@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { stackServerApp } from "@/stack/server";
 import { generateCustomerId } from "@/lib/banking";
@@ -12,7 +13,7 @@ export type AppUser = {
   role: "ADMIN" | "CUSTOMER";
 };
 
-export async function getCurrentAppUser(): Promise<AppUser | null> {
+export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
   const stackUser = await stackServerApp.getUser();
   if (!stackUser) {
     return null;
@@ -35,6 +36,10 @@ export async function getCurrentAppUser(): Promise<AppUser | null> {
   });
 
   if (existingUser) {
+    if (existingUser.role === role && existingUser.displayName === displayName) {
+      return existingUser;
+    }
+
     return prisma.user.update({
       where: { id: existingUser.id },
       data: {
@@ -71,4 +76,4 @@ export async function getCurrentAppUser(): Promise<AppUser | null> {
   }
 
   throw new Error("Kundennummer konnte nicht erzeugt werden.");
-}
+});

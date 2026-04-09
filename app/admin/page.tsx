@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AdminPanel } from "@/components/admin-panel";
+import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import { getCurrentAppUser } from "@/lib/current-user";
 
 export default async function AdminPage() {
@@ -13,5 +14,14 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  return <AdminPanel />;
+  const data = await getAdminDashboardData();
+
+  return (
+    <AdminPanel
+      initialFestgeldAccounts={data.festgeldAccounts}
+      initialSelectedCustomerId={data.users[0]?.customerId ?? ""}
+      initialTransactions={data.initialTransactions}
+      initialUsers={data.users}
+    />
+  );
 }

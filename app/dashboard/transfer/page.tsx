@@ -1,3 +1,5 @@
+import type { Route } from "next";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { CustomerTransferForm } from "@/components/customer-transfer-form";
 import { formatGermanDate } from "@/lib/date";
@@ -29,9 +31,9 @@ export default async function TransferPage() {
       <Card>
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-display text-slate-100">Letzte P2P-Transfers</h3>
-          <a className="text-sm font-semibold text-primary" href="/dashboard/transactions?q=%C3%9Cberweisung">
+          <Link className="text-sm font-semibold text-primary" href={"/dashboard/transactions?q=%C3%9Cberweisung" as Route}>
             Verlauf
-          </a>
+          </Link>
         </div>
         <div className="mt-5 space-y-3">
           {recentTransfers.length === 0 ? (

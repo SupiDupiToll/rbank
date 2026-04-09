@@ -1,5 +1,7 @@
 "use client";
 
+import type { Route } from "next";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/logout-button";
@@ -10,12 +12,86 @@ type CustomerShellProps = {
   children: React.ReactNode;
 };
 
+type NavIconProps = {
+  className?: string;
+};
+
+function HomeIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M3.75 10.5 12 4l8.25 6.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5v-5.25h-4.5v5.25h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function TransferIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M4.5 7.5h12.75m0 0-3-3m3 3-3 3M19.5 16.5H6.75m0 0 3 3m-3-3 3-3"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function TransactionsIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M7.5 6.75h9m-9 5.25h9m-9 5.25h5.25M5.25 4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function SavingsIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 6.75a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Zm0 0V4.5m0 9.75v5.25m4.5-11.25 1.5-1.5m-12 12 1.5-1.5m9 1.5-1.5-1.5m-7.5-7.5L6 8.25"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="m9.6 3.9-.24 1.91a6.84 6.84 0 0 0-1.47.61L6.3 5.46a1.5 1.5 0 0 0-1.86.22L3.68 6.44a1.5 1.5 0 0 0-.22 1.86l.96 1.6c-.28.47-.49.97-.61 1.47L1.9 11.6A1.5 1.5 0 0 0 .75 13.08v1.08A1.5 1.5 0 0 0 1.9 15.64l1.91.24c.12.5.33 1 .61 1.47l-.96 1.6a1.5 1.5 0 0 0 .22 1.86l.76.76a1.5 1.5 0 0 0 1.86.22l1.6-.96c.47.28.97.49 1.47.61l.24 1.91A1.5 1.5 0 0 0 11.08 24h1.08a1.5 1.5 0 0 0 1.48-1.15l.24-1.91c.5-.12 1-.33 1.47-.61l1.6.96a1.5 1.5 0 0 0 1.86-.22l.76-.76a1.5 1.5 0 0 0 .22-1.86l-.96-1.6c.28-.47.49-.97.61-1.47l1.91-.24A1.5 1.5 0 0 0 24 14.16v-1.08a1.5 1.5 0 0 0-1.15-1.48l-1.91-.24a6.84 6.84 0 0 0-.61-1.47l.96-1.6a1.5 1.5 0 0 0-.22-1.86l-.76-.76a1.5 1.5 0 0 0-1.86-.22l-1.6.96a6.84 6.84 0 0 0-1.47-.61L14.16 3.9A1.5 1.5 0 0 0 12.68 2.75H11.6A1.5 1.5 0 0 0 9.6 3.9ZM12.14 9a4.62 4.62 0 1 1 0 9.24 4.62 4.62 0 0 1 0-9.24Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
 const navigation = [
-  { href: "/dashboard", label: "Übersicht", shortLabel: "U" },
-  { href: "/dashboard/transfer", label: "Überweisung", shortLabel: "Ü" },
-  { href: "/dashboard/transactions", label: "Transaktionen", shortLabel: "T" },
-  { href: "/dashboard/festgeld", label: "Festgeld", shortLabel: "F" },
-  { href: "/dashboard/settings", label: "Einstellungen", shortLabel: "E" }
+  { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
+  { href: "/dashboard/transfer" as Route, label: "Überweisung", icon: TransferIcon },
+  { href: "/dashboard/transactions" as Route, label: "Transaktionen", icon: TransactionsIcon },
+  { href: "/dashboard/festgeld" as Route, label: "Festgeld", icon: SavingsIcon },
+  { href: "/dashboard/settings" as Route, label: "Einstellungen", icon: SettingsIcon }
 ];
 
 export function CustomerShell({ customerId, displayName, children }: CustomerShellProps) {
@@ -62,7 +138,7 @@ export function CustomerShell({ customerId, displayName, children }: CustomerShe
               const isActive = pathname === item.href;
 
               return (
-                <a
+                <Link
                   key={item.href}
                   className={cn(
                     "block rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
@@ -71,7 +147,7 @@ export function CustomerShell({ customerId, displayName, children }: CustomerShe
                   href={item.href}
                 >
                   {item.label}
-                </a>
+                </Link>
               );
             })}
           </nav>
@@ -93,9 +169,10 @@ export function CustomerShell({ customerId, displayName, children }: CustomerShe
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
+            const Icon = item.icon;
 
             return (
-              <a
+              <Link
                 key={item.href}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-semibold transition-colors",
@@ -103,9 +180,9 @@ export function CustomerShell({ customerId, displayName, children }: CustomerShe
                 )}
                 href={item.href}
               >
-                <span className="text-xs font-bold">{item.shortLabel}</span>
+                <Icon className="h-5 w-5" />
                 <span className="truncate">{item.label}</span>
-              </a>
+              </Link>
             );
           })}
         </div>

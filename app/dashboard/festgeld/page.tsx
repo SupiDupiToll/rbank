@@ -1,3 +1,5 @@
+import type { Route } from "next";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { FestgeldCountdown } from "@/components/festgeld-countdown";
 import { formatGermanDate } from "@/lib/date";
@@ -29,7 +31,7 @@ export default async function FestgeldPage() {
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           {festgeldAccounts.map((account) => (
-            <a key={account.id} className="block" href={`/dashboard/festgeld/${account.id}`}>
+            <Link key={account.id} className="block" href={`/dashboard/festgeld/${account.id}` as Route}>
               <Card className="space-y-4 transition-colors hover:border-primary/40">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -67,7 +69,7 @@ export default async function FestgeldPage() {
 
               <FestgeldCountdown endDate={account.endDate.toISOString()} />
               </Card>
-            </a>
+            </Link>
           ))}
         </div>
       )}

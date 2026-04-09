@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { AdminFestgeld, AdminTransaction, AdminUserRow } from "@/lib/admin-dashboard";
 import { formatEuroFromCents } from "@/lib/money";
 import { formatGermanDate, toDateInputValue } from "@/lib/date";
 import { Button } from "@/components/ui/button";
@@ -10,39 +11,23 @@ import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 
-type UserRow = {
-  customerId: string;
-  displayName: string | null;
-  stackUserId: string;
-  balanceCents: number;
+type AdminPanelProps = {
+  initialUsers: AdminUserRow[];
+  initialSelectedCustomerId: string;
+  initialTransactions: AdminTransaction[];
+  initialFestgeldAccounts: AdminFestgeld[];
 };
 
-type Transaction = {
-  id: string;
-  type: "INCOMING" | "OUTGOING";
-  amount: number;
-  description: string;
-  source: "ADMIN" | "TRANSFER";
-  transferId: string | null;
-  date: string;
-};
-
-type Festgeld = {
-  id: string;
-  user: { stackUserId: string; customerId: string; displayName: string | null };
-  label: string;
-  amount: number;
-  interestRate: number;
-  status: "ACTIVE" | "UNLOCKED" | "PAID_OUT";
-  startDate: string;
-  endDate: string;
-};
-
-export function AdminPanel() {
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [festgeldAccounts, setFestgeldAccounts] = useState<Festgeld[]>([]);
+export function AdminPanel({
+  initialUsers,
+  initialSelectedCustomerId,
+  initialTransactions,
+  initialFestgeldAccounts
+}: AdminPanelProps) {
+  const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(initialSelectedCustomerId);
+  const [transactions, setTransactions] = useState<AdminTransaction[]>(initialTransactions);
+  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(initialFestgeldAccounts);
 
   const [txType, setTxType] = useState<"INCOMING" | "OUTGOING">("INCOMING");
   const [txAmount, setTxAmount] = useState("");
@@ -60,7 +45,7 @@ export function AdminPanel() {
   const loadUsers = useCallback(async () => {
     const response = await fetch("/api/admin/users");
     if (!response.ok) return;
-    const data = (await response.json()) as { users: UserRow[] };
+    const data = (await response.json()) as { users: AdminUserRow[] };
     setUsers(data.users);
     if (!selectedCustomerId && data.users.length > 0) {
       setSelectedCustomerId(data.users[0].customerId);
@@ -70,14 +55,14 @@ export function AdminPanel() {
   const loadTransactions = useCallback(async (customerId: string) => {
     const response = await fetch(`/api/admin/users/${customerId}/transactions`);
     if (!response.ok) return;
-    const data = (await response.json()) as { transactions: Transaction[] };
+    const data = (await response.json()) as { transactions: AdminTransaction[] };
     setTransactions(data.transactions);
   }, []);
 
   const loadFestgeld = useCallback(async () => {
     const response = await fetch("/api/admin/festgeld");
     if (!response.ok) return;
-    const data = (await response.json()) as { accounts: Festgeld[] };
+    const data = (await response.json()) as { accounts: AdminFestgeld[] };
     setFestgeldAccounts(data.accounts);
   }, []);
 
@@ -88,15 +73,23 @@ export function AdminPanel() {
   }, [fgEndDate]);
 
   useEffect(() => {
+    if (initialUsers.length > 0 || initialFestgeldAccounts.length > 0) {
+      return;
+    }
+
     void loadUsers();
     void loadFestgeld();
-  }, [loadFestgeld, loadUsers]);
+  }, [initialFestgeldAccounts.length, initialUsers.length, loadFestgeld, loadUsers]);
 
   useEffect(() => {
+    if (selectedCustomerId === initialSelectedCustomerId && initialTransactions.length > 0) {
+      return;
+    }
+
     if (selectedCustomerId) {
       void loadTransactions(selectedCustomerId);
     }
-  }, [loadTransactions, selectedCustomerId]);
+  }, [initialSelectedCustomerId, initialTransactions.length, loadTransactions, selectedCustomerId]);
 
   async function submitTransaction(event: React.FormEvent) {
     event.preventDefault();

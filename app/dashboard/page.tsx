@@ -40,30 +40,30 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <a className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href="/dashboard/transfer">
+        <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transfer" as Route}>
           <p className="text-lg font-semibold text-slate-100">Überweisung</p>
           <p className="mt-2 text-sm text-slate-400">Geld direkt an eine Kundennummer senden.</p>
-        </a>
-        <a className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href="/dashboard/transactions">
+        </Link>
+        <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transactions" as Route}>
           <p className="text-lg font-semibold text-slate-100">Transaktionen</p>
           <p className="mt-2 text-sm text-slate-400">Buchungen durchsuchen und P2P/Admin trennen.</p>
-        </a>
+        </Link>
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/festgeld" as Route}>
           <p className="text-lg font-semibold text-slate-100">Festgeld</p>
           <p className="mt-2 text-sm text-slate-400">Alle Laufzeiten und Zinssätze in einer Ansicht.</p>
         </Link>
-        <a className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href="/dashboard/settings">
+        <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/settings" as Route}>
           <p className="text-lg font-semibold text-slate-100">Einstellungen</p>
           <p className="mt-2 text-sm text-slate-400">Stack-Auth-Konto, Sessions und Sicherheit verwalten.</p>
-        </a>
+        </Link>
       </div>
 
       <Card>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-xl font-display text-slate-100">Letzte Buchungen</h3>
-          <a className="text-sm font-semibold text-primary" href="/dashboard/transactions">
+          <Link className="text-sm font-semibold text-primary" href={"/dashboard/transactions" as Route}>
             Alle ansehen
-          </a>
+          </Link>
         </div>
         <div className="space-y-3">
           {latestTransactions.map((transaction) => (
