@@ -14,11 +14,12 @@ const appCsp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  "img-src 'self' data:",
-  "script-src 'self'",
+  "img-src 'self' data: https:",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "font-src 'self'",
-  "connect-src 'self'"
+  "font-src 'self' data:",
+  "connect-src 'self' https://api.stack-auth.com https://*.stack-auth.com https://*.built-with-stack-auth.com wss://api.stack-auth.com wss://*.stack-auth.com",
+  "frame-src 'self' https://*.stack-auth.com https://*.built-with-stack-auth.com"
 ].join("; ");
 
 const authHandlerCsp = [
