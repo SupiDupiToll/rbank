@@ -49,12 +49,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/handler/:path*",
-        headers: authHandlerHeaders
-      },
-      {
         source: "/:path*",
         headers: securityHeaders
+      },
+      {
+        source: "/handler/:path*",
+        headers: authHandlerHeaders
       }
     ];
   }
