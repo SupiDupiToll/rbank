@@ -21,12 +21,12 @@ export default async function FestgeldPage() {
     <div className="space-y-6">
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Festgeld</p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">Ihre angelegten Festgeldkonten</h2>
+        <h2 className="mt-2 text-3xl font-display text-slate-100">Konten</h2>
       </header>
 
       {festgeldAccounts.length === 0 ? (
         <Card>
-          <p className="text-sm text-slate-400">Es gibt aktuell keine Festgeldkonten für dieses Kundenkonto.</p>
+          <p className="text-sm text-slate-400">Keine Konten.</p>
         </Card>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
@@ -57,10 +57,9 @@ export default async function FestgeldPage() {
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-                <p className="text-sm text-slate-400">Zinssatz</p>
-                <p className="mt-1 text-lg font-semibold text-slate-100">{account.interestRate.toFixed(2)}%</p>
+                <p className="text-lg font-semibold text-slate-100">{account.interestRate.toFixed(2)}%</p>
                 <p className="mt-2 text-sm text-slate-400">
-                  Erwarteter Zins{" "}
+                  Zins{" "}
                   {formatEuroFromCents(
                     calculateFestgeldInterestCents(account.amount, account.interestRate, account.startDate, account.endDate)
                   )}

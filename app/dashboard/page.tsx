@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Übersicht</p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">Ihr Banking aufgeräumt nach Funktionen</h2>
+        <h2 className="mt-2 text-3xl font-display text-slate-100">Dashboard</h2>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -42,19 +42,15 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transfer" as Route}>
           <p className="text-lg font-semibold text-slate-100">Überweisung</p>
-          <p className="mt-2 text-sm text-slate-400">Geld direkt an eine Kundennummer senden.</p>
         </Link>
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transactions" as Route}>
           <p className="text-lg font-semibold text-slate-100">Transaktionen</p>
-          <p className="mt-2 text-sm text-slate-400">Buchungen durchsuchen und P2P/Admin trennen.</p>
         </Link>
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/festgeld" as Route}>
           <p className="text-lg font-semibold text-slate-100">Festgeld</p>
-          <p className="mt-2 text-sm text-slate-400">Alle Laufzeiten und Zinssätze in einer Ansicht.</p>
         </Link>
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/settings" as Route}>
           <p className="text-lg font-semibold text-slate-100">Einstellungen</p>
-          <p className="mt-2 text-sm text-slate-400">Stack-Auth-Konto, Sessions und Sicherheit verwalten.</p>
         </Link>
       </div>
 

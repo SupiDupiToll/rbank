@@ -21,8 +21,7 @@ export default async function TransferPage() {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       <Card>
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Überweisung</p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">Geld an andere Kunden senden</h2>
-        <p className="mt-2 text-sm text-slate-400">Jede Überweisung wird sofort bei Sender und Empfänger verbucht.</p>
+        <h2 className="mt-2 text-3xl font-display text-slate-100">Senden</h2>
         <div className="mt-8">
           <CustomerTransferForm balanceCents={balanceCents} />
         </div>
@@ -37,7 +36,7 @@ export default async function TransferPage() {
         </div>
         <div className="mt-5 space-y-3">
           {recentTransfers.length === 0 ? (
-            <p className="text-sm text-slate-400">Noch keine Überweisungen zwischen Kunden vorhanden.</p>
+            <p className="text-sm text-slate-400">Keine Überweisungen.</p>
           ) : (
             recentTransfers.map((transaction) => (
               <div key={transaction.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">

@@ -197,14 +197,14 @@ export function AdminPanel({
     <div className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-12">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">Admin Bereich</span>
-          <h1 className="font-display text-4xl font-black">Kunden und Transaktionen</h1>
+          <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">Admin</span>
+          <h1 className="font-display text-4xl font-black">Verwaltung</h1>
         </div>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="lg:col-span-5">
-          <h2 className="mb-4 text-2xl font-display font-bold">Kundenübersicht</h2>
+          <h2 className="mb-4 text-2xl font-display font-bold">Kunden</h2>
           <div className="overflow-x-auto">
             <Table>
               <thead>
@@ -233,7 +233,7 @@ export function AdminPanel({
         </Card>
 
         <Card className="space-y-4 lg:col-span-7">
-          <h2 className="text-2xl font-display font-bold">Transaktion anlegen</h2>
+          <h2 className="text-2xl font-display font-bold">Buchung</h2>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={submitTransaction}>
             <div className="space-y-2">
               <Label>Typ</Label>
@@ -242,8 +242,8 @@ export function AdminPanel({
                 value={txType}
                 onChange={(event) => setTxType(event.target.value as "INCOMING" | "OUTGOING")}
               >
-                <option value="INCOMING">Geldeingang</option>
-                <option value="OUTGOING">Geldausgang</option>
+                <option value="INCOMING">Eingang</option>
+                <option value="OUTGOING">Ausgang</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -269,7 +269,7 @@ export function AdminPanel({
 
       <div className="mt-8 grid gap-8 lg:grid-cols-12">
         <Card className="lg:col-span-7">
-          <h2 className="mb-4 text-2xl font-display font-bold">Transaktionshistorie</h2>
+          <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
           <div className="overflow-x-auto">
             <Table>
               <thead>
@@ -298,7 +298,7 @@ export function AdminPanel({
                       </div>
                     </Td>
                     <Td className={transaction.type === "INCOMING" ? "text-primary font-bold" : "text-red-400 font-bold"}>
-                      {transaction.type === "INCOMING" ? "Eingang ↑ " : "Ausgang ↓ "}
+                      {transaction.type === "INCOMING" ? "+ " : "- "}
                       {formatEuroFromCents(transaction.amount)}
                     </Td>
                   </tr>
@@ -309,7 +309,7 @@ export function AdminPanel({
         </Card>
 
         <Card className="space-y-4 lg:col-span-5">
-          <h2 className="text-2xl font-display font-bold">Festgeld erstellen</h2>
+          <h2 className="text-2xl font-display font-bold">Festgeld</h2>
           <form className="space-y-4" onSubmit={submitFestgeld}>
             <div className="space-y-2">
               <Label>Bezeichnung</Label>
@@ -334,14 +334,14 @@ export function AdminPanel({
               </div>
             </div>
             <Button type="submit" className="h-14 w-full">
-              Festgeldkonto anlegen
+              Anlegen
             </Button>
           </form>
         </Card>
       </div>
 
       <Card className="mt-8">
-        <h2 className="mb-4 text-2xl font-display font-bold">Alle Festgeldkonten</h2>
+        <h2 className="mb-4 text-2xl font-display font-bold">Festgeldkonten</h2>
         <div className="overflow-x-auto">
           <Table>
             <thead>

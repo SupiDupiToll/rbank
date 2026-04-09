@@ -42,16 +42,16 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
       <div className="flex flex-col gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Transaktionen</p>
-          <h2 className="mt-2 text-3xl font-display text-slate-100">Buchungen durchsuchen</h2>
+          <h2 className="mt-2 text-3xl font-display text-slate-100">Verlauf</h2>
         </div>
         <form className="w-full max-w-md" method="get">
-          <Input defaultValue={query} name="q" placeholder="Beschreibung durchsuchen" />
+          <Input defaultValue={query} name="q" placeholder="Suchen" />
         </form>
       </div>
 
       <div className="mt-6 space-y-3">
         {transactions.length === 0 ? (
-          <p className="text-sm text-slate-400">Keine Transaktionen für diese Suche gefunden.</p>
+          <p className="text-sm text-slate-400">Keine Treffer.</p>
         ) : (
           transactions.map((transaction) => (
             <div key={transaction.id} className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:flex-row md:items-center md:justify-between">
@@ -69,7 +69,6 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
                   {transaction.type === "INCOMING" ? "+" : "-"}
                   {formatEuroFromCents(transaction.amount).replace("-", "")}
                 </p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-slate-500">{transaction.type === "INCOMING" ? "Eingang" : "Ausgang"}</p>
               </div>
             </div>
           ))
