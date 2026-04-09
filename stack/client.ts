@@ -1,5 +1,5 @@
 import { StackClientApp } from "@stackframe/stack";
-import "@/lib/env";
+import "@/lib/public-env";
 
 export const stackClientApp = new StackClientApp({
   tokenStore: "nextjs-cookie",
