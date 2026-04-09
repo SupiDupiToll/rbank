@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { publicEnv } from "@/lib/public-env";
-
 const serverEnvSchema = z.object({
   APP_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
+  NEXT_PUBLIC_STACK_PROJECT_ID: z.string().min(1),
+  NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
   STACK_SECRET_SERVER_KEY: z.string().min(32),
   STACK_ADMIN_EMAILS: z.string().min(1),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
@@ -14,6 +14,8 @@ const serverEnvSchema = z.object({
 const parsedEnv = serverEnvSchema.safeParse({
   APP_URL: process.env.APP_URL,
   DATABASE_URL: process.env.DATABASE_URL,
+  NEXT_PUBLIC_STACK_PROJECT_ID: process.env.NEXT_PUBLIC_STACK_PROJECT_ID,
+  NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
   STACK_SECRET_SERVER_KEY: process.env.STACK_SECRET_SERVER_KEY,
   STACK_ADMIN_EMAILS: process.env.STACK_ADMIN_EMAILS,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
@@ -36,8 +38,5 @@ if (parsedEnv.data.UPSTASH_REDIS_REST_TOKEN && !parsedEnv.data.UPSTASH_REDIS_RES
   throw new Error("UPSTASH_REDIS_REST_URL fehlt.");
 }
 
-export const env = {
-  ...publicEnv,
-  ...parsedEnv.data
-};
+export const env = parsedEnv.data;
 export const appOrigin = new URL(env.APP_URL).origin;
