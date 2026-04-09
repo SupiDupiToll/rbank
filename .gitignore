@@ -17,3 +17,5 @@ tsconfig.tsbuildinfo
 
 *.sqlite
 *.sqlite-journal
+.codex
+.env.example
