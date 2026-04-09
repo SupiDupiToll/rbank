@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum TransactionType {
+  INCOMING
+  OUTGOING
+}
+
+enum TransactionSource {
+  ADMIN
+  TRANSFER
+}
+
+enum FestgeldStatus {
+  ACTIVE
+  UNLOCKED
+  PAID_OUT
+}
+
+model User {
+  id           String            @id @default(cuid())
+  stackUserId  String            @unique
+  customerId   String            @unique
+  displayName  String?
+  role         Role              @default(CUSTOMER)
+  createdAt    DateTime          @default(now())
+  transactions Transaction[]
+  festgeld     FestgeldAccount[]
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int
+  description String
+  source      TransactionSource  @default(ADMIN)
+  transferId  String?
+  date        DateTime
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([transferId])
+}
+
+model FestgeldAccount {
+  id                  String         @id @default(cuid())
+  userId              String
+  label               String
+  amount              Int
+  interestRate        Float
+  status              FestgeldStatus @default(ACTIVE)
+  startDate           DateTime
+  endDate             DateTime
+  interestCreditedAt  DateTime?
+  payoutDate          DateTime?
+  payoutTransactionId String?
+  lockedTransactionId String?
+  createdAt           DateTime       @default(now())
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, endDate])
+  @@index([status, endDate])
+}

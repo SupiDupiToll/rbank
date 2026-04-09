@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=DM+Serif+Display&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4ade80", // Luminous, shining green (Tailwind Green 400ish)
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#0f1115", // Deep charcoal base
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "serif-heading": ["DM Serif Display", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1.5rem", // 24px as requested
+                        "lg": "1.5rem", // 24px as requested
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-accent {
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col bg-background-dark overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-6 pt-8 pb-4">
+<div class="size-10 flex items-center justify-center rounded-full bg-slate-800/50 overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7lMNtvK8D8oQKpI5mdr7Q_HQPnkfHmhKqR7Byb64HLt_cutobm94KEpzMcDQjwKbBtjc-IZZvIda6bxeeUtetTpnMYXLK1Muw-jkKDOxIW8echtOqe4k7p3aKQdWjNFFkqMSPIZv1g-pS6Ltlybbkmw0yt2D45o6mfi2QZ6SYdTxygiMFVjW9of9tKdFbng_1x6fEkZB3RaRGMddHesjDN1SWrHIwlv-7gKBUrnlpunA8RGmU_iJ899yp3_RqR2NXMI--N7v4cCI"/>
+</div>
+<h2 class="text-slate-100 text-base font-serif-heading italic tracking-wide">My Bank</h2>
+<button class="size-10 flex items-center justify-center rounded-full bg-slate-800/30 text-slate-100 border border-slate-800/50">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+</header>
+<!-- Balance Section -->
+<section class="flex flex-col items-center px-6 py-10">
+<span class="text-slate-500 text-[10px] font-bold mb-2 uppercase tracking-[0.3em]">Current Balance</span>
+<h1 class="text-slate-100 text-5xl font-serif-heading tracking-tight mb-10">$12,450.00</h1>
+<button class="w-full max-w-[280px] flex items-center justify-center rounded-lg h-14 bg-primary text-background-dark text-base font-extrabold tracking-wide glow-accent hover:brightness-110 transition-all active:scale-[0.98]">
+<span>Pay</span>
+</button>
+</section>
+<!-- Quick Actions / Cards -->
+<div class="px-6 grid grid-cols-2 gap-4 mb-10">
+<div class="bg-slate-900/40 p-6 rounded-lg border border-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-3 text-[22px]" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<p class="text-slate-100 font-bold text-sm">Savings</p>
+<p class="text-slate-500 text-xs mt-1">$4,200.50</p>
+</div>
+<div class="bg-slate-900/40 p-6 rounded-lg border border-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-3 text-[22px]" style="font-variation-settings: 'FILL' 1;">credit_card</span>
+<p class="text-slate-100 font-bold text-sm">Credit</p>
+<p class="text-slate-500 text-xs mt-1">-$120.00</p>
+</div>
+</div>
+<!-- Recent Transactions -->
+<section class="flex-1 px-6 pb-24">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-slate-100 text-lg font-serif-heading">Recent Activity</h3>
+<button class="text-primary text-xs font-bold tracking-wider uppercase">See All</button>
+</div>
+<div class="space-y-3">
+<!-- Transaction 1 -->
+<div class="flex items-center justify-between p-4 bg-slate-900/30 rounded-lg border border-slate-800/40">
+<div class="flex items-center gap-4">
+<div class="size-11 rounded-lg bg-slate-800/40 flex items-center justify-center border border-slate-700/30">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">shopping_bag</span>
+</div>
+<div>
+<p class="text-slate-100 font-semibold text-sm">Apple Store</p>
+<p class="text-slate-500 text-[10px] uppercase tracking-wider mt-0.5">Today, 2:45 PM</p>
+</div>
+</div>
+<span class="text-slate-100 font-bold text-sm">-$199.00</span>
+</div>
+<!-- Transaction 2 -->
+<div class="flex items-center justify-between p-4 bg-slate-900/30 rounded-lg border border-slate-800/40">
+<div class="flex items-center gap-4">
+<div class="size-11 rounded-lg bg-slate-800/40 flex items-center justify-center border border-slate-700/30">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">restaurant</span>
+</div>
+<div>
+<p class="text-slate-100 font-semibold text-sm">The Green Bistro</p>
+<p class="text-slate-500 text-[10px] uppercase tracking-wider mt-0.5">Yesterday, 8:12 PM</p>
+</div>
+</div>
+<span class="text-slate-100 font-bold text-sm">-$42.50</span>
+</div>
+<!-- Transaction 3 -->
+<div class="flex items-center justify-between p-4 bg-slate-900/30 rounded-lg border border-slate-800/40">
+<div class="flex items-center gap-4">
+<div class="size-11 rounded-lg bg-slate-800/40 flex items-center justify-center border border-slate-700/30">
+<span class="material-symbols-outlined text-primary text-[20px]">south_west</span>
+</div>
+<div>
+<p class="text-slate-100 font-semibold text-sm">Salary Deposit</p>
+<p class="text-slate-500 text-[10px] uppercase tracking-wider mt-0.5">Oct 25, 2023</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">+$4,500.00</span>
+</div>
+</div>
+</section>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background-dark/80 backdrop-blur-xl border-t border-slate-800/50 flex justify-around items-center py-5 px-4">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-400" href="#">
+<span class="material-symbols-outlined">pie_chart</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-400" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-600 hover:text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</div>
+</body></html>

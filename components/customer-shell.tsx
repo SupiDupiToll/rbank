@@ -1,0 +1,115 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/logout-button";
+
+type CustomerShellProps = {
+  customerId: string;
+  displayName: string | null;
+  children: React.ReactNode;
+};
+
+const navigation = [
+  { href: "/dashboard", label: "Übersicht", shortLabel: "U" },
+  { href: "/dashboard/transfer", label: "Überweisung", shortLabel: "Ü" },
+  { href: "/dashboard/transactions", label: "Transaktionen", shortLabel: "T" },
+  { href: "/dashboard/festgeld", label: "Festgeld", shortLabel: "F" },
+  { href: "/dashboard/settings", label: "Einstellungen", shortLabel: "E" }
+];
+
+export function CustomerShell({ customerId, displayName, children }: CustomerShellProps) {
+  const pathname = usePathname();
+  const currentPage = navigation.find((item) => item.href === pathname)?.label ?? "Dashboard";
+
+  return (
+    <div className="min-h-screen bg-background-dark text-slate-100">
+      <div className="lg:hidden">
+        <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-background-dark/90 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-md items-center justify-between px-4 pb-4 pt-5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-primary">RBANK</p>
+              <h1 className="mt-2 text-2xl font-display text-slate-100">{currentPage}</h1>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+              <span className="text-sm font-bold tracking-[0.2em]">RB</span>
+            </div>
+          </div>
+          <div className="mx-auto max-w-md px-4 pb-4">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4">
+              <p className="text-xs text-slate-400">{displayName ?? "Kundenkonto"}</p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-lg font-semibold text-slate-100">Kundennummer {customerId}</p>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                  App
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-0 pb-24 pt-0 lg:flex-row lg:px-8 lg:py-6">
+        <aside className="hidden w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 lg:sticky lg:top-6 lg:block lg:h-fit lg:w-72">
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">RBANK</p>
+            <h1 className="mt-3 text-2xl font-display text-slate-100">{displayName ?? "Kundenkonto"}</h1>
+            <p className="mt-2 text-sm text-slate-400">Kundennummer {customerId}</p>
+          </div>
+
+          <nav className="space-y-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+
+              return (
+                <a
+                  key={item.href}
+                  className={cn(
+                    "block rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
+                    isActive ? "bg-primary text-background-dark" : "bg-slate-900 text-slate-200 hover:bg-slate-800"
+                  )}
+                  href={item.href}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          <div className="mt-6 space-y-3 border-t border-slate-800 pt-6">
+            <LogoutButton className="block w-full rounded-xl bg-slate-900 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800" />
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1 px-4 pt-4 lg:px-0 lg:pt-0">
+          <div className="mx-auto max-w-md lg:max-w-none">{children}</div>
+        </div>
+      </div>
+
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-background-dark/95 px-2 pt-2 backdrop-blur-xl lg:hidden"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+      >
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href;
+
+            return (
+              <a
+                key={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-semibold transition-colors",
+                  isActive ? "bg-primary text-background-dark" : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+                )}
+                href={item.href}
+              >
+                <span className="text-xs font-bold">{item.shortLabel}</span>
+                <span className="truncate">{item.label}</span>
+              </a>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}
