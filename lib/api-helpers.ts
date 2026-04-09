@@ -109,7 +109,25 @@ export async function enforceRateLimit(_request: Request, policy: RateLimitPolic
 export function enforceSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
 
-  if (!origin || origin !== appOrigin) {
+  if (!origin) {
+    return jsonError("Ungueltige Anfrage.", 403);
+  }
+
+  const allowedOrigins = new Set<string>([appOrigin]);
+
+  try {
+    allowedOrigins.add(new URL(request.url).origin);
+  } catch {
+    // Ignore malformed runtime request URLs and fall back to configured origin.
+  }
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+    allowedOrigins.add(`${forwardedProto}://${forwardedHost.split(",")[0]?.trim()}`);
+  }
+
+  if (!allowedOrigins.has(origin)) {
     return jsonError("Ungueltige Anfrage.", 403);
   }
 
