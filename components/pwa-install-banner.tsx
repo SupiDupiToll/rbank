@@ -11,41 +11,47 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-const STORAGE_KEY = "rbank-pwa-banner-dismissed";
+const DISMISSED_KEY = "rbank-pwa-banner-dismissed";
 const INSTALL_DELAY_MS = 30_000;
 
 function isMobileDevice(): boolean {
   if (typeof window === "undefined") return false;
-  const ua = navigator.userAgent;
-  return /Android|iPhone|iPad|iPod/i.test(ua);
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
-  return window.matchMedia("(display-mode: standalone)").matches;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true
+  );
 }
 
-function hasBeenDismissed(): boolean {
+function isDismissed(): boolean {
   if (typeof window === "undefined") return true;
-  return localStorage.getItem(STORAGE_KEY) === "true";
+  try {
+    return localStorage.getItem(DISMISSED_KEY) === "true";
+  } catch {
+    return true;
+  }
 }
 
-function setDismissed(): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, "true");
+function setDismissedFlag(): void {
+  try {
+    localStorage.setItem(DISMISSED_KEY, "true");
+  } catch {
+    // ignore
   }
 }
 
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [canShow, setCanShow] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || !isMobileDevice() || hasBeenDismissed()) {
-      return;
-    }
+    if (isStandalone() || !isMobileDevice() || isDismissed()) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -53,56 +59,48 @@ export function usePWAInstall() {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-
     window.addEventListener("appinstalled", () => {
-      setIsInstalled(true);
-      setShowBanner(false);
+      setDismissedFlag();
       setDeferredPrompt(null);
     });
 
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-    };
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   useEffect(() => {
-    if (
-      !deferredPrompt ||
-      isStandalone() ||
-      !isMobileDevice() ||
-      hasBeenDismissed()
-    ) {
-      return;
-    }
+    if (isStandalone() || !isMobileDevice() || isDismissed()) return;
 
-    const timer = setTimeout(() => {
-      setShowBanner(true);
-    }, INSTALL_DELAY_MS);
-
+    // Always show banner after delay — with or without native prompt
+    const timer = setTimeout(() => setCanShow(true), INSTALL_DELAY_MS);
     return () => clearTimeout(timer);
   }, [deferredPrompt]);
 
   const handleInstall = useCallback(async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      setIsInstalled(true);
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
     }
-    setShowBanner(false);
+    setDismissedFlag();
+    setCanShow(false);
     setDeferredPrompt(null);
   }, [deferredPrompt]);
 
   const handleDismiss = useCallback(() => {
-    setDismissed();
-    setShowBanner(false);
+    setDismissedFlag();
+    setCanShow(false);
   }, []);
 
-  return { showBanner, isInstalled, handleInstall, handleDismiss };
+  return {
+    showBanner: canShow,
+    hasNativePrompt: !!deferredPrompt,
+    handleInstall,
+    handleDismiss,
+  };
 }
 
 export function PWAInstallBanner() {
-  const { showBanner, handleInstall, handleDismiss } = usePWAInstall();
+  const { showBanner, hasNativePrompt, handleInstall, handleDismiss } =
+    usePWAInstall();
 
   if (!showBanner) return null;
 
@@ -117,16 +115,20 @@ export function PWAInstallBanner() {
             FamilyBank als App installieren
           </p>
           <p className="mt-0.5 text-xs text-slate-400">
-            Schneller Zugriff auf dein Banking
+            {hasNativePrompt
+              ? "Tippe auf Installieren"
+              : "Browser-Men\u00fc \u2192 App installieren"}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleInstall}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
-          >
-            Installieren
-          </button>
+          {hasNativePrompt ? (
+            <button
+              onClick={handleInstall}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
+            >
+              Installieren
+            </button>
+          ) : null}
           <button
             onClick={handleDismiss}
             className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
@@ -150,41 +152,33 @@ export function PWARegistration({
   vapidPublicKey,
 }: PWARegistrationProps) {
   const { requestPermission } = usePushNotification();
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [hasAsked, setHasAsked] = useState(false);
 
   const registerPush = useCallback(async () => {
-    if (!userId || !vapidPublicKey || !("serviceWorker" in navigator)) return;
+    if (!userId || !("serviceWorker" in navigator)) return;
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      // Never ask again if already granted or denied
+      if (Notification.permission !== "default") return;
 
-      // Check if already subscribed
-      const existingSubscription =
-        await registration.pushManager.getSubscription();
-      if (existingSubscription) {
-        setIsRegistered(true);
-        return;
-      }
-
-      const result = await requestPermission({ userId, vapidPublicKey });
-      if (result.success) {
-        setIsRegistered(true);
+      if (vapidPublicKey && "PushManager" in window) {
+        // Full push registration with subscription
+        const result = await requestPermission({ userId, vapidPublicKey });
+        if (result.success) setHasAsked(true);
+      } else {
+        // Fallback: only ask for notification permission (no subscription)
+        await Notification.requestPermission();
+        setHasAsked(true);
       }
     } catch {
-      // Silently fail — user may have denied permission
+      // user denied or error — don't ask again
     }
   }, [userId, vapidPublicKey, requestPermission]);
 
-  // Register service worker and push on mount
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
-
-    // Service worker is auto-registered by next-pwa via <script> in _document
-    // But we still register push when user is logged in
-    if (userId && vapidPublicKey) {
-      registerPush();
-    }
-  }, [userId, vapidPublicKey, registerPush]);
+    if (hasAsked || !userId) return;
+    registerPush();
+  }, [userId, hasAsked, registerPush]);
 
   return null;
 }

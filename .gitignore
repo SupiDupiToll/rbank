@@ -19,3 +19,4 @@ tsconfig.tsbuildinfo
 *.sqlite-journal
 .codex
 .env.example
+.qwen
