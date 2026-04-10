@@ -1,19 +1,36 @@
 import { Prisma, type FestgeldAccount } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents } from "@/lib/banking";
+import {
+  buildFestgeldExpiredNotification,
+  sendToUser,
+} from "@/lib/push-service";
 
 export function getFestgeldDurationDays(startDate: Date, endDate: Date) {
   const millisecondsPerDay = 24 * 60 * 60 * 1000;
-  return Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / millisecondsPerDay));
+  return Math.max(
+    1,
+    Math.round((endDate.getTime() - startDate.getTime()) / millisecondsPerDay),
+  );
 }
 
-export function calculateFestgeldInterestCents(amount: number, interestRate: number, startDate: Date, endDate: Date) {
+export function calculateFestgeldInterestCents(
+  amount: number,
+  interestRate: number,
+  startDate: Date,
+  endDate: Date,
+) {
   const durationDays = getFestgeldDurationDays(startDate, endDate);
   return Math.round(amount * (interestRate / 100) * (durationDays / 365));
 }
 
-export function isFestgeldUnlocked(account: Pick<FestgeldAccount, "status" | "endDate">) {
-  return account.status === "UNLOCKED" || (account.status === "ACTIVE" && account.endDate <= new Date());
+export function isFestgeldUnlocked(
+  account: Pick<FestgeldAccount, "status" | "endDate">,
+) {
+  return (
+    account.status === "UNLOCKED" ||
+    (account.status === "ACTIVE" && account.endDate <= new Date())
+  );
 }
 
 export async function settleMaturedFestgeldAccounts(userId?: string) {
@@ -21,20 +38,25 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
     where: {
       status: "ACTIVE",
       endDate: { lte: new Date() },
-      ...(userId ? { userId } : {})
+      ...(userId ? { userId } : {}),
     },
     select: {
-      id: true
-    }
+      id: true,
+      userId: true,
+    },
   });
 
   for (const account of maturedAccounts) {
     await prisma.$transaction(async (tx) => {
       const currentAccount = await tx.festgeldAccount.findUnique({
-        where: { id: account.id }
+        where: { id: account.id },
       });
 
-      if (!currentAccount || currentAccount.status !== "ACTIVE" || currentAccount.endDate > new Date()) {
+      if (
+        !currentAccount ||
+        currentAccount.status !== "ACTIVE" ||
+        currentAccount.endDate > new Date()
+      ) {
         return;
       }
 
@@ -42,7 +64,7 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
         currentAccount.amount,
         currentAccount.interestRate,
         currentAccount.startDate,
-        currentAccount.endDate
+        currentAccount.endDate,
       );
 
       if (interestAmount > 0) {
@@ -53,8 +75,8 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
             amount: interestAmount,
             description: `Festgeldzins ${currentAccount.label}`,
             source: "ADMIN",
-            date: new Date()
-          }
+            date: new Date(),
+          },
         });
       }
 
@@ -62,10 +84,15 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
         where: { id: currentAccount.id },
         data: {
           status: "UNLOCKED",
-          interestCreditedAt: new Date()
-        }
+          interestCreditedAt: new Date(),
+        },
       });
     });
+
+    // Send push notification (fire-and-forget)
+    sendToUser(account.userId, buildFestgeldExpiredNotification()).catch(
+      console.error,
+    );
   }
 }
 
@@ -83,7 +110,7 @@ export async function createFestgeldAccount(input: {
     async (tx) => {
       const transactions = await tx.transaction.findMany({
         where: { userId: input.userId },
-        select: { type: true, amount: true }
+        select: { type: true, amount: true },
       });
 
       const balanceCents = calculateBalanceCents(transactions);
@@ -98,27 +125,27 @@ export async function createFestgeldAccount(input: {
           amount: input.amount,
           description: `Festgeldanlage ${input.label}`,
           source: "ADMIN",
-          date: input.startDate
-        }
+          date: input.startDate,
+        },
       });
 
       const account = await tx.festgeldAccount.create({
         data: {
           ...input,
-          lockedTransactionId: lockTransaction.id
-        }
+          lockedTransactionId: lockTransaction.id,
+        },
       });
 
       return { account, lockTransaction };
     },
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
   );
 }
 
 export async function payoutUnlockedFestgeldAccount(accountId: string) {
   return prisma.$transaction(async (tx) => {
     const account = await tx.festgeldAccount.findUnique({
-      where: { id: accountId }
+      where: { id: accountId },
     });
 
     if (!account) {
@@ -138,8 +165,8 @@ export async function payoutUnlockedFestgeldAccount(accountId: string) {
         amount: account.amount,
         description: `Festgeldauszahlung ${account.label}`,
         source: "ADMIN",
-        date: payoutDate
-      }
+        date: payoutDate,
+      },
     });
 
     const updatedAccount = await tx.festgeldAccount.update({
@@ -147,8 +174,8 @@ export async function payoutUnlockedFestgeldAccount(accountId: string) {
       data: {
         status: "PAID_OUT",
         payoutDate,
-        payoutTransactionId: payoutTransaction.id
-      }
+        payoutTransactionId: payoutTransaction.id,
+      },
     });
 
     return { payoutTransaction, updatedAccount };

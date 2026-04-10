@@ -7,11 +7,21 @@ import {
   enforceSameOrigin,
   parseJsonBody,
   requireAdmin,
-  safeRoute
+  safeRoute,
 } from "@/lib/api-helpers";
 import { TransactionType } from "@prisma/client";
 import { rateLimitPolicies } from "@/lib/rate-limit";
-import { amountCentsSchema, customerIdSchema, isoDateStringSchema, safeTextSchema } from "@/lib/security";
+import {
+  amountCentsSchema,
+  customerIdSchema,
+  isoDateStringSchema,
+  safeTextSchema,
+} from "@/lib/security";
+import {
+  buildIncomingTransactionNotification,
+  buildOutgoingTransactionNotification,
+  sendToUser,
+} from "@/lib/push-service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -24,7 +34,11 @@ export async function POST(request: Request) {
     const csrfError = enforceCsrf(request);
     if (csrfError) return csrfError;
 
-    const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
+    const rateLimitError = await enforceRateLimit(
+      request,
+      rateLimitPolicies.adminApi,
+      user.id,
+    );
     if (rateLimitError) return rateLimitError;
 
     const body = await parseJsonBody(
@@ -34,13 +48,13 @@ export async function POST(request: Request) {
         type: z.nativeEnum(TransactionType),
         amount: amountCentsSchema,
         description: safeTextSchema(120),
-        date: isoDateStringSchema
-      })
+        date: isoDateStringSchema,
+      }),
     );
 
     const accountHolder = await prisma.user.findUnique({
       where: { customerId: body.customerId },
-      select: { id: true, role: true }
+      select: { id: true, role: true },
     });
 
     if (!accountHolder || accountHolder.role !== "CUSTOMER") {
@@ -54,7 +68,7 @@ export async function POST(request: Request) {
         amount: body.amount,
         description: body.description,
         date: body.date,
-        source: "ADMIN"
+        source: "ADMIN",
       },
       select: {
         id: true,
@@ -64,9 +78,16 @@ export async function POST(request: Request) {
         source: true,
         transferId: true,
         date: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
+
+    // Send push notification (fire-and-forget)
+    const notification =
+      body.type === TransactionType.INCOMING
+        ? buildIncomingTransactionNotification(body.amount)
+        : buildOutgoingTransactionNotification(body.amount);
+    sendToUser(accountHolder.id, notification).catch(console.error);
 
     return NextResponse.json({ transaction }, { status: 201 });
   });

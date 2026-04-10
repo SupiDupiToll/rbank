@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { AdminFestgeld, AdminTransaction, AdminUserRow } from "@/lib/admin-dashboard";
+import type {
+  AdminFestgeld,
+  AdminTransaction,
+  AdminUserRow,
+} from "@/lib/admin-dashboard";
 import { formatEuroFromCents } from "@/lib/money";
 import { formatGermanDate, toDateInputValue } from "@/lib/date";
 import { Button } from "@/components/ui/button";
@@ -10,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
+import { PushNotificationForm } from "@/components/admin/push-notification-form";
 
 type AdminPanelProps = {
   initialUsers: AdminUserRow[];
@@ -22,12 +27,17 @@ export function AdminPanel({
   initialUsers,
   initialSelectedCustomerId,
   initialTransactions,
-  initialFestgeldAccounts
+  initialFestgeldAccounts,
 }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
-  const [selectedCustomerId, setSelectedCustomerId] = useState(initialSelectedCustomerId);
-  const [transactions, setTransactions] = useState<AdminTransaction[]>(initialTransactions);
-  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(initialFestgeldAccounts);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    initialSelectedCustomerId,
+  );
+  const [transactions, setTransactions] =
+    useState<AdminTransaction[]>(initialTransactions);
+  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(
+    initialFestgeldAccounts,
+  );
 
   const [txType, setTxType] = useState<"INCOMING" | "OUTGOING">("INCOMING");
   const [txAmount, setTxAmount] = useState("");
@@ -55,7 +65,9 @@ export function AdminPanel({
   const loadTransactions = useCallback(async (customerId: string) => {
     const response = await fetch(`/api/admin/users/${customerId}/transactions`);
     if (!response.ok) return;
-    const data = (await response.json()) as { transactions: AdminTransaction[] };
+    const data = (await response.json()) as {
+      transactions: AdminTransaction[];
+    };
     setTransactions(data.transactions);
   }, []);
 
@@ -68,7 +80,9 @@ export function AdminPanel({
 
   useEffect(() => {
     if (!fgEndDate) {
-      setFgEndDate(toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)));
+      setFgEndDate(
+        toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)),
+      );
     }
   }, [fgEndDate]);
 
@@ -79,17 +93,30 @@ export function AdminPanel({
 
     void loadUsers();
     void loadFestgeld();
-  }, [initialFestgeldAccounts.length, initialUsers.length, loadFestgeld, loadUsers]);
+  }, [
+    initialFestgeldAccounts.length,
+    initialUsers.length,
+    loadFestgeld,
+    loadUsers,
+  ]);
 
   useEffect(() => {
-    if (selectedCustomerId === initialSelectedCustomerId && initialTransactions.length > 0) {
+    if (
+      selectedCustomerId === initialSelectedCustomerId &&
+      initialTransactions.length > 0
+    ) {
       return;
     }
 
     if (selectedCustomerId) {
       void loadTransactions(selectedCustomerId);
     }
-  }, [initialSelectedCustomerId, initialTransactions.length, loadTransactions, selectedCustomerId]);
+  }, [
+    initialSelectedCustomerId,
+    initialTransactions.length,
+    loadTransactions,
+    selectedCustomerId,
+  ]);
 
   async function submitTransaction(event: React.FormEvent) {
     event.preventDefault();
@@ -105,15 +132,15 @@ export function AdminPanel({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie()
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
       },
       body: JSON.stringify({
         customerId: selectedCustomerId,
         type: txType,
         amount,
         description: txDescription,
-        date: txDate
-      })
+        date: txDate,
+      }),
     });
 
     if (!response.ok) {
@@ -135,7 +162,12 @@ export function AdminPanel({
     const amount = Math.round(Number(fgAmount) * 100);
     const interestRate = Number(fgRate);
 
-    if (!selectedCustomerId || Number.isNaN(amount) || amount <= 0 || Number.isNaN(interestRate)) {
+    if (
+      !selectedCustomerId ||
+      Number.isNaN(amount) ||
+      amount <= 0 ||
+      Number.isNaN(interestRate)
+    ) {
       setMessage("Bitte gültige Festgeld-Werte eingeben.");
       return;
     }
@@ -144,7 +176,7 @@ export function AdminPanel({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie()
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
       },
       body: JSON.stringify({
         customerId: selectedCustomerId,
@@ -152,8 +184,8 @@ export function AdminPanel({
         amount,
         interestRate,
         startDate: fgStartDate,
-        endDate: fgEndDate
-      })
+        endDate: fgEndDate,
+      }),
     });
 
     const data = (await response.json()) as { error?: string };
@@ -174,8 +206,8 @@ export function AdminPanel({
     const response = await fetch(`/api/admin/festgeld/${accountId}/payout`, {
       method: "POST",
       headers: {
-        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie()
-      }
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+      },
     });
 
     const data = (await response.json()) as { error?: string };
@@ -197,7 +229,9 @@ export function AdminPanel({
     <div className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-12">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">Admin</span>
+          <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">
+            Admin
+          </span>
           <h1 className="font-display text-4xl font-black">Verwaltung</h1>
         </div>
       </header>
@@ -221,10 +255,16 @@ export function AdminPanel({
                     onClick={() => setSelectedCustomerId(user.customerId)}
                   >
                     <Td>
-                      <div className="font-bold text-slate-100">{user.displayName ?? "Kunde"}</div>
-                      <div className="text-xs text-slate-400">#{user.customerId} · {user.stackUserId}</div>
+                      <div className="font-bold text-slate-100">
+                        {user.displayName ?? "Kunde"}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        #{user.customerId} · {user.stackUserId}
+                      </div>
                     </Td>
-                    <Td className="font-bold">{formatEuroFromCents(user.balanceCents)}</Td>
+                    <Td className="font-bold">
+                      {formatEuroFromCents(user.balanceCents)}
+                    </Td>
                   </tr>
                 ))}
               </tbody>
@@ -234,13 +274,18 @@ export function AdminPanel({
 
         <Card className="space-y-4 lg:col-span-7">
           <h2 className="text-2xl font-display font-bold">Buchung</h2>
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={submitTransaction}>
+          <form
+            className="grid gap-4 md:grid-cols-2"
+            onSubmit={submitTransaction}
+          >
             <div className="space-y-2">
               <Label>Typ</Label>
               <select
                 className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
                 value={txType}
-                onChange={(event) => setTxType(event.target.value as "INCOMING" | "OUTGOING")}
+                onChange={(event) =>
+                  setTxType(event.target.value as "INCOMING" | "OUTGOING")
+                }
               >
                 <option value="INCOMING">Eingang</option>
                 <option value="OUTGOING">Ausgang</option>
@@ -248,15 +293,28 @@ export function AdminPanel({
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input value={txAmount} onChange={(event) => setTxAmount(event.target.value)} required />
+              <Input
+                value={txAmount}
+                onChange={(event) => setTxAmount(event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label>Beschreibung</Label>
-              <Input value={txDescription} onChange={(event) => setTxDescription(event.target.value)} required />
+              <Input
+                value={txDescription}
+                onChange={(event) => setTxDescription(event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Datum</Label>
-              <Input type="date" value={txDate} onChange={(event) => setTxDate(event.target.value)} required />
+              <Input
+                type="date"
+                value={txDate}
+                onChange={(event) => setTxDate(event.target.value)}
+                required
+              />
             </div>
             <div className="flex items-end">
               <Button type="submit" className="h-14 w-full">
@@ -297,7 +355,13 @@ export function AdminPanel({
                         <span>{transaction.description}</span>
                       </div>
                     </Td>
-                    <Td className={transaction.type === "INCOMING" ? "text-primary font-bold" : "text-red-400 font-bold"}>
+                    <Td
+                      className={
+                        transaction.type === "INCOMING"
+                          ? "text-primary font-bold"
+                          : "text-red-400 font-bold"
+                      }
+                    >
                       {transaction.type === "INCOMING" ? "+ " : "- "}
                       {formatEuroFromCents(transaction.amount)}
                     </Td>
@@ -313,24 +377,46 @@ export function AdminPanel({
           <form className="space-y-4" onSubmit={submitFestgeld}>
             <div className="space-y-2">
               <Label>Bezeichnung</Label>
-              <Input value={fgLabel} onChange={(event) => setFgLabel(event.target.value)} required />
+              <Input
+                value={fgLabel}
+                onChange={(event) => setFgLabel(event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input value={fgAmount} onChange={(event) => setFgAmount(event.target.value)} required />
+              <Input
+                value={fgAmount}
+                onChange={(event) => setFgAmount(event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Zinssatz (%)</Label>
-              <Input value={fgRate} onChange={(event) => setFgRate(event.target.value)} required />
+              <Input
+                value={fgRate}
+                onChange={(event) => setFgRate(event.target.value)}
+                required
+              />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Startdatum</Label>
-                <Input type="date" value={fgStartDate} onChange={(event) => setFgStartDate(event.target.value)} required />
+                <Input
+                  type="date"
+                  value={fgStartDate}
+                  onChange={(event) => setFgStartDate(event.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label>Enddatum</Label>
-                <Input type="date" value={fgEndDate} onChange={(event) => setFgEndDate(event.target.value)} required />
+                <Input
+                  type="date"
+                  value={fgEndDate}
+                  onChange={(event) => setFgEndDate(event.target.value)}
+                  required
+                />
               </div>
             </div>
             <Button type="submit" className="h-14 w-full">
@@ -358,14 +444,19 @@ export function AdminPanel({
               {festgeldAccounts.map((account) => (
                 <tr key={account.id}>
                   <Td>
-                    <div className="font-bold">{account.user.displayName ?? "Kunde"}</div>
-                    <div className="text-xs text-slate-400">#{account.user.customerId} · {account.user.stackUserId}</div>
+                    <div className="font-bold">
+                      {account.user.displayName ?? "Kunde"}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      #{account.user.customerId} · {account.user.stackUserId}
+                    </div>
                   </Td>
                   <Td>{account.label}</Td>
                   <Td>{formatEuroFromCents(account.amount)}</Td>
                   <Td>{account.interestRate.toFixed(2)}%</Td>
                   <Td>
-                    {formatGermanDate(account.startDate)} - {formatGermanDate(account.endDate)}
+                    {formatGermanDate(account.startDate)} -{" "}
+                    {formatGermanDate(account.endDate)}
                   </Td>
                   <Td>
                     <div className="flex flex-wrap items-center gap-2">
@@ -378,7 +469,11 @@ export function AdminPanel({
                               : "bg-amber-500/10 text-amber-300"
                         }`}
                       >
-                        {account.status === "UNLOCKED" ? "Unlocked" : account.status === "PAID_OUT" ? "Ausgezahlt" : "Aktiv"}
+                        {account.status === "UNLOCKED"
+                          ? "Unlocked"
+                          : account.status === "PAID_OUT"
+                            ? "Ausgezahlt"
+                            : "Aktiv"}
                       </span>
                       {account.status === "UNLOCKED" ? (
                         <button
@@ -399,6 +494,8 @@ export function AdminPanel({
       </Card>
 
       {message ? <p className="mt-4 text-sm text-primary">{message}</p> : null}
+
+      <PushNotificationForm csrfToken={getCsrfTokenFromDocumentCookie()} />
     </div>
   );
 }

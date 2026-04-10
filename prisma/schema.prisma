@@ -38,6 +38,7 @@ model User {
   createdAt    DateTime          @default(now())
   transactions Transaction[]
   festgeld     FestgeldAccount[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Transaction {
@@ -74,4 +75,16 @@ model FestgeldAccount {
 
   @@index([userId, endDate])
   @@index([status, endDate])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
