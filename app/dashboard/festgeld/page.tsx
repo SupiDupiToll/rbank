@@ -6,7 +6,7 @@ import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
-import { calculateFestgeldInterestCents } from "@/lib/festgeld";
+import { calculateFestgeldInterestCents, settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 
 export default async function FestgeldPage() {
   const user = await getCurrentAppUser();
@@ -14,6 +14,8 @@ export default async function FestgeldPage() {
   if (!user) {
     return null;
   }
+
+  await settleMaturedFestgeldAccounts(user.id);
 
   const festgeldAccounts = await prisma.festgeldAccount.findMany({
     where: { userId: user.id },

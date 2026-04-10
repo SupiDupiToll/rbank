@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { FestgeldCountdown } from "@/components/festgeld-countdown";
-import { FestgeldRenewButton } from "@/components/festgeld-renew-button";
+import { FestgeldMaturityActions } from "@/components/festgeld-maturity-actions";
 import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
-import { calculateFestgeldInterestCents } from "@/lib/festgeld";
+import { calculateFestgeldInterestCents, settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 
 type FestgeldDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -19,6 +19,8 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
   if (!user) return null;
 
   const { id } = await params;
+
+  await settleMaturedFestgeldAccounts(user.id);
 
   const account = await prisma.festgeldAccount.findFirst({
     where: { id, userId: user.id }
@@ -83,10 +85,11 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
         {account.status === "UNLOCKED" ? (
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
             <p className="text-sm text-slate-200">
-              Dieses Festgeld ist abgelaufen und entsperrt. Die Zinsen wurden bereits automatisch gutgeschrieben.
+              Dieses Festgeld ist abgelaufen und entsperrt. Die Zinsen wurden bereits automatisch gutgeschrieben. Du kannst
+              jetzt entweder das Festgeld verlängern oder den kompletten Anlagebetrag ins Guthaben auszahlen lassen.
             </p>
             <div className="mt-4">
-              <FestgeldRenewButton accountId={account.id} />
+              <FestgeldMaturityActions accountId={account.id} />
             </div>
           </div>
         ) : null}

@@ -114,3 +114,43 @@ export async function createFestgeldAccount(input: {
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
   );
 }
+
+export async function payoutUnlockedFestgeldAccount(accountId: string) {
+  return prisma.$transaction(async (tx) => {
+    const account = await tx.festgeldAccount.findUnique({
+      where: { id: accountId }
+    });
+
+    if (!account) {
+      throw new Error("FESTGELD_NOT_FOUND");
+    }
+
+    if (account.status !== "UNLOCKED") {
+      throw new Error("FESTGELD_NOT_UNLOCKED");
+    }
+
+    const payoutDate = new Date();
+
+    const payoutTransaction = await tx.transaction.create({
+      data: {
+        userId: account.userId,
+        type: "INCOMING",
+        amount: account.amount,
+        description: `Festgeldauszahlung ${account.label}`,
+        source: "ADMIN",
+        date: payoutDate
+      }
+    });
+
+    const updatedAccount = await tx.festgeldAccount.update({
+      where: { id: account.id },
+      data: {
+        status: "PAID_OUT",
+        payoutDate,
+        payoutTransactionId: payoutTransaction.id
+      }
+    });
+
+    return { payoutTransaction, updatedAccount };
+  });
+}
