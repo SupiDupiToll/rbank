@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  urlBase64ToUint8Array,
-  usePushNotification,
-} from "@/lib/push-notification";
+import { urlBase64ToUint8Array } from "@/lib/push-notification";
+import { registerServiceWorker } from "@/lib/register-sw";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -114,39 +112,48 @@ export function PWAInstallBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 p-4 md:hidden">
-      <div className="mx-auto flex max-w-lg items-center gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-800">
-          <span className="text-xl font-bold text-primary">RB</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-100">
-            FamilyBank als App installieren
-          </p>
-          <p className="mt-0.5 text-xs text-slate-400">
-            {isIOS
-              ? "Teilen \u2192 Zum Home-Bildschirm"
-              : hasNativePrompt
-                ? "Tippe auf Installieren"
-                : "Browser-Men\u00fc \u2192 App installieren"}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {hasNativePrompt ? (
+      <div className="mx-auto flex max-w-lg flex-col gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-800">
+            <span className="text-xl font-bold text-primary">RB</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-slate-100">
+              FamilyBank als App installieren
+            </p>
+            <p className="mt-0.5 text-xs text-slate-400">
+              {isIOS
+                ? "Tippe auf Teilen \u2192 \u201eZum Home-Bildschirm\u201c"
+                : hasNativePrompt
+                  ? "Tippe auf Installieren"
+                  : "Browser-Men\u00fc \u2192 App installieren"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {hasNativePrompt ? (
+              <button
+                onClick={handleInstall}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
+              >
+                Installieren
+              </button>
+            ) : null}
             <button
-              onClick={handleInstall}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
+              onClick={handleDismiss}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+              aria-label="Schließen"
             >
-              Installieren
+              ✕
             </button>
-          ) : null}
-          <button
-            onClick={handleDismiss}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
-            aria-label="Schließen"
-          >
-            ✕
-          </button>
+          </div>
         </div>
+        {isIOS && (
+          <div className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary">
+            <strong>Hinweis:</strong> Push-Benachrichtigungen funktionieren nur,
+            wenn die App zum Home-Bildschirm hinzugefügt und von dort gestartet
+            wird.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -164,46 +171,127 @@ function isSafariOnIOS(): boolean {
   return isIOS && isSafari;
 }
 
+/**
+ * Check if Web Push is supported on this device.
+ * Push is NOT supported on iOS Safari in the EU region (since iOS 17.4).
+ * Push only works on iOS when the PWA is installed to home screen.
+ */
+function isPushSupported(): boolean {
+  if (typeof window === "undefined") return false;
+  if (!("Notification" in window)) return false;
+  if (!("PushManager" in window)) return false;
+  if (!("serviceWorker" in navigator)) return false;
+  return true;
+}
+
 export function PWARegistration({
   userId,
   vapidPublicKey,
 }: PWARegistrationProps) {
-  const { requestPermission } = usePushNotification();
   const [hasAsked, setHasAsked] = useState(false);
 
   const registerPush = useCallback(async () => {
-    if (!userId || !("serviceWorker" in navigator)) return;
+    if (!userId || !vapidPublicKey) return;
 
     try {
-      // Never ask again if already granted or denied
-      if (Notification.permission !== "default") return;
-
-      // iOS Safari does not support web push notifications unless the app
-      // is installed to the home screen AND the user manually enables notifications.
-      // We skip the permission prompt on iOS to avoid confusion.
-      if (isSafariOnIOS()) {
+      // iOS Safari: Push notifications only work when the PWA is installed
+      // to the Home Screen AND launched from there (standalone mode).
+      // In the regular Safari browser, Notification.requestPermission() does nothing.
+      // In standalone mode on iOS 16.4+, the permission prompt works fine.
+      if (isIOSDevice() && !isStandalone()) {
+        console.log(
+          "\uD83D\uDCF1 iOS: Push notifications only work when launched from Home Screen. Skipping permission prompt.",
+        );
         setHasAsked(true);
         return;
       }
 
-      if (vapidPublicKey && "PushManager" in window) {
-        // Full push registration with subscription
-        const result = await requestPermission({ userId, vapidPublicKey });
-        if (result.success) setHasAsked(true);
-      } else {
-        // Fallback: only ask for notification permission (no subscription)
-        await Notification.requestPermission();
+      // Check if push is supported
+      if (!isPushSupported()) {
+        console.log(
+          "\u26A0\uFE0F Push notifications not supported on this device",
+        );
         setHasAsked(true);
+        return;
       }
-    } catch {
-      // user denied or error — don't ask again
+
+      // Never ask again if already granted or denied
+      if (Notification.permission !== "default") {
+        // Permission already set, but we still need to save subscription
+        if (Notification.permission === "granted") {
+          await subscribeAndSave(userId, vapidPublicKey);
+        }
+        setHasAsked(true);
+        return;
+      }
+
+      // Ensure service worker is registered first
+      await registerServiceWorker();
+
+      // Wait for service worker to be ready
+      if ("serviceWorker" in navigator) {
+        await navigator.serviceWorker.ready;
+      }
+
+      // Request notification permission — this shows the consent banner
+      const permissionResult = await Notification.requestPermission();
+
+      if (permissionResult !== "granted") {
+        console.log(`\u274C Notification permission: ${permissionResult}`);
+        setHasAsked(true);
+        return;
+      }
+
+      // Create push subscription and save to server
+      await subscribeAndSave(userId, vapidPublicKey);
+      setHasAsked(true);
+    } catch (error) {
+      console.error("Push registration error:", error);
+      setHasAsked(true);
     }
-  }, [userId, vapidPublicKey, requestPermission]);
+  }, [userId, vapidPublicKey]);
 
   useEffect(() => {
-    if (hasAsked || !userId) return;
+    if (hasAsked || !userId || !vapidPublicKey) return;
     registerPush();
-  }, [userId, hasAsked, registerPush]);
+  }, [userId, vapidPublicKey, hasAsked, registerPush]);
 
   return null;
+}
+
+async function subscribeAndSave(
+  userId: string,
+  vapidPublicKey: string,
+): Promise<void> {
+  if (!("serviceWorker" in navigator)) {
+    throw new Error("Service Worker not available");
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+
+  // Create push subscription
+  const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: applicationServerKey as BufferSource,
+  });
+
+  // Save subscription to server
+  const response = await fetch("/api/customer/notifications/subscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription, userId }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to save subscription: ${error}`);
+  }
+
+  const result = await response.json();
+  if (result.alreadyExists) {
+    console.log("\u2139\uFE0F Push subscription already exists");
+  } else {
+    console.log("\u2705 Push subscription saved successfully");
+  }
 }
