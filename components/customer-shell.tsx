@@ -44,6 +44,20 @@ function TransferIcon({ className }: NavIconProps) {
   );
 }
 
+function ReceivePaymentIcon({ className }: NavIconProps) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M4.5 8.25V6A1.5 1.5 0 0 1 6 4.5h2.25M15.75 4.5H18A1.5 1.5 0 0 1 19.5 6v2.25M19.5 15.75V18A1.5 1.5 0 0 1 18 19.5h-2.25M8.25 19.5H6A1.5 1.5 0 0 1 4.5 18v-2.25M8.25 8.25h7.5v7.5h-7.5z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function TransactionsIcon({ className }: NavIconProps) {
   return (
     <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
@@ -89,6 +103,7 @@ function SettingsIcon({ className }: NavIconProps) {
 const navigation = [
   { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
   { href: "/dashboard/transfer" as Route, label: "Überweisung", icon: TransferIcon },
+  { href: "/dashboard/receive-payment" as Route, label: "Zahlung", icon: ReceivePaymentIcon },
   { href: "/dashboard/transactions" as Route, label: "Transaktionen", icon: TransactionsIcon },
   { href: "/dashboard/festgeld" as Route, label: "Festgeld", icon: SavingsIcon },
   { href: "/dashboard/settings" as Route, label: "Einstellungen", icon: SettingsIcon }
@@ -166,7 +181,7 @@ export function CustomerShell({ customerId, displayName, children }: CustomerShe
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-background-dark/95 px-2 pt-2 backdrop-blur-xl lg:hidden"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
-        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;

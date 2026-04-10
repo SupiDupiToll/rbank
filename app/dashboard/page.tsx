@@ -70,6 +70,9 @@ export default async function DashboardPage() {
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transfer" as Route}>
           <p className="text-lg font-semibold text-slate-100">Überweisung</p>
         </Link>
+        <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/receive-payment" as Route}>
+          <p className="text-lg font-semibold text-slate-100">Zahlung entgegennehmen</p>
+        </Link>
         <Link className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 transition-colors hover:border-primary/40" href={"/dashboard/transactions" as Route}>
           <p className="text-lg font-semibold text-slate-100">Transaktionen</p>
         </Link>
