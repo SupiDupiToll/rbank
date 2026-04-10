@@ -8,7 +8,7 @@ import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
-import { calculateFestgeldInterestCents, settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { calculateFestgeldInterestCents } from "@/lib/festgeld";
 
 type FestgeldDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -19,8 +19,6 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
   if (!user) return null;
 
   const { id } = await params;
-
-  await settleMaturedFestgeldAccounts(user.id);
 
   const account = await prisma.festgeldAccount.findFirst({
     where: { id, userId: user.id }

@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
-import { getCustomerDashboardData } from "@/lib/customer-dashboard";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const user = await getCurrentAppUser();
@@ -13,9 +13,36 @@ export default async function DashboardPage() {
     return null;
   }
 
-  const { balanceCents, transactions, festgeldAccounts } = await getCustomerDashboardData(user.id);
-  const savingsTotal = festgeldAccounts.reduce((sum, account) => sum + account.amount, 0);
-  const latestTransactions = transactions.slice(0, 5);
+  const [incoming, outgoing, latestTransactions, savings] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: { userId: user.id, type: "INCOMING" },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: { userId: user.id, type: "OUTGOING" },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        description: true,
+        source: true,
+        date: true
+      },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      take: 5
+    }),
+    prisma.festgeldAccount.aggregate({
+      where: { userId: user.id },
+      _sum: { amount: true }
+    })
+  ]);
+
+  const balanceCents = (incoming._sum.amount ?? 0) - (outgoing._sum.amount ?? 0);
+  const savingsTotal = savings._sum.amount ?? 0;
 
   return (
     <div className="space-y-6">

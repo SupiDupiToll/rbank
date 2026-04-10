@@ -5,7 +5,7 @@ import { CustomerTransferForm } from "@/components/customer-transfer-form";
 import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
-import { getCustomerDashboardData } from "@/lib/customer-dashboard";
+import { prisma } from "@/lib/prisma";
 
 export default async function TransferPage() {
   const user = await getCurrentAppUser();
@@ -14,8 +14,30 @@ export default async function TransferPage() {
     return null;
   }
 
-  const { balanceCents, transactions } = await getCustomerDashboardData(user.id);
-  const recentTransfers = transactions.filter((transaction) => transaction.source === "TRANSFER").slice(0, 5);
+  const [incoming, outgoing, recentTransfers] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: { userId: user.id, type: "INCOMING" },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: { userId: user.id, type: "OUTGOING" },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.findMany({
+      where: { userId: user.id, source: "TRANSFER" },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        description: true,
+        date: true
+      },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      take: 5
+    })
+  ]);
+
+  const balanceCents = (incoming._sum.amount ?? 0) - (outgoing._sum.amount ?? 0);
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">

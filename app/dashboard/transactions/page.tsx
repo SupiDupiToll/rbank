@@ -4,7 +4,6 @@ import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
-import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 
 type TransactionsPageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -19,8 +18,6 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
 
   const { q = "" } = await searchParams;
   const query = q.trim();
-
-  await settleMaturedFestgeldAccounts(user.id);
 
   const transactions = await prisma.transaction.findMany({
     where: {

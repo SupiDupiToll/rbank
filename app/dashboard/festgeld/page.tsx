@@ -5,7 +5,7 @@ import { FestgeldCountdown } from "@/components/festgeld-countdown";
 import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
-import { getCustomerDashboardData } from "@/lib/customer-dashboard";
+import { prisma } from "@/lib/prisma";
 import { calculateFestgeldInterestCents } from "@/lib/festgeld";
 
 export default async function FestgeldPage() {
@@ -15,7 +15,10 @@ export default async function FestgeldPage() {
     return null;
   }
 
-  const { festgeldAccounts } = await getCustomerDashboardData(user.id);
+  const festgeldAccounts = await prisma.festgeldAccount.findMany({
+    where: { userId: user.id },
+    orderBy: [{ endDate: "asc" }, { createdAt: "desc" }]
+  });
 
   return (
     <div className="space-y-6">
