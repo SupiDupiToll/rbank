@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import {
   enforceCsrf,
@@ -45,10 +46,26 @@ export async function POST(request: Request) {
 
     const pinHash = await hashPin(body.pin);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { pinHash }
-    });
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { pinHash }
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2022" &&
+        typeof error.meta?.column === "string" &&
+        error.meta.column.includes("pin_hash")
+      ) {
+        return NextResponse.json(
+          { error: "PIN-Funktion ist auf diesem System noch nicht freigeschaltet. Datenbankmigration fehlt." },
+          { status: 503 }
+        );
+      }
+
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   });
