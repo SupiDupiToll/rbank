@@ -3,22 +3,24 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+    color-scheme: dark;
 }
 
+html,
 body {
-  @apply min-h-screen bg-background-dark font-sans text-slate-100;
-  -webkit-font-smoothing: antialiased;
+    @apply min-h-screen bg-background-dark font-sans text-slate-100;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 .font-display {
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 .glass-card {
-  @apply bg-slate-900/40 border border-slate-800/50 rounded-xl;
+    @apply bg-slate-900/40 border border-slate-800/50 rounded-xl;
 }
 
 .glow-accent {
-  box-shadow: 0 0 25px rgba(183, 228, 75, 0.25);
+    box-shadow: 0 0 25px rgba(183, 228, 75, 0.25);
 }

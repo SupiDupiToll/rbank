@@ -12,11 +12,16 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const DISMISSED_KEY = "rbank-pwa-banner-dismissed";
-const INSTALL_DELAY_MS = 30_000;
+const INSTALL_DELAY_MS = 5_000;
 
 function isMobileDevice(): boolean {
   if (typeof window === "undefined") return false;
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function isIOSDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
 function isStandalone(): boolean {
@@ -49,9 +54,12 @@ export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [canShow, setCanShow] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     if (isStandalone() || !isMobileDevice() || isDismissed()) return;
+
+    setIsIOS(isIOSDevice());
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -70,10 +78,9 @@ export function usePWAInstall() {
   useEffect(() => {
     if (isStandalone() || !isMobileDevice() || isDismissed()) return;
 
-    // Always show banner after delay — with or without native prompt
     const timer = setTimeout(() => setCanShow(true), INSTALL_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [deferredPrompt]);
+  }, []);
 
   const handleInstall = useCallback(async () => {
     if (deferredPrompt) {
@@ -93,13 +100,14 @@ export function usePWAInstall() {
   return {
     showBanner: canShow,
     hasNativePrompt: !!deferredPrompt,
+    isIOS,
     handleInstall,
     handleDismiss,
   };
 }
 
 export function PWAInstallBanner() {
-  const { showBanner, hasNativePrompt, handleInstall, handleDismiss } =
+  const { showBanner, hasNativePrompt, isIOS, handleInstall, handleDismiss } =
     usePWAInstall();
 
   if (!showBanner) return null;
@@ -115,9 +123,11 @@ export function PWAInstallBanner() {
             FamilyBank als App installieren
           </p>
           <p className="mt-0.5 text-xs text-slate-400">
-            {hasNativePrompt
-              ? "Tippe auf Installieren"
-              : "Browser-Men\u00fc \u2192 App installieren"}
+            {isIOS
+              ? "Teilen \u2192 Zum Home-Bildschirm"
+              : hasNativePrompt
+                ? "Tippe auf Installieren"
+                : "Browser-Men\u00fc \u2192 App installieren"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -147,6 +157,13 @@ interface PWARegistrationProps {
   vapidPublicKey?: string;
 }
 
+function isSafariOnIOS(): boolean {
+  if (typeof window === "undefined") return false;
+  const isIOS = isIOSDevice();
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  return isIOS && isSafari;
+}
+
 export function PWARegistration({
   userId,
   vapidPublicKey,
@@ -160,6 +177,14 @@ export function PWARegistration({
     try {
       // Never ask again if already granted or denied
       if (Notification.permission !== "default") return;
+
+      // iOS Safari does not support web push notifications unless the app
+      // is installed to the home screen AND the user manually enables notifications.
+      // We skip the permission prompt on iOS to avoid confusion.
+      if (isSafariOnIOS()) {
+        setHasAsked(true);
+        return;
+      }
 
       if (vapidPublicKey && "PushManager" in window) {
         // Full push registration with subscription
