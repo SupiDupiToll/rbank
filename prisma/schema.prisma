@@ -33,6 +33,7 @@ model User {
   stackUserId  String            @unique
   customerId   String            @unique
   displayName  String?
+  pinHash      String?           @map("pin_hash")
   role         Role              @default(CUSTOMER)
   createdAt    DateTime          @default(now())
   transactions Transaction[]

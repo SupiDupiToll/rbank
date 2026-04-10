@@ -10,6 +10,7 @@ export type AppUser = {
   stackUserId: string;
   customerId: string;
   displayName: string | null;
+  pinHash: string | null;
   role: "ADMIN" | "CUSTOMER";
 };
 
@@ -32,7 +33,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
 
   const existingUser = await prisma.user.findUnique({
     where: { stackUserId: stackUser.id },
-    select: { id: true, stackUserId: true, customerId: true, displayName: true, role: true }
+    select: { id: true, stackUserId: true, customerId: true, displayName: true, pinHash: true, role: true }
   });
 
   if (existingUser) {
@@ -46,7 +47,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
         role,
         displayName
       },
-      select: { id: true, stackUserId: true, customerId: true, displayName: true, role: true }
+      select: { id: true, stackUserId: true, customerId: true, displayName: true, pinHash: true, role: true }
     });
   }
 
@@ -59,7 +60,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
           displayName,
           role
         },
-        select: { id: true, stackUserId: true, customerId: true, displayName: true, role: true }
+        select: { id: true, stackUserId: true, customerId: true, displayName: true, pinHash: true, role: true }
       });
     } catch (error) {
       if (

@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { LoginRedirect } from "@/components/login-redirect";
 
-export default async function LoginPage() {
-  redirect("/handler/sign-in");
+type LoginPageProps = {
+  searchParams: Promise<{ redirect?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  return <LoginRedirect redirectTo={params.redirect} />;
 }

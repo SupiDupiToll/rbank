@@ -8,7 +8,7 @@ import {
   enforceRateLimit,
   enforceSameOrigin,
   parseJsonBody,
-  requireCustomer,
+  requireCustomerWithPin,
   safeRoute
 } from "@/lib/api-helpers";
 import { calculateBalanceCents } from "@/lib/banking";
@@ -17,7 +17,7 @@ import { amountCentsSchema, customerIdSchema, safeTextSchema } from "@/lib/secur
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
-    const { error, user } = await requireCustomer();
+    const { error, user } = await requireCustomerWithPin();
     if (error || !user) return error;
 
     const originError = enforceSameOrigin(request);

@@ -81,6 +81,23 @@ export async function requireCustomer() {
   return { error: null, user };
 }
 
+export async function requireCustomerWithPin() {
+  const result = await requireCustomer();
+
+  if (result.error || !result.user) {
+    return result;
+  }
+
+  if (!result.user.pinHash) {
+    return {
+      error: jsonError("PIN muss zuerst eingerichtet werden.", 403),
+      user: null
+    };
+  }
+
+  return result;
+}
+
 export async function parseJsonBody<TSchema extends z.ZodTypeAny>(request: Request, schema: TSchema): Promise<z.infer<TSchema>> {
   let rawBody: unknown;
 

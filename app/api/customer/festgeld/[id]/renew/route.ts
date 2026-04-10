@@ -4,7 +4,7 @@ import {
   enforceRateLimit,
   enforceSameOrigin,
   parseInput,
-  requireCustomer,
+  requireCustomerWithPin,
   safeRoute
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
@@ -18,7 +18,7 @@ type Params = {
 
 export async function POST(request: Request, context: Params) {
   return safeRoute(async () => {
-    const { error, user } = await requireCustomer();
+    const { error, user } = await requireCustomerWithPin();
     if (error || !user) return error;
 
     const originError = enforceSameOrigin(request);

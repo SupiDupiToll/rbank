@@ -1,0 +1,2 @@
+ALTER TABLE "User"
+ADD COLUMN "pin_hash" TEXT;
