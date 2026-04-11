@@ -8,14 +8,16 @@ import { stackServerApp } from "@/stack/server";
 
 type PaymentPageProps = {
   params: Promise<{ userId: string }>;
+  searchParams: Promise<{ return_url?: string }>;
 };
 
-export default async function PaymentPage({ params }: PaymentPageProps) {
-  const [{ userId }, user, stackUser] = await Promise.all([
-    params,
-    getCurrentAppUser(),
-    stackServerApp.getUser()
-  ]);
+export default async function PaymentPage({
+  params,
+  searchParams,
+}: PaymentPageProps) {
+  const [{ userId }, user, stackUser, searchParamsResolved] = await Promise.all(
+    [params, getCurrentAppUser(), stackServerApp.getUser(), searchParams],
+  );
 
   if (!user || !stackUser) {
     redirect(`/login?redirect=${encodeURIComponent(`/zahlungen/${userId}`)}`);
@@ -33,20 +35,26 @@ export default async function PaymentPage({ params }: PaymentPageProps) {
 
   const payer = await prisma.user.findUnique({
     where: { id: parsedUserId.data },
-    select: { id: true, role: true }
+    select: { id: true, role: true },
   });
 
   if (!payer || payer.role !== "CUSTOMER") {
     notFound();
   }
 
-  const recipientEmail = stackUser.primaryEmail?.trim() || user.displayName || user.customerId;
+  const recipientEmail =
+    stackUser.primaryEmail?.trim() || user.displayName || user.customerId;
+  const returnUrl = searchParamsResolved.return_url ?? "/dashboard";
 
   return (
     <PinSetupGate hasPin={Boolean(user.pinHash)}>
       <div className="min-h-screen bg-background-dark px-4 py-8 text-slate-100">
         <div className="mx-auto max-w-5xl">
-          <PaymentRequestFlow payerUserId={payer.id} recipientEmail={recipientEmail} />
+          <PaymentRequestFlow
+            payerUserId={payer.id}
+            recipientEmail={recipientEmail}
+            returnUrl={returnUrl}
+          />
         </div>
       </div>
     </PinSetupGate>

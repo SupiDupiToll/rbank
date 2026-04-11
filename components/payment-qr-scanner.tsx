@@ -74,9 +74,13 @@ export function PaymentQrScanner() {
 
           if (target) {
             isRedirectingRef.current = true;
+            // Append return_url so the payment page can show a back button
+            const separator = target.includes("?") ? "&" : "?";
+            const returnUrl = encodeURIComponent("/dashboard");
+            const redirectUrl = `${target}${separator}return_url=${returnUrl}`;
             setMessage("Gueltiger Zahlungslink erkannt. Weiterleitung...");
             scanner.stop().catch(() => {});
-            window.location.href = target;
+            window.location.href = redirectUrl;
           } else {
             setMessage(
               "QR-Code erkannt, aber kein gueltiger Zahlungslink von rbank.sdtoll.de/zahlungen.",
