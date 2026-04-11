@@ -20,11 +20,6 @@ import {
   safeTextSchema,
 } from "@/lib/security";
 import { verifyPin } from "@/lib/pin";
-import {
-  buildOutgoingTransactionNotification,
-  buildTransferReceivedNotification,
-  sendToUser,
-} from "@/lib/push-service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -159,26 +154,6 @@ export async function POST(request: Request) {
         { error: "Ueberweisung konnte nicht ausgefuehrt werden." },
         { status: 400 },
       );
-    }
-
-    // Send push notifications (fire-and-forget, non-blocking)
-    sendToUser(
-      user.id,
-      buildOutgoingTransactionNotification(body.amount),
-    ).catch(console.error);
-
-    const recipientUser = await prisma.user.findUnique({
-      where: { customerId: body.recipientCustomerId },
-      select: { id: true, displayName: true },
-    });
-    if (recipientUser) {
-      sendToUser(
-        recipientUser.id,
-        buildTransferReceivedNotification(
-          user.displayName ?? user.customerId,
-          body.amount,
-        ),
-      ).catch(console.error);
     }
 
     return NextResponse.json(

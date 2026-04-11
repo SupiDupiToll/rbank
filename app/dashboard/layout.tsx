@@ -2,11 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { CustomerShell } from "@/components/customer-shell";
 import { PinSetupGate } from "@/components/pin-setup-gate";
-import {
-  PWAInstallBanner,
-  PWARegistration,
-} from "@/components/pwa-install-banner";
-import { env } from "@/lib/env";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 export default async function DashboardLayout({
   children,
@@ -27,10 +23,6 @@ export default async function DashboardLayout({
     <CustomerShell customerId={user.customerId} displayName={user.displayName}>
       <PinSetupGate hasPin={Boolean(user.pinHash)}>{children}</PinSetupGate>
       <PWAInstallBanner />
-      <PWARegistration
-        userId={user.id}
-        vapidPublicKey={env.NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      />
     </CustomerShell>
   );
 }

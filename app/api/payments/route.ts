@@ -15,11 +15,6 @@ import { verifyPin } from "@/lib/pin";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { amountCentsSchema, cuidSchema, pinSchema } from "@/lib/security";
-import {
-  buildIncomingTransactionNotification,
-  buildOutgoingTransactionNotification,
-  sendToUser,
-} from "@/lib/push-service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -148,22 +143,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    // Send push notifications (fire-and-forget, non-blocking)
-    const payer = await prisma.user.findUnique({
-      where: { id: body.payerUserId },
-      select: { id: true, displayName: true },
-    });
-    if (payer) {
-      sendToUser(
-        payer.id,
-        buildOutgoingTransactionNotification(body.amount),
-      ).catch(console.error);
-    }
-    sendToUser(
-      recipient.id,
-      buildIncomingTransactionNotification(body.amount),
-    ).catch(console.error);
 
     return NextResponse.json(
       {

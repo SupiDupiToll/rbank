@@ -17,11 +17,6 @@ import {
   isoDateStringSchema,
   safeTextSchema,
 } from "@/lib/security";
-import {
-  buildIncomingTransactionNotification,
-  buildOutgoingTransactionNotification,
-  sendToUser,
-} from "@/lib/push-service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -81,13 +76,6 @@ export async function POST(request: Request) {
         createdAt: true,
       },
     });
-
-    // Send push notification (fire-and-forget)
-    const notification =
-      body.type === TransactionType.INCOMING
-        ? buildIncomingTransactionNotification(body.amount)
-        : buildOutgoingTransactionNotification(body.amount);
-    sendToUser(accountHolder.id, notification).catch(console.error);
 
     return NextResponse.json({ transaction }, { status: 201 });
   });

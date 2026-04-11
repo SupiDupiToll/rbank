@@ -30,14 +30,12 @@
     "react-dom": "19.2.5",
     "sharp": "^0.34.5",
     "tailwind-merge": "3.5.0",
-    "web-push": "^3.6.7",
     "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/node": "22.19.17",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@types/web-push": "^3.6.4",
     "autoprefixer": "10.4.27",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.2",

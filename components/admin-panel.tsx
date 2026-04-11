@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
-import { PushNotificationForm } from "@/components/admin/push-notification-form";
 
 type AdminPanelProps = {
   initialUsers: AdminUserRow[];
@@ -494,8 +493,6 @@ export function AdminPanel({
       </Card>
 
       {message ? <p className="mt-4 text-sm text-primary">{message}</p> : null}
-
-      <PushNotificationForm csrfToken={getCsrfTokenFromDocumentCookie()} />
     </div>
   );
 }

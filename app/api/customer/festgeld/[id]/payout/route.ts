@@ -14,10 +14,6 @@ import {
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
-import {
-  buildIncomingTransactionNotification,
-  sendToUser,
-} from "@/lib/push-service";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -65,14 +61,6 @@ export async function POST(request: Request, context: Params) {
     }
 
     const result = await payoutUnlockedFestgeldAccount(account.id);
-
-    // Send push notification for the payout transaction (fire-and-forget)
-    if (result.payoutTransaction) {
-      sendToUser(
-        user.id,
-        buildIncomingTransactionNotification(result.payoutTransaction.amount),
-      ).catch(console.error);
-    }
 
     return NextResponse.json(result);
   });

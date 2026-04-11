@@ -1,10 +1,6 @@
 import { Prisma, type FestgeldAccount } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents } from "@/lib/banking";
-import {
-  buildFestgeldExpiredNotification,
-  sendToUser,
-} from "@/lib/push-service";
 
 export function getFestgeldDurationDays(startDate: Date, endDate: Date) {
   const millisecondsPerDay = 24 * 60 * 60 * 1000;
@@ -88,11 +84,6 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
         },
       });
     });
-
-    // Send push notification (fire-and-forget)
-    sendToUser(account.userId, buildFestgeldExpiredNotification()).catch(
-      console.error,
-    );
   }
 }
 
