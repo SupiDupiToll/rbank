@@ -1,6 +1,8 @@
+"use client";
+
 export default function Loading() {
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8 bg-gradient-to-br from-primary/20 via-background-dark to-background-dark px-6">
+    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-8 px-6">
       {/* Splash-ähnliches Branding */}
       <div className="flex flex-col items-center gap-6">
         {/* App-Logo */}
