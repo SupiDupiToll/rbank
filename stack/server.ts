@@ -8,8 +8,8 @@ export const stackServerApp = new StackServerApp({
     signIn: "/handler/sign-in",
     signUp: "/handler/sign-up",
     signOut: "/handler/sign-out",
-    accountSettings: "/handler/account-settings",
+    accountSettings: "/dashboard/settings",
     afterSignIn: "/auth/finish",
-    afterSignOut: "/handler/sign-in"
-  }
+    afterSignOut: "/handler/sign-in",
+  },
 });

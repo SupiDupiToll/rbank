@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -113,7 +114,7 @@ export function PaymentRequestFlow({
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
-            href={returnUrl}
+            href={returnUrl as Route}
             className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
           >
             <svg
