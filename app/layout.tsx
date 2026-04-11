@@ -36,7 +36,6 @@ export default function RootLayout({
   return (
     <html lang="de" className="dark">
       <head>
-        <link rel="manifest" href="/manifest.json" />
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -51,24 +50,46 @@ export default function RootLayout({
         <meta name="theme-color" content="#0f1115" />
         <meta name="mobile-web-app-capable" content="yes" />
         {/* iPhone splash screens */}
+        {/* iPhone SE (2nd/3rd gen) – 375x667 @2x */}
         <link
           rel="apple-touch-startup-image"
-          media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 2)"
+          media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
           href="/splash/se-portrait.png"
         />
+        {/* iPhone X / XS / 11 Pro / 12 mini – 375x812 @3x */}
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
+          href="/splash/se-portrait.png"
+        />
+        {/* iPhone 12 / 13 / 14 – 390x844 @3x */}
         <link
           rel="apple-touch-startup-image"
           media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)"
           href="/splash/14-portrait.png"
         />
+        {/* iPhone 14 Pro / 15 / 16 / 16e – 393x852 @3x */}
         <link
           rel="apple-touch-startup-image"
           media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)"
           href="/splash/14pro-portrait.png"
         />
+        {/* iPhone 14 Plus / 15 Plus – 428x926 @3x */}
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)"
+          href="/splash/14promax-portrait.png"
+        />
+        {/* iPhone 14 Pro Max / 15 Pro Max – 430x932 @3x */}
         <link
           rel="apple-touch-startup-image"
           media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)"
+          href="/splash/14promax-portrait.png"
+        />
+        {/* iPhone 16 Pro Max – 440x956 @3x */}
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)"
           href="/splash/14promax-portrait.png"
         />
       </head>

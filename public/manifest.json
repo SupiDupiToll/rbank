@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "RuiBank",
   "short_name": "RBank",
   "description": "Online Banking System mit Admin- und Kundenbereich",
