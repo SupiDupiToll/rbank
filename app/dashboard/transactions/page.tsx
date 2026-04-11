@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatGermanDate } from "@/lib/date";
 import { formatEuroFromCents } from "@/lib/money";
@@ -9,7 +8,9 @@ type TransactionsPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
-export default async function TransactionsPage({ searchParams }: TransactionsPageProps) {
+export default async function TransactionsPage({
+  searchParams,
+}: TransactionsPageProps) {
   const user = await getCurrentAppUser();
 
   if (!user) {
@@ -26,51 +27,94 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         ? {
             description: {
               contains: query,
-              mode: "insensitive"
-            }
+              mode: "insensitive",
+            },
           }
-        : {})
+        : {}),
     },
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }]
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
   });
 
+  // Calculate totals for summary
+  const incoming = transactions
+    .filter((t) => t.type === "INCOMING")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const outgoing = transactions
+    .filter((t) => t.type === "OUTGOING")
+    .reduce((sum, t) => sum + t.amount, 0);
+
   return (
-    <Card>
-      <div className="flex flex-col gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Transaktionen</p>
-          <h2 className="mt-2 text-3xl font-display text-slate-100">Verlauf</h2>
+    <div className="space-y-8 pb-8">
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl bg-primary/10 px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
+            Eingänge
+          </p>
+          <p className="mt-2 text-3xl font-display text-primary">
+            +{formatEuroFromCents(incoming)}
+          </p>
         </div>
-        <form className="w-full max-w-md" method="get">
-          <Input defaultValue={query} name="q" placeholder="Suchen" />
-        </form>
+        <div className="rounded-2xl bg-red-500/10 px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-400/80">
+            Ausgänge
+          </p>
+          <p className="mt-2 text-3xl font-display text-red-400">
+            -{formatEuroFromCents(outgoing)}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-6 space-y-3">
+      {/* Search */}
+      <form method="get" className="w-full">
+        <Input defaultValue={query} name="q" placeholder="Suchen…" />
+      </form>
+
+      {/* Transactions List */}
+      <div className="space-y-3">
         {transactions.length === 0 ? (
-          <p className="text-sm text-slate-400">Keine Treffer.</p>
+          <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-10 text-center">
+            <p className="text-sm text-slate-400">Keine Transaktionen.</p>
+          </div>
         ) : (
           transactions.map((transaction) => (
-            <div key={transaction.id} className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-slate-100">{transaction.description}</p>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${transaction.source === "TRANSFER" ? "bg-primary/10 text-primary" : "bg-slate-800 text-slate-300"}`}>
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="truncate font-semibold text-slate-100">
+                    {transaction.description}
+                  </p>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      transaction.source === "TRANSFER"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-slate-800 text-slate-400"
+                    }`}
+                  >
                     {transaction.source === "TRANSFER" ? "P2P" : "Admin"}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-slate-400">{formatGermanDate(transaction.date)}</p>
-              </div>
-              <div className="text-left md:text-right">
-                <p className={transaction.type === "INCOMING" ? "font-bold text-primary" : "font-bold text-red-400"}>
-                  {transaction.type === "INCOMING" ? "+" : "-"}
-                  {formatEuroFromCents(transaction.amount).replace("-", "")}
+                <p className="mt-1 text-sm text-slate-500">
+                  {formatGermanDate(transaction.date)}
                 </p>
               </div>
+              <p
+                className={`shrink-0 font-bold ${
+                  transaction.type === "INCOMING"
+                    ? "text-primary"
+                    : "text-red-400"
+                }`}
+              >
+                {transaction.type === "INCOMING" ? "+" : "-"}
+                {formatEuroFromCents(transaction.amount).replace("-", "")}
+              </p>
             </div>
           ))
         )}
       </div>
-    </Card>
+    </div>
   );
 }

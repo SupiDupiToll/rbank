@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 const PAYMENT_HOST = "rbank.sdtoll.de";
 const PAYMENT_PATH_PREFIX = "/zahlungen";
@@ -55,7 +54,7 @@ export function PaymentQrScanner() {
 
   async function startScanner() {
     setIsStarting(true);
-    setMessage("Kamerazugriff wird angefragt...");
+    setMessage("Kamerazugriff wird angefragt…");
 
     try {
       const scanner = new Html5Qrcode("qr-reader");
@@ -74,17 +73,14 @@ export function PaymentQrScanner() {
 
           if (target) {
             isRedirectingRef.current = true;
-            // Append return_url so the payment page can show a back button
             const separator = target.includes("?") ? "&" : "?";
             const returnUrl = encodeURIComponent("/dashboard");
             const redirectUrl = `${target}${separator}return_url=${returnUrl}`;
-            setMessage("Gueltiger Zahlungslink erkannt. Weiterleitung...");
+            setMessage("Zahlungslink erkannt. Weiterleitung…");
             scanner.stop().catch(() => {});
             window.location.href = redirectUrl;
           } else {
-            setMessage(
-              "QR-Code erkannt, aber kein gueltiger Zahlungslink von rbank.sdtoll.de/zahlungen.",
-            );
+            setMessage("Kein gültiger Zahlungslink erkannt.");
           }
         },
         () => {
@@ -93,9 +89,9 @@ export function PaymentQrScanner() {
       );
 
       setIsScanning(true);
-      setMessage("QR-Code wird gesucht...");
+      setMessage("QR-Code wird gesucht…");
     } catch {
-      setMessage("Kamerazugriff wurde verweigert oder ist nicht verfügbar.");
+      setMessage("Kamerazugriff verweigert oder nicht verfügbar.");
     } finally {
       setIsStarting(false);
     }
@@ -110,66 +106,71 @@ export function PaymentQrScanner() {
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <Card className="space-y-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Zahlung entgegennehmen
-          </p>
-          <h2 className="mt-2 text-3xl font-display text-slate-100">
-            QR-Code scannen
-          </h2>
-          <p className="mt-3 max-w-2xl text-slate-300">
-            Öffne die Kamera, scanne den QR-Code des Kunden und leite nur dann
-            weiter, wenn der Code auf rbank.sdtoll.de/zahlungen zeigt.
-          </p>
-        </div>
+    <div className="space-y-8">
+      {/* Scanner Area */}
+      <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-900/40">
+        <div id="qr-reader" className="aspect-[4/5] md:aspect-[16/9]" />
+      </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70">
-          <div id="qr-reader" className="aspect-[4/5] md:aspect-[16/9]" />
-        </div>
+      {/* Controls */}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          className="flex-1 rounded-xl"
+          disabled={isStarting || isScanning}
+          onClick={startScanner}
+          type="button"
+        >
+          {isStarting
+            ? "Kamera startet…"
+            : isScanning
+              ? "Scanner aktiv"
+              : "Kamera freigeben"}
+        </Button>
+        <Button
+          className="flex-1 rounded-xl"
+          disabled={!isScanning}
+          onClick={stopScanner}
+          type="button"
+          variant="outline"
+        >
+          Scanner stoppen
+        </Button>
+      </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            className="rounded-xl sm:min-w-48"
-            disabled={isStarting || isScanning}
-            onClick={startScanner}
-            type="button"
-          >
-            {isStarting
-              ? "Kamera startet..."
-              : isScanning
-                ? "Scanner aktiv"
-                : "Kamera freigeben"}
-          </Button>
-          <Button
-            className="rounded-xl sm:min-w-40"
-            disabled={!isScanning}
-            onClick={stopScanner}
-            type="button"
-            variant="outline"
-          >
-            Scanner stoppen
-          </Button>
-        </div>
+      {/* Status */}
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4">
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
+          Status
+        </p>
+        <p className="mt-2 text-sm text-slate-300">{message}</p>
+      </div>
 
-        <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
-          <p className="text-sm font-semibold text-slate-100">Status</p>
-          <p className="mt-2 text-sm text-slate-300">{message}</p>
-        </div>
-      </Card>
-
-      <Card className="space-y-4">
-        <h3 className="text-xl font-display text-slate-100">Ablauf</h3>
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>1. Kamera freigeben.</p>
-          <p>2. QR-Code vor die Kamera halten.</p>
-          <p>
-            3. Weiterleitung erfolgt nur bei gueltigen Links unter
-            `rbank.sdtoll.de/zahlungen...`.
-          </p>
-        </div>
-      </Card>
+      {/* Steps */}
+      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 px-5 py-5">
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+          So geht&apos;s
+        </p>
+        <ol className="space-y-2 text-sm text-slate-400">
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+              1
+            </span>
+            Kamera freigeben
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+              2
+            </span>
+            QR-Code des Kunden vor die Kamera halten
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+              3
+            </span>
+            Automatische Weiterleitung zum Zahlungslin
+          </li>
+        </ol>
+      </div>
     </div>
   );
 }

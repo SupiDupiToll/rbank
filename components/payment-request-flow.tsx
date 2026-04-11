@@ -181,13 +181,34 @@ export function PaymentRequestFlow({
 
           {message ? <p className="text-sm text-red-300">{message}</p> : null}
 
-          <Button
-            className="w-full rounded-xl"
-            onClick={goToPinStep}
-            type="button"
-          >
-            Weiter zur PIN
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              className="flex-1 rounded-xl"
+              onClick={goToPinStep}
+              type="button"
+            >
+              Weiter zur PIN
+            </Button>
+            <Link
+              href={returnUrl as Route}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                />
+              </svg>
+              Zum Dashboard
+            </Link>
+          </div>
         </Card>
       ) : (
         <Card className="space-y-8">
