@@ -115,7 +115,7 @@ export function PaymentRequestFlow({
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href={returnUrl as Route}
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80 sm:w-auto"
           >
             <svg
               className="h-4 w-4"
@@ -134,7 +134,7 @@ export function PaymentRequestFlow({
           </Link>
           <Link
             href="/dashboard"
-            className="flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700"
+            className="flex h-14 w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800 px-6 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 sm:w-auto"
           >
             Zum Dashboard
           </Link>
@@ -183,7 +183,7 @@ export function PaymentRequestFlow({
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              className="flex-1 rounded-xl"
+              className="h-14 w-full rounded-xl text-sm sm:w-auto sm:flex-1"
               onClick={goToPinStep}
               type="button"
             >
@@ -191,7 +191,7 @@ export function PaymentRequestFlow({
             </Button>
             <Link
               href={returnUrl as Route}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-6 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 sm:w-auto"
             >
               <svg
                 className="h-4 w-4"
@@ -220,10 +220,6 @@ export function PaymentRequestFlow({
               <h2 className="mt-3 text-3xl font-display text-slate-100">
                 PIN eingeben
               </h2>
-              <p className="mt-3 text-slate-300">
-                Bestaetige die Zahlung mit der 4-stelligen PIN des zahlenden
-                Nutzers.
-              </p>
             </div>
             <Button
               onClick={() => setStep("amount")}

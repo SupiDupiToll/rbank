@@ -113,9 +113,9 @@ export function PaymentQrScanner() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Button
-          className="flex-1 rounded-xl"
+          className="h-14 rounded-xl text-sm"
           disabled={isStarting || isScanning}
           onClick={startScanner}
           type="button"
@@ -127,7 +127,7 @@ export function PaymentQrScanner() {
               : "Kamera freigeben"}
         </Button>
         <Button
-          className="flex-1 rounded-xl"
+          className="h-14 rounded-xl text-sm"
           disabled={!isScanning}
           onClick={stopScanner}
           type="button"
