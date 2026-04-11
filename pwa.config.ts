@@ -5,6 +5,7 @@ const pwaConfig: Config = {
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  swSrc: "app/sw.ts",
   buildExcludes: [/^\.next\/server\/.*/],
   runtimeCaching: [
     {
@@ -64,7 +65,7 @@ const pwaConfig: Config = {
     },
   ],
   fallbacks: {
-    offline: "/offline",
+    offline: "/offline.html",
   },
 };
 
