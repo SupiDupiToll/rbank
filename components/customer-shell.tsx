@@ -183,24 +183,6 @@ export function CustomerShell({
                 {currentPage}
               </h1>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-              <span className="text-sm font-bold tracking-[0.2em]">RB</span>
-            </div>
-          </div>
-          <div className="mx-auto max-w-md px-4 pb-4">
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4">
-              <p className="text-xs text-slate-400">
-                {displayName ?? "Kundenkonto"}
-              </p>
-              <div className="mt-2 flex items-center justify-between gap-3">
-                <p className="text-lg font-semibold text-slate-100">
-                  Kundennummer {customerId}
-                </p>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  App
-                </span>
-              </div>
-            </div>
           </div>
         </header>
       </div>
