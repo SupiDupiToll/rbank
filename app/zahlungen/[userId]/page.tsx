@@ -47,7 +47,7 @@ export default async function PaymentPage({
   const returnUrl = searchParamsResolved.return_url ?? "/dashboard";
 
   return (
-    <PinSetupGate hasPin={Boolean(user.pinHash)}>
+    <PinSetupGate hasPin={Boolean(user.paymentPinHash)}>
       <div className="min-h-screen bg-background-dark px-4 py-8 text-slate-100">
         <div className="mx-auto max-w-5xl">
           <PaymentRequestFlow

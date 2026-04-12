@@ -48,6 +48,18 @@ const authHandlerCsp = [
   "frame-src 'self' https://*.stack-auth.com https://*.built-with-stack-auth.com",
 ].join("; ");
 
+const checkoutCsp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "img-src 'self' data:",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+].join("; ");
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: appCsp },
   ...baseSecurityHeaders,
@@ -55,6 +67,11 @@ const securityHeaders = [
 
 const authHandlerHeaders = [
   { key: "Content-Security-Policy", value: authHandlerCsp },
+  ...baseSecurityHeaders,
+];
+
+const checkoutHeaders = [
+  { key: "Content-Security-Policy", value: checkoutCsp },
   ...baseSecurityHeaders,
 ];
 
@@ -71,6 +88,10 @@ const nextConfig: NextConfig = {
       {
         source: "/handler/:path*",
         headers: authHandlerHeaders,
+      },
+      {
+        source: "/pay/:path*",
+        headers: checkoutHeaders,
       },
     ];
   },

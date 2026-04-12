@@ -21,8 +21,8 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (pin.length !== 4 || confirmationPin.length !== 4) {
-      setMessage("Bitte zwei 4-stellige PINs eingeben.");
+    if (pin.length < 4 || pin.length > 6 || confirmationPin.length < 4 || confirmationPin.length > 6) {
+      setMessage("Bitte zwei PINs mit 4 bis 6 Ziffern eingeben.");
       return;
     }
 
@@ -72,7 +72,7 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">PIN erforderlich</p>
             <h2 className="mt-3 text-3xl font-display text-slate-100">Zugang absichern</h2>
             <p className="mt-3 text-sm text-slate-300">
-              Bevor Sie fortfahren, müssen Sie einmalig eine 4-stellige PIN einrichten.
+              Bevor Sie fortfahren, müssen Sie einmalig eine Checkout-PIN mit 4 bis 6 Ziffern einrichten.
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -81,9 +81,9 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
                 <Input
                   autoComplete="off"
                   inputMode="numeric"
-                  maxLength={4}
+                  maxLength={6}
                   onChange={(event) => setPin(event.target.value.replace(/\D/g, ""))}
-                  placeholder="1234"
+                  placeholder="123456"
                   value={pin}
                 />
               </div>
@@ -93,9 +93,9 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
                 <Input
                   autoComplete="off"
                   inputMode="numeric"
-                  maxLength={4}
+                  maxLength={6}
                   onChange={(event) => setConfirmationPin(event.target.value.replace(/\D/g, ""))}
-                  placeholder="1234"
+                  placeholder="123456"
                   value={confirmationPin}
                 />
               </div>

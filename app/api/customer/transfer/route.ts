@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       }),
     );
 
-    const isPinValid = await verifyPin(body.pin, user.pinHash);
+    const isPinValid = await verifyPin(body.pin, user.paymentPinHash);
 
     if (!isPinValid) {
       return NextResponse.json(

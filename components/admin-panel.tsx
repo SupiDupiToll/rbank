@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type {
   AdminFestgeld,
+  AdminMerchant,
   AdminTransaction,
   AdminUserRow,
 } from "@/lib/admin-dashboard";
@@ -20,6 +21,7 @@ type AdminPanelProps = {
   initialSelectedCustomerId: string;
   initialTransactions: AdminTransaction[];
   initialFestgeldAccounts: AdminFestgeld[];
+  initialMerchants: AdminMerchant[];
 };
 
 export function AdminPanel({
@@ -27,16 +29,14 @@ export function AdminPanel({
   initialSelectedCustomerId,
   initialTransactions,
   initialFestgeldAccounts,
+  initialMerchants,
 }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
-  const [selectedCustomerId, setSelectedCustomerId] = useState(
-    initialSelectedCustomerId,
-  );
-  const [transactions, setTransactions] =
-    useState<AdminTransaction[]>(initialTransactions);
-  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(
-    initialFestgeldAccounts,
-  );
+  const [selectedCustomerId, setSelectedCustomerId] = useState(initialSelectedCustomerId);
+  const [transactions, setTransactions] = useState<AdminTransaction[]>(initialTransactions);
+  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(initialFestgeldAccounts);
+  const [merchants, setMerchants] = useState<AdminMerchant[]>(initialMerchants);
+  const [selectedMerchantId, setSelectedMerchantId] = useState(initialMerchants[0]?.merchantId ?? "");
 
   const [txType, setTxType] = useState<"INCOMING" | "OUTGOING">("INCOMING");
   const [txAmount, setTxAmount] = useState("");
@@ -49,7 +49,31 @@ export function AdminPanel({
   const [fgStartDate, setFgStartDate] = useState(toDateInputValue(new Date()));
   const [fgEndDate, setFgEndDate] = useState("");
 
+  const [merchantName, setMerchantName] = useState("");
+  const [merchantRedirectUrls, setMerchantRedirectUrls] = useState("");
+  const [merchantWebhookUrl, setMerchantWebhookUrl] = useState("");
+  const [merchantActive, setMerchantActive] = useState(true);
+  const [merchantSecretPreview, setMerchantSecretPreview] = useState("");
+
   const [message, setMessage] = useState("");
+
+  const selectedMerchant =
+    merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ?? null;
+
+  const hydrateMerchantForm = useCallback((merchant: AdminMerchant | null) => {
+    if (!merchant) {
+      setMerchantName("");
+      setMerchantRedirectUrls("");
+      setMerchantWebhookUrl("");
+      setMerchantActive(true);
+      return;
+    }
+
+    setMerchantName(merchant.name);
+    setMerchantRedirectUrls(merchant.allowedRedirectUrls.join("\n"));
+    setMerchantWebhookUrl(merchant.webhookUrl ?? "");
+    setMerchantActive(merchant.isActive);
+  }, []);
 
   const loadUsers = useCallback(async () => {
     const response = await fetch("/api/admin/users");
@@ -64,9 +88,7 @@ export function AdminPanel({
   const loadTransactions = useCallback(async (customerId: string) => {
     const response = await fetch(`/api/admin/users/${customerId}/transactions`);
     if (!response.ok) return;
-    const data = (await response.json()) as {
-      transactions: AdminTransaction[];
-    };
+    const data = (await response.json()) as { transactions: AdminTransaction[] };
     setTransactions(data.transactions);
   }, []);
 
@@ -77,38 +99,50 @@ export function AdminPanel({
     setFestgeldAccounts(data.accounts);
   }, []);
 
+  const loadMerchants = useCallback(async () => {
+    const response = await fetch("/api/admin/merchants");
+    if (!response.ok) return;
+    const data = (await response.json()) as { merchants: AdminMerchant[] };
+    setMerchants(data.merchants);
+    const nextSelectedMerchant =
+      data.merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ??
+      data.merchants[0] ??
+      null;
+    setSelectedMerchantId(nextSelectedMerchant?.merchantId ?? "");
+    hydrateMerchantForm(nextSelectedMerchant);
+  }, [hydrateMerchantForm, selectedMerchantId]);
+
   useEffect(() => {
     if (!fgEndDate) {
-      setFgEndDate(
-        toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)),
-      );
+      setFgEndDate(toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)));
     }
   }, [fgEndDate]);
 
   useEffect(() => {
-    if (initialUsers.length > 0 || initialFestgeldAccounts.length > 0) {
-      return;
-    }
+    hydrateMerchantForm(selectedMerchant);
+  }, [hydrateMerchantForm, selectedMerchant]);
 
-    void loadUsers();
-    void loadFestgeld();
-  }, [
-    initialFestgeldAccounts.length,
-    initialUsers.length,
-    loadFestgeld,
-    loadUsers,
-  ]);
+  useEffect(() => {
+    if (initialUsers.length === 0 && initialFestgeldAccounts.length === 0) {
+      void loadUsers();
+      void loadFestgeld();
+    }
+  }, [initialFestgeldAccounts.length, initialUsers.length, loadFestgeld, loadUsers]);
+
+  useEffect(() => {
+    if (initialMerchants.length === 0) {
+      void loadMerchants();
+    }
+  }, [initialMerchants.length, loadMerchants]);
 
   useEffect(() => {
     if (
-      selectedCustomerId === initialSelectedCustomerId &&
-      initialTransactions.length > 0
+      selectedCustomerId !== initialSelectedCustomerId ||
+      initialTransactions.length === 0
     ) {
-      return;
-    }
-
-    if (selectedCustomerId) {
-      void loadTransactions(selectedCustomerId);
+      if (selectedCustomerId) {
+        void loadTransactions(selectedCustomerId);
+      }
     }
   }, [
     initialSelectedCustomerId,
@@ -123,7 +157,7 @@ export function AdminPanel({
 
     const amount = Math.round(Number(txAmount) * 100);
     if (!selectedCustomerId || Number.isNaN(amount) || amount <= 0) {
-      setMessage("Bitte gültige Werte eingeben.");
+      setMessage("Bitte gueltige Werte eingeben.");
       return;
     }
 
@@ -161,13 +195,8 @@ export function AdminPanel({
     const amount = Math.round(Number(fgAmount) * 100);
     const interestRate = Number(fgRate);
 
-    if (
-      !selectedCustomerId ||
-      Number.isNaN(amount) ||
-      amount <= 0 ||
-      Number.isNaN(interestRate)
-    ) {
-      setMessage("Bitte gültige Festgeld-Werte eingeben.");
+    if (!selectedCustomerId || Number.isNaN(amount) || amount <= 0 || Number.isNaN(interestRate)) {
+      setMessage("Bitte gueltige Festgeld-Werte eingeben.");
       return;
     }
 
@@ -188,7 +217,6 @@ export function AdminPanel({
     });
 
     const data = (await response.json()) as { error?: string };
-
     if (!response.ok) {
       setMessage(data.error ?? "Festgeldkonto konnte nicht erstellt werden.");
       return;
@@ -210,7 +238,6 @@ export function AdminPanel({
     });
 
     const data = (await response.json()) as { error?: string };
-
     if (!response.ok) {
       setMessage(data.error ?? "Auszahlung fehlgeschlagen.");
       return;
@@ -224,9 +251,119 @@ export function AdminPanel({
     }
   }
 
+  async function createMerchant(event: React.FormEvent) {
+    event.preventDefault();
+    setMessage("");
+    setMerchantSecretPreview("");
+
+    const redirectUrls = merchantRedirectUrls
+      .split("\n")
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const response = await fetch("/api/admin/merchants", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+      },
+      body: JSON.stringify({
+        name: merchantName,
+        allowedRedirectUrls: redirectUrls,
+        webhookUrl: merchantWebhookUrl || null,
+      }),
+    });
+
+    const data = (await response.json()) as {
+      error?: string;
+      merchantSecret?: string;
+      merchant?: { merchantId: string };
+    };
+
+    if (!response.ok) {
+      setMessage(data.error ?? "Haendler konnte nicht erstellt werden.");
+      return;
+    }
+
+    setMerchantSecretPreview(data.merchantSecret ?? "");
+    setMessage("Haendler erstellt. Secret wird nur einmal angezeigt.");
+    await loadMerchants();
+    if (data.merchant?.merchantId) {
+      setSelectedMerchantId(data.merchant.merchantId);
+    }
+  }
+
+  async function saveMerchant() {
+    if (!selectedMerchant) {
+      return;
+    }
+
+    setMessage("");
+
+    const redirectUrls = merchantRedirectUrls
+      .split("\n")
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const response = await fetch(`/api/admin/merchants/${selectedMerchant.merchantId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+      },
+      body: JSON.stringify({
+        name: merchantName,
+        allowedRedirectUrls: redirectUrls,
+        webhookUrl: merchantWebhookUrl || null,
+        isActive: merchantActive,
+      }),
+    });
+
+    const data = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(data.error ?? "Haendler konnte nicht gespeichert werden.");
+      return;
+    }
+
+    setMessage("Haendler gespeichert.");
+    await loadMerchants();
+  }
+
+  async function refundPayment(token: string) {
+    setMessage("");
+
+    const response = await fetch(`/api/admin/payments/${token}/refund`, {
+      method: "POST",
+      headers: {
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+      },
+    });
+
+    const data = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(data.error ?? "Rueckerstattung fehlgeschlagen.");
+      return;
+    }
+
+    setMessage("Rueckerstattung ausgefuehrt.");
+    await loadMerchants();
+    await loadUsers();
+    if (selectedCustomerId) {
+      await loadTransactions(selectedCustomerId);
+    }
+  }
+
+  function downloadMerchantReport() {
+    if (!selectedMerchant) {
+      return;
+    }
+
+    window.location.href = `/api/admin/merchants/${selectedMerchant.merchantId}/report`;
+  }
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-12">
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-10 lg:px-12">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">
             Admin
@@ -254,16 +391,12 @@ export function AdminPanel({
                     onClick={() => setSelectedCustomerId(user.customerId)}
                   >
                     <Td>
-                      <div className="font-bold text-slate-100">
-                        {user.displayName ?? "Kunde"}
-                      </div>
+                      <div className="font-bold text-slate-100">{user.displayName ?? "Kunde"}</div>
                       <div className="text-xs text-slate-400">
                         #{user.customerId} · {user.stackUserId}
                       </div>
                     </Td>
-                    <Td className="font-bold">
-                      {formatEuroFromCents(user.balanceCents)}
-                    </Td>
+                    <Td className="font-bold">{formatEuroFromCents(user.balanceCents)}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -273,18 +406,13 @@ export function AdminPanel({
 
         <Card className="space-y-4 lg:col-span-7">
           <h2 className="text-2xl font-display font-bold">Buchung</h2>
-          <form
-            className="grid gap-4 md:grid-cols-2"
-            onSubmit={submitTransaction}
-          >
+          <form className="grid gap-4 md:grid-cols-2" onSubmit={submitTransaction}>
             <div className="space-y-2">
               <Label>Typ</Label>
               <select
                 className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
                 value={txType}
-                onChange={(event) =>
-                  setTxType(event.target.value as "INCOMING" | "OUTGOING")
-                }
+                onChange={(event) => setTxType(event.target.value as "INCOMING" | "OUTGOING")}
               >
                 <option value="INCOMING">Eingang</option>
                 <option value="OUTGOING">Ausgang</option>
@@ -292,31 +420,22 @@ export function AdminPanel({
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input
-                value={txAmount}
-                onChange={(event) => setTxAmount(event.target.value)}
-                required
-              />
+              <Input required value={txAmount} onChange={(event) => setTxAmount(event.target.value)} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label>Beschreibung</Label>
               <Input
+                required
                 value={txDescription}
                 onChange={(event) => setTxDescription(event.target.value)}
-                required
               />
             </div>
             <div className="space-y-2">
               <Label>Datum</Label>
-              <Input
-                type="date"
-                value={txDate}
-                onChange={(event) => setTxDate(event.target.value)}
-                required
-              />
+              <Input required type="date" value={txDate} onChange={(event) => setTxDate(event.target.value)} />
             </div>
             <div className="flex items-end">
-              <Button type="submit" className="h-14 w-full">
+              <Button className="h-14 w-full" type="submit">
                 Speichern
               </Button>
             </div>
@@ -324,7 +443,7 @@ export function AdminPanel({
         </Card>
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-12">
+      <div className="grid gap-8 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
           <div className="overflow-x-auto">
@@ -346,21 +465,19 @@ export function AdminPanel({
                           className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
                             transaction.source === "TRANSFER"
                               ? "bg-primary/10 text-primary"
-                              : "bg-slate-800 text-slate-300"
+                              : transaction.source === "CHECKOUT"
+                                ? "bg-emerald-500/10 text-emerald-300"
+                                : transaction.source === "REFUND"
+                                  ? "bg-sky-500/10 text-sky-300"
+                                  : "bg-slate-800 text-slate-300"
                           }`}
                         >
-                          {transaction.source === "TRANSFER" ? "P2P" : "Admin"}
+                          {transaction.source}
                         </span>
                         <span>{transaction.description}</span>
                       </div>
                     </Td>
-                    <Td
-                      className={
-                        transaction.type === "INCOMING"
-                          ? "text-primary font-bold"
-                          : "text-red-400 font-bold"
-                      }
-                    >
+                    <Td className={transaction.type === "INCOMING" ? "font-bold text-primary" : "font-bold text-red-400"}>
                       {transaction.type === "INCOMING" ? "+ " : "- "}
                       {formatEuroFromCents(transaction.amount)}
                     </Td>
@@ -376,56 +493,34 @@ export function AdminPanel({
           <form className="space-y-4" onSubmit={submitFestgeld}>
             <div className="space-y-2">
               <Label>Bezeichnung</Label>
-              <Input
-                value={fgLabel}
-                onChange={(event) => setFgLabel(event.target.value)}
-                required
-              />
+              <Input required value={fgLabel} onChange={(event) => setFgLabel(event.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input
-                value={fgAmount}
-                onChange={(event) => setFgAmount(event.target.value)}
-                required
-              />
+              <Input required value={fgAmount} onChange={(event) => setFgAmount(event.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Zinssatz (%)</Label>
-              <Input
-                value={fgRate}
-                onChange={(event) => setFgRate(event.target.value)}
-                required
-              />
+              <Input required value={fgRate} onChange={(event) => setFgRate(event.target.value)} />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Startdatum</Label>
-                <Input
-                  type="date"
-                  value={fgStartDate}
-                  onChange={(event) => setFgStartDate(event.target.value)}
-                  required
-                />
+                <Input required type="date" value={fgStartDate} onChange={(event) => setFgStartDate(event.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Enddatum</Label>
-                <Input
-                  type="date"
-                  value={fgEndDate}
-                  onChange={(event) => setFgEndDate(event.target.value)}
-                  required
-                />
+                <Input required type="date" value={fgEndDate} onChange={(event) => setFgEndDate(event.target.value)} />
               </div>
             </div>
-            <Button type="submit" className="h-14 w-full">
+            <Button className="h-14 w-full" type="submit">
               Anlegen
             </Button>
           </form>
         </Card>
       </div>
 
-      <Card className="mt-8">
+      <Card>
         <h2 className="mb-4 text-2xl font-display font-bold">Festgeldkonten</h2>
         <div className="overflow-x-auto">
           <Table>
@@ -443,9 +538,7 @@ export function AdminPanel({
               {festgeldAccounts.map((account) => (
                 <tr key={account.id}>
                   <Td>
-                    <div className="font-bold">
-                      {account.user.displayName ?? "Kunde"}
-                    </div>
+                    <div className="font-bold">{account.user.displayName ?? "Kunde"}</div>
                     <div className="text-xs text-slate-400">
                       #{account.user.customerId} · {account.user.stackUserId}
                     </div>
@@ -454,8 +547,7 @@ export function AdminPanel({
                   <Td>{formatEuroFromCents(account.amount)}</Td>
                   <Td>{account.interestRate.toFixed(2)}%</Td>
                   <Td>
-                    {formatGermanDate(account.startDate)} -{" "}
-                    {formatGermanDate(account.endDate)}
+                    {formatGermanDate(account.startDate)} - {formatGermanDate(account.endDate)}
                   </Td>
                   <Td>
                     <div className="flex flex-wrap items-center gap-2">
@@ -492,7 +584,218 @@ export function AdminPanel({
         </div>
       </Card>
 
-      {message ? <p className="mt-4 text-sm text-primary">{message}</p> : null}
+      <div className="grid gap-8 lg:grid-cols-12">
+        <Card className="space-y-4 lg:col-span-5">
+          <h2 className="text-2xl font-display font-bold">Haendler anlegen</h2>
+          <form className="space-y-4" onSubmit={createMerchant}>
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input required value={merchantName} onChange={(event) => setMerchantName(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Erlaubte Redirect-URLs</Label>
+              <textarea
+                className="min-h-32 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+                onChange={(event) => setMerchantRedirectUrls(event.target.value)}
+                placeholder={"https://shop.de/success\nhttps://shop.de/cancel"}
+                value={merchantRedirectUrls}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Webhook-URL (optional)</Label>
+              <Input value={merchantWebhookUrl} onChange={(event) => setMerchantWebhookUrl(event.target.value)} />
+            </div>
+            <Button className="h-14 w-full" type="submit">
+              Haendler erstellen
+            </Button>
+          </form>
+          {merchantSecretPreview ? (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-300">Secret</p>
+              <p className="mt-2 break-all font-mono text-sm text-amber-100">{merchantSecretPreview}</p>
+            </div>
+          ) : null}
+        </Card>
+
+        <Card className="space-y-4 lg:col-span-7">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-display font-bold">Haendler</h2>
+            {selectedMerchant ? (
+              <Button onClick={downloadMerchantReport} type="button" variant="outline">
+                CSV exportieren
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-[260px_minmax(0,1fr)]">
+            <div className="space-y-3">
+              {merchants.map((merchant) => (
+                <button
+                  key={merchant.merchantId}
+                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                    selectedMerchantId === merchant.merchantId
+                      ? "border-primary bg-primary/10"
+                      : "border-slate-800 bg-slate-900/40 hover:border-slate-700"
+                  }`}
+                  onClick={() => setSelectedMerchantId(merchant.merchantId)}
+                  type="button"
+                >
+                  <p className="font-bold text-slate-100">{merchant.name}</p>
+                  <p className="mt-1 text-xs text-slate-400">{merchant.merchantId}</p>
+                  <p className="mt-3 text-sm text-slate-300">
+                    Volumen {formatEuroFromCents(merchant.totalVolumeCents)}
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            {selectedMerchant ? (
+              <div className="space-y-5">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <MetricCard label="Heute" value={formatEuroFromCents(selectedMerchant.volumeTodayCents)} />
+                  <MetricCard label="Monat" value={formatEuroFromCents(selectedMerchant.volumeMonthCents)} />
+                  <MetricCard label="Gesamt" value={formatEuroFromCents(selectedMerchant.totalVolumeCents)} />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={merchantName} onChange={(event) => setMerchantName(event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Webhook-URL</Label>
+                    <Input value={merchantWebhookUrl} onChange={(event) => setMerchantWebhookUrl(event.target.value)} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Erlaubte Redirect-URLs</Label>
+                  <textarea
+                    className="min-h-28 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+                    onChange={(event) => setMerchantRedirectUrls(event.target.value)}
+                    value={merchantRedirectUrls}
+                  />
+                </div>
+                <label className="flex items-center gap-3 text-sm text-slate-200">
+                  <input checked={merchantActive} onChange={(event) => setMerchantActive(event.target.checked)} type="checkbox" />
+                  Haendler aktiv
+                </label>
+                <Button className="h-12" onClick={() => void saveMerchant()} type="button">
+                  Haendler speichern
+                </Button>
+
+                <div className="overflow-x-auto">
+                  <Table>
+                    <thead>
+                      <tr>
+                        <Th>Status</Th>
+                        <Th>Beschreibung</Th>
+                        <Th>Betrag</Th>
+                        <Th>Kunde</Th>
+                        <Th>Aktion</Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedMerchant.sessions.map((session) => (
+                        <tr key={session.token}>
+                          <Td>{session.status}</Td>
+                          <Td>
+                            <div className="font-semibold text-slate-100">{session.description}</div>
+                            <div className="text-xs text-slate-400">{formatGermanDate(session.createdAt)}</div>
+                          </Td>
+                          <Td>{formatEuroFromCents(session.amount)}</Td>
+                          <Td>{session.customerName ?? session.customerId ?? "—"}</Td>
+                          <Td>
+                            {session.status === "COMPLETED" ? (
+                              <button
+                                className="rounded-lg bg-sky-500/15 px-3 py-1 text-xs font-bold text-sky-300"
+                                onClick={() => void refundPayment(session.token)}
+                                type="button"
+                              >
+                                Refund
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-500">—</span>
+                            )}
+                          </Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">Noch keine Haendler vorhanden.</p>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      <Card className="space-y-4">
+        <h2 className="text-2xl font-display font-bold">Shop-Integration</h2>
+        <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-200">
+{`<button onclick="payWithRBank()">Mit RBank bezahlen</button>
+
+<script>
+async function payWithRBank() {
+  const res = await fetch('/api/create-rbank-payment', {
+    method: 'POST',
+    body: JSON.stringify({ orderId: '1234', amount: 2999 })
+  });
+  const { paymentUrl } = await res.json();
+  window.location.href = paymentUrl;
+}
+</script>
+
+// Next.js API Route (shop-side)
+export async function POST(req) {
+  const { orderId, amount } = await req.json();
+
+  const res = await fetch('https://rbank.de/api/pay/create', {
+    method: 'POST',
+    headers: {
+      'Authorization': \`Bearer \${MERCHANT_ID}:\${MERCHANT_SECRET}\`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      amount,
+      currency: 'EUR',
+      description: \`Bestellung #\${orderId}\`,
+      redirectUrl: \`https://meinshop.de/success?order=\${orderId}\`,
+      cancelUrl: \`https://meinshop.de/cancel?order=\${orderId}\`
+    })
+  });
+
+  const { paymentUrl } = await res.json();
+  return Response.json({ paymentUrl });
+}
+
+// Success Page Verification (shop-side)
+export async function GET(req) {
+  const token = req.nextUrl.searchParams.get('token');
+
+  const res = await fetch(\`https://rbank.de/api/pay/verify/\${token}\`, {
+    headers: { 'Authorization': \`Bearer \${MERCHANT_ID}:\${MERCHANT_SECRET}\` }
+  });
+
+  const payment = await res.json();
+
+  if (payment.status === 'COMPLETED') {
+    // fulfill order
+  }
+}`}
+        </pre>
+      </Card>
+
+      {message ? <p className="text-sm text-primary">{message}</p> : null}
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">{label}</p>
+      <p className="mt-3 text-2xl font-black text-white">{value}</p>
     </div>
   );
 }

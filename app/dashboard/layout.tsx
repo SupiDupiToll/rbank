@@ -21,7 +21,7 @@ export default async function DashboardLayout({
 
   return (
     <CustomerShell customerId={user.customerId} displayName={user.displayName}>
-      <PinSetupGate hasPin={Boolean(user.pinHash)}>{children}</PinSetupGate>
+      <PinSetupGate hasPin={Boolean(user.paymentPinHash)}>{children}</PinSetupGate>
       <PWAInstallBanner />
     </CustomerShell>
   );

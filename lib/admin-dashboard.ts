@@ -14,7 +14,7 @@ export type AdminTransaction = {
   type: "INCOMING" | "OUTGOING";
   amount: number;
   description: string;
-  source: "ADMIN" | "TRANSFER";
+  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "REFUND";
   transferId: string | null;
   date: Date;
 };
@@ -30,10 +30,42 @@ export type AdminFestgeld = {
   endDate: Date;
 };
 
+export type AdminMerchantSession = {
+  token: string;
+  amount: number;
+  currency: string;
+  description: string;
+  status: "PENDING" | "COMPLETED" | "CANCELLED" | "EXPIRED" | "REFUNDED";
+  customerId: string | null;
+  customerName: string | null;
+  paidAt: Date | null;
+  createdAt: Date;
+  refundedAt: Date | null;
+};
+
+export type AdminMerchant = {
+  id: string;
+  name: string;
+  merchantId: string;
+  allowedRedirectUrls: string[];
+  webhookUrl: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  sessionCount: number;
+  totalVolumeCents: number;
+  volumeTodayCents: number;
+  volumeMonthCents: number;
+  sessions: AdminMerchantSession[];
+};
+
 export async function getAdminDashboardData() {
   await settleMaturedFestgeldAccounts();
 
-  const [users, accounts] = await Promise.all([
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [users, accounts, merchants] = await Promise.all([
     prisma.user.findMany({
       where: { role: "CUSTOMER" },
       orderBy: { createdAt: "asc" },
@@ -52,6 +84,22 @@ export async function getAdminDashboardData() {
           select: { stackUserId: true, customerId: true, displayName: true }
         }
       }
+    }),
+    prisma.merchant.findMany({
+      orderBy: [{ createdAt: "desc" }],
+      include: {
+        paymentSessions: {
+          orderBy: [{ createdAt: "desc" }],
+          include: {
+            user: {
+              select: {
+                customerId: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
     })
   ]);
 
@@ -83,6 +131,45 @@ export async function getAdminDashboardData() {
   return {
     users: mappedUsers,
     festgeldAccounts: accounts,
-    initialTransactions
+    initialTransactions,
+    merchants: merchants.map((merchant) => {
+      const completedSessions = merchant.paymentSessions.filter(
+        (session) =>
+          session.status === "COMPLETED" || session.status === "REFUNDED",
+      );
+
+      return {
+        id: merchant.id,
+        name: merchant.name,
+        merchantId: merchant.merchantId,
+        allowedRedirectUrls: merchant.allowedRedirectUrls,
+        webhookUrl: merchant.webhookUrl,
+        isActive: merchant.isActive,
+        createdAt: merchant.createdAt,
+        sessionCount: merchant.paymentSessions.length,
+        totalVolumeCents: completedSessions.reduce(
+          (sum, session) => sum + session.amount,
+          0,
+        ),
+        volumeTodayCents: completedSessions
+          .filter((session) => (session.paidAt ?? session.createdAt) >= startOfToday)
+          .reduce((sum, session) => sum + session.amount, 0),
+        volumeMonthCents: completedSessions
+          .filter((session) => (session.paidAt ?? session.createdAt) >= startOfMonth)
+          .reduce((sum, session) => sum + session.amount, 0),
+        sessions: merchant.paymentSessions.map((session) => ({
+          token: session.token,
+          amount: session.amount,
+          currency: session.currency,
+          description: session.description,
+          status: session.status,
+          customerId: session.user?.customerId ?? null,
+          customerName: session.user?.displayName ?? null,
+          paidAt: session.paidAt,
+          createdAt: session.createdAt,
+          refundedAt: session.refundedAt,
+        })),
+      };
+    }),
   };
 }

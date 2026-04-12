@@ -88,7 +88,7 @@ export async function requireCustomerWithPin() {
     return result;
   }
 
-  if (!result.user.pinHash) {
+  if (!result.user.paymentPinHash) {
     return {
       error: jsonError("PIN muss zuerst eingerichtet werden.", 403),
       user: null

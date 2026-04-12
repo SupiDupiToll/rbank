@@ -40,32 +40,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Die PINs stimmen nicht ueberein." }, { status: 400 });
     }
 
-    if (user.pinHash) {
+    if (user.paymentPinHash) {
       return NextResponse.json({ error: "PIN ist bereits eingerichtet." }, { status: 409 });
     }
 
     const pinHash = await hashPin(body.pin);
 
-    try {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { pinHash }
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2022" &&
-        typeof error.meta?.column === "string" &&
-        error.meta.column.includes("pin_hash")
-      ) {
-        return NextResponse.json(
-          { error: "PIN-Funktion ist auf diesem System noch nicht freigeschaltet. Datenbankmigration fehlt." },
-          { status: 503 }
-        );
-      }
-
-      throw error;
-    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { paymentPinHash: pinHash }
+    });
 
     return NextResponse.json({ success: true });
   });

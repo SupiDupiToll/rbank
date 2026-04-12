@@ -62,15 +62,15 @@ export async function POST(request: Request) {
               id: true,
               customerId: true,
               role: true,
-              pinHash: true,
+              paymentPinHash: true,
             },
           });
 
-          if (!payer || payer.role !== "CUSTOMER" || !payer.pinHash) {
+          if (!payer || payer.role !== "CUSTOMER" || !payer.paymentPinHash) {
             throw new Error("PAYMENT_REJECTED");
           }
 
-          const isValidPin = await verifyPin(body.pin, payer.pinHash);
+          const isValidPin = await verifyPin(body.pin, payer.paymentPinHash);
 
           if (!isValidPin) {
             throw new Error("INVALID_PIN");

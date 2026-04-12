@@ -21,6 +21,7 @@ export default async function AdminPage() {
     <>
       <AdminPanel
         initialFestgeldAccounts={data.festgeldAccounts}
+        initialMerchants={data.merchants}
         initialSelectedCustomerId={data.users[0]?.customerId ?? ""}
         initialTransactions={data.initialTransactions}
         initialUsers={data.users}
