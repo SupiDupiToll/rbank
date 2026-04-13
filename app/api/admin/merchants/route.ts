@@ -10,9 +10,10 @@ import {
 } from "@/lib/api-helpers";
 import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import {
-  encryptMerchantSecret,
+  encryptWebhookSecret,
   generateMerchantCredentials,
   hashMerchantSecret,
+  hashWebhookSecret,
 } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
@@ -23,7 +24,11 @@ export async function GET(request: Request) {
     const { error, user } = await requireAdmin();
     if (error || !user) return error;
 
-    const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
+    const rateLimitError = await enforceRateLimit(
+      request,
+      rateLimitPolicies.adminApi,
+      user.id,
+    );
     if (rateLimitError) return rateLimitError;
 
     const data = await getAdminDashboardData();
@@ -42,7 +47,11 @@ export async function POST(request: Request) {
     const csrfError = enforceCsrf(request);
     if (csrfError) return csrfError;
 
-    const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
+    const rateLimitError = await enforceRateLimit(
+      request,
+      rateLimitPolicies.adminApi,
+      user.id,
+    );
     if (rateLimitError) return rateLimitError;
 
     const body = await parseJsonBody(
@@ -55,15 +64,21 @@ export async function POST(request: Request) {
     );
 
     const credentials = generateMerchantCredentials();
-    const merchantSecretHash = await hashMerchantSecret(credentials.merchantSecret);
-    const merchantSecretEnc = encryptMerchantSecret(credentials.merchantSecret);
+    const merchantSecretHash = await hashMerchantSecret(
+      credentials.merchantSecret,
+    );
+    const webhookSecretHash = await hashWebhookSecret(
+      credentials.webhookSecret,
+    );
+    const webhookSecretEnc = encryptWebhookSecret(credentials.webhookSecret);
 
     const merchant = await prisma.merchant.create({
       data: {
         name: body.name,
         merchantId: credentials.merchantId,
         merchantSecretHash,
-        merchantSecretEnc,
+        webhookSecretHash,
+        webhookSecretEnc,
         allowedRedirectUrls: body.allowedRedirectUrls,
         webhookUrl: body.webhookUrl ?? null,
       },
@@ -80,6 +95,7 @@ export async function POST(request: Request) {
         createdAt: merchant.createdAt,
       },
       merchantSecret: credentials.merchantSecret,
+      webhookSecret: credentials.webhookSecret,
     });
   });
 }

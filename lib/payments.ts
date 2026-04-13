@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  randomUUID,
+  timingSafeEqual,
+} from "node:crypto";
 import { compare, hash } from "bcryptjs";
 import { PaymentSessionStatus, Prisma } from "@prisma/client";
 import { cookies } from "next/headers";
@@ -10,9 +18,11 @@ const CHECKOUT_COOKIE_PREFIX = "rbank_checkout_";
 const CHECKOUT_SESSION_TTL_MS = 15 * 60_000;
 
 export function generateMerchantCredentials() {
+  const merchantSecret = randomBytes(32).toString("hex");
   return {
     merchantId: randomUUID(),
-    merchantSecret: randomBytes(32).toString("hex"),
+    merchantSecret,
+    webhookSecret: merchantSecret,
   };
 }
 
@@ -20,22 +30,33 @@ export async function hashMerchantSecret(secret: string) {
   return hash(secret, 12);
 }
 
+export async function hashWebhookSecret(secret: string) {
+  return hash(secret, 12);
+}
+
 function getEncryptionKey() {
   return createHash("sha256").update(env.STACK_SECRET_SERVER_KEY).digest();
 }
 
-export function encryptMerchantSecret(secret: string) {
+export function encryptWebhookSecret(secret: string) {
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
-  const ciphertext = Buffer.concat([cipher.update(secret, "utf8"), cipher.final()]);
+  const ciphertext = Buffer.concat([
+    cipher.update(secret, "utf8"),
+    cipher.final(),
+  ]);
   const authTag = cipher.getAuthTag();
-  return [iv.toString("hex"), authTag.toString("hex"), ciphertext.toString("hex")].join(".");
+  return [
+    iv.toString("hex"),
+    authTag.toString("hex"),
+    ciphertext.toString("hex"),
+  ].join(".");
 }
 
-export function decryptMerchantSecret(secretEnc: string) {
+export function decryptWebhookSecret(secretEnc: string) {
   const [ivHex, authTagHex, ciphertextHex] = secretEnc.split(".");
   if (!ivHex || !authTagHex || !ciphertextHex) {
-    throw new Error("Invalid merchant secret ciphertext");
+    throw new Error("Invalid webhook secret ciphertext");
   }
 
   const decipher = createDecipheriv(
@@ -80,8 +101,14 @@ export function isRedirectUrlAllowed(allowedUrls: string[], candidate: string) {
   });
 }
 
-export function getPaymentStatus(session: { status: PaymentSessionStatus; expiresAt: Date }) {
-  if (session.status === "PENDING" && session.expiresAt.getTime() <= Date.now()) {
+export function getPaymentStatus(session: {
+  status: PaymentSessionStatus;
+  expiresAt: Date;
+}) {
+  if (
+    session.status === "PENDING" &&
+    session.expiresAt.getTime() <= Date.now()
+  ) {
     return "EXPIRED" as const;
   }
 
@@ -161,13 +188,16 @@ export async function getCheckoutCookieUserId(token: string) {
 }
 
 export function buildMerchantAuthError() {
-  return new Response(JSON.stringify({ error: "Ungueltige Merchant-Anmeldedaten." }), {
-    status: 401,
-    headers: {
-      "Content-Type": "application/json",
-      "WWW-Authenticate": 'Bearer realm="rbank-pay"',
+  return new Response(
+    JSON.stringify({ error: "Ungueltige Merchant-Anmeldedaten." }),
+    {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": 'Bearer realm="rbank-pay"',
+      },
     },
-  });
+  );
 }
 
 export async function authenticateMerchantRequest(request: Request) {

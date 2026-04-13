@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents } from "@/lib/banking";
-import { clearCheckoutCookie, decryptMerchantSecret, expireStalePaymentSession } from "@/lib/payments";
+import {
+  clearCheckoutCookie,
+  decryptWebhookSecret,
+  expireStalePaymentSession,
+} from "@/lib/payments";
 
 type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
   include: {
@@ -98,7 +102,12 @@ export async function sendMerchantWebhook(sessionToken: string) {
     },
   });
 
-  if (!session?.merchant.webhookUrl || !session.paidAt || !session.user) {
+  if (
+    !session?.merchant.webhookUrl ||
+    !session.paidAt ||
+    !session.user ||
+    !session.merchant.webhookSecretEnc
+  ) {
     return;
   }
 
@@ -113,7 +122,7 @@ export async function sendMerchantWebhook(sessionToken: string) {
   const { createHmac } = await import("node:crypto");
   const signature = createHmac(
     "sha256",
-    decryptMerchantSecret(session.merchant.merchantSecretEnc),
+    decryptWebhookSecret(session.merchant.webhookSecretEnc),
   )
     .update(JSON.stringify(payload))
     .digest("hex");

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
+import { MerchantCredentialsModal } from "@/components/merchant-credentials-modal";
 
 type AdminPanelProps = {
   initialUsers: AdminUserRow[];
@@ -32,11 +33,18 @@ export function AdminPanel({
   initialMerchants,
 }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
-  const [selectedCustomerId, setSelectedCustomerId] = useState(initialSelectedCustomerId);
-  const [transactions, setTransactions] = useState<AdminTransaction[]>(initialTransactions);
-  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(initialFestgeldAccounts);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    initialSelectedCustomerId,
+  );
+  const [transactions, setTransactions] =
+    useState<AdminTransaction[]>(initialTransactions);
+  const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(
+    initialFestgeldAccounts,
+  );
   const [merchants, setMerchants] = useState<AdminMerchant[]>(initialMerchants);
-  const [selectedMerchantId, setSelectedMerchantId] = useState(initialMerchants[0]?.merchantId ?? "");
+  const [selectedMerchantId, setSelectedMerchantId] = useState(
+    initialMerchants[0]?.merchantId ?? "",
+  );
 
   const [txType, setTxType] = useState<"INCOMING" | "OUTGOING">("INCOMING");
   const [txAmount, setTxAmount] = useState("");
@@ -53,12 +61,18 @@ export function AdminPanel({
   const [merchantRedirectUrls, setMerchantRedirectUrls] = useState("");
   const [merchantWebhookUrl, setMerchantWebhookUrl] = useState("");
   const [merchantActive, setMerchantActive] = useState(true);
-  const [merchantSecretPreview, setMerchantSecretPreview] = useState("");
+  const [credentialsModal, setCredentialsModal] = useState<{
+    merchantId: string;
+    merchantName: string;
+    merchantSecret: string;
+    webhookSecret: string;
+  } | null>(null);
 
   const [message, setMessage] = useState("");
 
   const selectedMerchant =
-    merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ?? null;
+    merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ??
+    null;
 
   const hydrateMerchantForm = useCallback((merchant: AdminMerchant | null) => {
     if (!merchant) {
@@ -88,7 +102,9 @@ export function AdminPanel({
   const loadTransactions = useCallback(async (customerId: string) => {
     const response = await fetch(`/api/admin/users/${customerId}/transactions`);
     if (!response.ok) return;
-    const data = (await response.json()) as { transactions: AdminTransaction[] };
+    const data = (await response.json()) as {
+      transactions: AdminTransaction[];
+    };
     setTransactions(data.transactions);
   }, []);
 
@@ -105,7 +121,9 @@ export function AdminPanel({
     const data = (await response.json()) as { merchants: AdminMerchant[] };
     setMerchants(data.merchants);
     const nextSelectedMerchant =
-      data.merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ??
+      data.merchants.find(
+        (merchant) => merchant.merchantId === selectedMerchantId,
+      ) ??
       data.merchants[0] ??
       null;
     setSelectedMerchantId(nextSelectedMerchant?.merchantId ?? "");
@@ -114,7 +132,9 @@ export function AdminPanel({
 
   useEffect(() => {
     if (!fgEndDate) {
-      setFgEndDate(toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)));
+      setFgEndDate(
+        toDateInputValue(new Date(Date.now() + 365 * 24 * 3600 * 1000)),
+      );
     }
   }, [fgEndDate]);
 
@@ -127,7 +147,12 @@ export function AdminPanel({
       void loadUsers();
       void loadFestgeld();
     }
-  }, [initialFestgeldAccounts.length, initialUsers.length, loadFestgeld, loadUsers]);
+  }, [
+    initialFestgeldAccounts.length,
+    initialUsers.length,
+    loadFestgeld,
+    loadUsers,
+  ]);
 
   useEffect(() => {
     if (initialMerchants.length === 0) {
@@ -195,7 +220,12 @@ export function AdminPanel({
     const amount = Math.round(Number(fgAmount) * 100);
     const interestRate = Number(fgRate);
 
-    if (!selectedCustomerId || Number.isNaN(amount) || amount <= 0 || Number.isNaN(interestRate)) {
+    if (
+      !selectedCustomerId ||
+      Number.isNaN(amount) ||
+      amount <= 0 ||
+      Number.isNaN(interestRate)
+    ) {
       setMessage("Bitte gueltige Festgeld-Werte eingeben.");
       return;
     }
@@ -254,7 +284,7 @@ export function AdminPanel({
   async function createMerchant(event: React.FormEvent) {
     event.preventDefault();
     setMessage("");
-    setMerchantSecretPreview("");
+    setCredentialsModal(null);
 
     const redirectUrls = merchantRedirectUrls
       .split("\n")
@@ -277,7 +307,8 @@ export function AdminPanel({
     const data = (await response.json()) as {
       error?: string;
       merchantSecret?: string;
-      merchant?: { merchantId: string };
+      webhookSecret?: string;
+      merchant?: { merchantId: string; name: string };
     };
 
     if (!response.ok) {
@@ -285,8 +316,20 @@ export function AdminPanel({
       return;
     }
 
-    setMerchantSecretPreview(data.merchantSecret ?? "");
-    setMessage("Haendler erstellt. Secret wird nur einmal angezeigt.");
+    if (
+      data.merchant?.merchantId &&
+      data.merchantSecret &&
+      data.webhookSecret
+    ) {
+      setCredentialsModal({
+        merchantId: data.merchant.merchantId,
+        merchantName: data.merchant.name ?? merchantName,
+        merchantSecret: data.merchantSecret,
+        webhookSecret: data.webhookSecret,
+      });
+    }
+
+    setMessage("Haendler erstellt. Zugangsdaten wurden geoeffnet.");
     await loadMerchants();
     if (data.merchant?.merchantId) {
       setSelectedMerchantId(data.merchant.merchantId);
@@ -305,19 +348,22 @@ export function AdminPanel({
       .map((value) => value.trim())
       .filter(Boolean);
 
-    const response = await fetch(`/api/admin/merchants/${selectedMerchant.merchantId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+    const response = await fetch(
+      `/api/admin/merchants/${selectedMerchant.merchantId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+        },
+        body: JSON.stringify({
+          name: merchantName,
+          allowedRedirectUrls: redirectUrls,
+          webhookUrl: merchantWebhookUrl || null,
+          isActive: merchantActive,
+        }),
       },
-      body: JSON.stringify({
-        name: merchantName,
-        allowedRedirectUrls: redirectUrls,
-        webhookUrl: merchantWebhookUrl || null,
-        isActive: merchantActive,
-      }),
-    });
+    );
 
     const data = (await response.json()) as { error?: string };
     if (!response.ok) {
@@ -391,12 +437,16 @@ export function AdminPanel({
                     onClick={() => setSelectedCustomerId(user.customerId)}
                   >
                     <Td>
-                      <div className="font-bold text-slate-100">{user.displayName ?? "Kunde"}</div>
+                      <div className="font-bold text-slate-100">
+                        {user.displayName ?? "Kunde"}
+                      </div>
                       <div className="text-xs text-slate-400">
                         #{user.customerId} · {user.stackUserId}
                       </div>
                     </Td>
-                    <Td className="font-bold">{formatEuroFromCents(user.balanceCents)}</Td>
+                    <Td className="font-bold">
+                      {formatEuroFromCents(user.balanceCents)}
+                    </Td>
                   </tr>
                 ))}
               </tbody>
@@ -406,13 +456,18 @@ export function AdminPanel({
 
         <Card className="space-y-4 lg:col-span-7">
           <h2 className="text-2xl font-display font-bold">Buchung</h2>
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={submitTransaction}>
+          <form
+            className="grid gap-4 md:grid-cols-2"
+            onSubmit={submitTransaction}
+          >
             <div className="space-y-2">
               <Label>Typ</Label>
               <select
                 className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
                 value={txType}
-                onChange={(event) => setTxType(event.target.value as "INCOMING" | "OUTGOING")}
+                onChange={(event) =>
+                  setTxType(event.target.value as "INCOMING" | "OUTGOING")
+                }
               >
                 <option value="INCOMING">Eingang</option>
                 <option value="OUTGOING">Ausgang</option>
@@ -420,7 +475,11 @@ export function AdminPanel({
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input required value={txAmount} onChange={(event) => setTxAmount(event.target.value)} />
+              <Input
+                required
+                value={txAmount}
+                onChange={(event) => setTxAmount(event.target.value)}
+              />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label>Beschreibung</Label>
@@ -432,7 +491,12 @@ export function AdminPanel({
             </div>
             <div className="space-y-2">
               <Label>Datum</Label>
-              <Input required type="date" value={txDate} onChange={(event) => setTxDate(event.target.value)} />
+              <Input
+                required
+                type="date"
+                value={txDate}
+                onChange={(event) => setTxDate(event.target.value)}
+              />
             </div>
             <div className="flex items-end">
               <Button className="h-14 w-full" type="submit">
@@ -477,7 +541,13 @@ export function AdminPanel({
                         <span>{transaction.description}</span>
                       </div>
                     </Td>
-                    <Td className={transaction.type === "INCOMING" ? "font-bold text-primary" : "font-bold text-red-400"}>
+                    <Td
+                      className={
+                        transaction.type === "INCOMING"
+                          ? "font-bold text-primary"
+                          : "font-bold text-red-400"
+                      }
+                    >
                       {transaction.type === "INCOMING" ? "+ " : "- "}
                       {formatEuroFromCents(transaction.amount)}
                     </Td>
@@ -493,24 +563,46 @@ export function AdminPanel({
           <form className="space-y-4" onSubmit={submitFestgeld}>
             <div className="space-y-2">
               <Label>Bezeichnung</Label>
-              <Input required value={fgLabel} onChange={(event) => setFgLabel(event.target.value)} />
+              <Input
+                required
+                value={fgLabel}
+                onChange={(event) => setFgLabel(event.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Betrag (EUR)</Label>
-              <Input required value={fgAmount} onChange={(event) => setFgAmount(event.target.value)} />
+              <Input
+                required
+                value={fgAmount}
+                onChange={(event) => setFgAmount(event.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Zinssatz (%)</Label>
-              <Input required value={fgRate} onChange={(event) => setFgRate(event.target.value)} />
+              <Input
+                required
+                value={fgRate}
+                onChange={(event) => setFgRate(event.target.value)}
+              />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Startdatum</Label>
-                <Input required type="date" value={fgStartDate} onChange={(event) => setFgStartDate(event.target.value)} />
+                <Input
+                  required
+                  type="date"
+                  value={fgStartDate}
+                  onChange={(event) => setFgStartDate(event.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Enddatum</Label>
-                <Input required type="date" value={fgEndDate} onChange={(event) => setFgEndDate(event.target.value)} />
+                <Input
+                  required
+                  type="date"
+                  value={fgEndDate}
+                  onChange={(event) => setFgEndDate(event.target.value)}
+                />
               </div>
             </div>
             <Button className="h-14 w-full" type="submit">
@@ -538,7 +630,9 @@ export function AdminPanel({
               {festgeldAccounts.map((account) => (
                 <tr key={account.id}>
                   <Td>
-                    <div className="font-bold">{account.user.displayName ?? "Kunde"}</div>
+                    <div className="font-bold">
+                      {account.user.displayName ?? "Kunde"}
+                    </div>
                     <div className="text-xs text-slate-400">
                       #{account.user.customerId} · {account.user.stackUserId}
                     </div>
@@ -547,7 +641,8 @@ export function AdminPanel({
                   <Td>{formatEuroFromCents(account.amount)}</Td>
                   <Td>{account.interestRate.toFixed(2)}%</Td>
                   <Td>
-                    {formatGermanDate(account.startDate)} - {formatGermanDate(account.endDate)}
+                    {formatGermanDate(account.startDate)} -{" "}
+                    {formatGermanDate(account.endDate)}
                   </Td>
                   <Td>
                     <div className="flex flex-wrap items-center gap-2">
@@ -590,38 +685,45 @@ export function AdminPanel({
           <form className="space-y-4" onSubmit={createMerchant}>
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input required value={merchantName} onChange={(event) => setMerchantName(event.target.value)} />
+              <Input
+                required
+                value={merchantName}
+                onChange={(event) => setMerchantName(event.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Erlaubte Redirect-URLs</Label>
               <textarea
                 className="min-h-32 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
-                onChange={(event) => setMerchantRedirectUrls(event.target.value)}
+                onChange={(event) =>
+                  setMerchantRedirectUrls(event.target.value)
+                }
                 placeholder={"https://shop.de/success\nhttps://shop.de/cancel"}
                 value={merchantRedirectUrls}
               />
             </div>
             <div className="space-y-2">
               <Label>Webhook-URL (optional)</Label>
-              <Input value={merchantWebhookUrl} onChange={(event) => setMerchantWebhookUrl(event.target.value)} />
+              <Input
+                value={merchantWebhookUrl}
+                onChange={(event) => setMerchantWebhookUrl(event.target.value)}
+              />
             </div>
             <Button className="h-14 w-full" type="submit">
               Haendler erstellen
             </Button>
           </form>
-          {merchantSecretPreview ? (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-300">Secret</p>
-              <p className="mt-2 break-all font-mono text-sm text-amber-100">{merchantSecretPreview}</p>
-            </div>
-          ) : null}
         </Card>
 
         <Card className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-2xl font-display font-bold">Haendler</h2>
             {selectedMerchant ? (
-              <Button onClick={downloadMerchantReport} type="button" variant="outline">
+              <Button
+                onClick={downloadMerchantReport}
+                type="button"
+                variant="outline"
+              >
                 CSV exportieren
               </Button>
             ) : null}
@@ -641,7 +743,9 @@ export function AdminPanel({
                   type="button"
                 >
                   <p className="font-bold text-slate-100">{merchant.name}</p>
-                  <p className="mt-1 text-xs text-slate-400">{merchant.merchantId}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {merchant.merchantId}
+                  </p>
                   <p className="mt-3 text-sm text-slate-300">
                     Volumen {formatEuroFromCents(merchant.totalVolumeCents)}
                   </p>
@@ -652,34 +756,79 @@ export function AdminPanel({
             {selectedMerchant ? (
               <div className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <MetricCard label="Heute" value={formatEuroFromCents(selectedMerchant.volumeTodayCents)} />
-                  <MetricCard label="Monat" value={formatEuroFromCents(selectedMerchant.volumeMonthCents)} />
-                  <MetricCard label="Gesamt" value={formatEuroFromCents(selectedMerchant.totalVolumeCents)} />
+                  <MetricCard
+                    label="Heute"
+                    value={formatEuroFromCents(
+                      selectedMerchant.volumeTodayCents,
+                    )}
+                  />
+                  <MetricCard
+                    label="Monat"
+                    value={formatEuroFromCents(
+                      selectedMerchant.volumeMonthCents,
+                    )}
+                  />
+                  <MetricCard
+                    label="Gesamt"
+                    value={formatEuroFromCents(
+                      selectedMerchant.totalVolumeCents,
+                    )}
+                  />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Name</Label>
-                    <Input value={merchantName} onChange={(event) => setMerchantName(event.target.value)} />
+                    <Input
+                      value={merchantName}
+                      onChange={(event) => setMerchantName(event.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
+                    <Label>Merchant ID</Label>
+                    <input
+                      className="w-full rounded-lg bg-slate-800/50 p-4 font-mono text-sm text-slate-400 outline-none"
+                      readOnly
+                      value={selectedMerchant.merchantId}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
                     <Label>Webhook-URL</Label>
-                    <Input value={merchantWebhookUrl} onChange={(event) => setMerchantWebhookUrl(event.target.value)} />
+                    <Input
+                      value={merchantWebhookUrl}
+                      onChange={(event) =>
+                        setMerchantWebhookUrl(event.target.value)
+                      }
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Erlaubte Redirect-URLs</Label>
                   <textarea
                     className="min-h-28 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
-                    onChange={(event) => setMerchantRedirectUrls(event.target.value)}
+                    onChange={(event) =>
+                      setMerchantRedirectUrls(event.target.value)
+                    }
                     value={merchantRedirectUrls}
                   />
                 </div>
                 <label className="flex items-center gap-3 text-sm text-slate-200">
-                  <input checked={merchantActive} onChange={(event) => setMerchantActive(event.target.checked)} type="checkbox" />
+                  <input
+                    checked={merchantActive}
+                    onChange={(event) =>
+                      setMerchantActive(event.target.checked)
+                    }
+                    type="checkbox"
+                  />
                   Haendler aktiv
                 </label>
-                <Button className="h-12" onClick={() => void saveMerchant()} type="button">
+                <Button
+                  className="h-12"
+                  onClick={() => void saveMerchant()}
+                  type="button"
+                >
                   Haendler speichern
                 </Button>
 
@@ -699,16 +848,24 @@ export function AdminPanel({
                         <tr key={session.token}>
                           <Td>{session.status}</Td>
                           <Td>
-                            <div className="font-semibold text-slate-100">{session.description}</div>
-                            <div className="text-xs text-slate-400">{formatGermanDate(session.createdAt)}</div>
+                            <div className="font-semibold text-slate-100">
+                              {session.description}
+                            </div>
+                            <div className="text-xs text-slate-400">
+                              {formatGermanDate(session.createdAt)}
+                            </div>
                           </Td>
                           <Td>{formatEuroFromCents(session.amount)}</Td>
-                          <Td>{session.customerName ?? session.customerId ?? "—"}</Td>
+                          <Td>
+                            {session.customerName ?? session.customerId ?? "—"}
+                          </Td>
                           <Td>
                             {session.status === "COMPLETED" ? (
                               <button
                                 className="rounded-lg bg-sky-500/15 px-3 py-1 text-xs font-bold text-sky-300"
-                                onClick={() => void refundPayment(session.token)}
+                                onClick={() =>
+                                  void refundPayment(session.token)
+                                }
                                 type="button"
                               >
                                 Refund
@@ -724,7 +881,9 @@ export function AdminPanel({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-400">Noch keine Haendler vorhanden.</p>
+              <p className="text-sm text-slate-400">
+                Noch keine Haendler vorhanden.
+              </p>
             )}
           </div>
         </Card>
@@ -733,7 +892,7 @@ export function AdminPanel({
       <Card className="space-y-4">
         <h2 className="text-2xl font-display font-bold">Shop-Integration</h2>
         <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-200">
-{`<button onclick="payWithRBank()">Mit RBank bezahlen</button>
+          {`<button onclick="payWithRBank()">Mit RBank bezahlen</button>
 
 <script>
 async function payWithRBank() {
@@ -787,6 +946,16 @@ export async function GET(req) {
       </Card>
 
       {message ? <p className="text-sm text-primary">{message}</p> : null}
+
+      {credentialsModal ? (
+        <MerchantCredentialsModal
+          merchantId={credentialsModal.merchantId}
+          merchantName={credentialsModal.merchantName}
+          merchantSecret={credentialsModal.merchantSecret}
+          webhookSecret={credentialsModal.webhookSecret}
+          onDismiss={() => setCredentialsModal(null)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -794,7 +963,9 @@ export async function GET(req) {
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
+        {label}
+      </p>
       <p className="mt-3 text-2xl font-black text-white">{value}</p>
     </div>
   );

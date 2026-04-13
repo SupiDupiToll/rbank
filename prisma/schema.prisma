@@ -97,7 +97,8 @@ model Merchant {
   name                String
   merchantId          String           @unique @map("merchant_id")
   merchantSecretHash  String           @map("merchant_secret_hash")
-  merchantSecretEnc   String           @map("merchant_secret_enc")
+  webhookSecretHash   String?          @map("webhook_secret_hash")
+  webhookSecretEnc    String?          @map("webhook_secret_enc")
   allowedRedirectUrls String[]         @map("allowed_redirect_urls")
   webhookUrl          String?          @map("webhook_url")
   isActive            Boolean          @default(true) @map("is_active")
