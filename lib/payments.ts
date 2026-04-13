@@ -107,69 +107,8 @@ function safeParseUrl(value: string): URL | null {
   }
 }
 
-function originsMatch(allowedUrl: URL, targetUrl: URL): boolean {
-  if (allowedUrl.protocol !== targetUrl.protocol) {
-    return false;
-  }
-
-  const allowedHost = allowedUrl.hostname.toLowerCase();
-  const targetHost = targetUrl.hostname.toLowerCase();
-
-  if (allowedHost.startsWith("*.")) {
-    const parentDomain = allowedHost.slice(1);
-    if (targetHost === parentDomain.slice(1)) {
-      return allowedUrl.port === targetUrl.port;
-    }
-    if (!targetHost.endsWith(parentDomain)) {
-      return false;
-    }
-    return allowedUrl.port === targetUrl.port;
-  }
-
-  if (allowedHost !== targetHost) {
-    return false;
-  }
-
-  const allowedPort =
-    allowedUrl.port || (allowedUrl.protocol === "https:" ? "443" : "80");
-  const targetPort =
-    targetUrl.port || (targetUrl.protocol === "https:" ? "443" : "80");
-  return allowedPort === targetPort;
-}
-
-function matchesWildcardPath(allowedUrl: URL, targetUrl: URL): boolean {
-  const allowedPath = allowedUrl.pathname.replace(/\/+$/, "");
-  if (allowedPath.endsWith("/*")) {
-    const allowedPrefix = allowedPath.slice(0, -1);
-    const targetPath = targetUrl.pathname;
-    return (
-      targetPath === allowedPrefix || targetPath.startsWith(allowedPrefix + "/")
-    );
-  }
-  return allowedPath === targetUrl.pathname.replace(/\/+$/, "");
-}
-
-export function isRedirectUrlAllowed(
-  allowedUrls: string[],
-  targetUrl: string,
-): boolean {
-  const parsedTarget = safeParseUrl(targetUrl);
-  if (!parsedTarget) {
-    return false;
-  }
-
-  return allowedUrls.some((allowedUrl) => {
-    const parsedAllowed = safeParseUrl(allowedUrl);
-    if (!parsedAllowed) {
-      return false;
-    }
-
-    if (!originsMatch(parsedAllowed, parsedTarget)) {
-      return false;
-    }
-
-    return matchesWildcardPath(parsedAllowed, parsedTarget);
-  });
+export function isRedirectUrlAllowed(targetUrl: string): boolean {
+  return safeParseUrl(targetUrl) !== null;
 }
 
 export function getPaymentStatus(session: {

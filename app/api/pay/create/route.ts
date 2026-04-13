@@ -20,7 +20,10 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ungueltige Eingabedaten." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Ungueltige Eingabedaten." },
+      { status: 400 },
+    );
   }
 
   const parsedBody = z
@@ -35,15 +38,18 @@ export async function POST(request: Request) {
     .safeParse(rawBody);
 
   if (!parsedBody.success) {
-    return NextResponse.json({ error: "Ungueltige Eingabedaten." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Ungueltige Eingabedaten." },
+      { status: 400 },
+    );
   }
 
   if (
-    !isRedirectUrlAllowed(merchant.allowedRedirectUrls, parsedBody.data.redirectUrl) ||
-    !isRedirectUrlAllowed(merchant.allowedRedirectUrls, parsedBody.data.cancelUrl)
+    !isRedirectUrlAllowed(parsedBody.data.redirectUrl) ||
+    !isRedirectUrlAllowed(parsedBody.data.cancelUrl)
   ) {
     return NextResponse.json(
-      { error: "Redirect-URL ist nicht fuer diesen Haendler freigegeben." },
+      { error: "Redirect-URL ist nicht gueltig." },
       { status: 400 },
     );
   }
