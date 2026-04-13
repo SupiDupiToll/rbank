@@ -83,21 +83,92 @@ export function createPaymentExpiryDate() {
   return new Date(Date.now() + CHECKOUT_SESSION_TTL_MS);
 }
 
-export function normalizeAllowedRedirectUrl(value: string) {
-  const url = new URL(value);
-  url.hash = "";
-  url.search = "";
-  return url.toString().replace(/\/$/, "");
+const BLOCKED_PROTOCOLS = new Set([
+  "javascript:",
+  "data:",
+  "file:",
+  "blob:",
+  "ftp:",
+]);
+const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
+
+function safeParseUrl(value: string): URL | null {
+  try {
+    const url = new URL(value);
+    if (BLOCKED_PROTOCOLS.has(url.protocol)) {
+      return null;
+    }
+    if (!ALLOWED_PROTOCOLS.has(url.protocol)) {
+      return null;
+    }
+    return url;
+  } catch {
+    return null;
+  }
 }
 
-export function isRedirectUrlAllowed(allowedUrls: string[], candidate: string) {
-  const normalizedCandidate = normalizeAllowedRedirectUrl(candidate);
-  return allowedUrls.some((allowedUrl) => {
-    try {
-      return normalizeAllowedRedirectUrl(allowedUrl) === normalizedCandidate;
-    } catch {
+function originsMatch(allowedUrl: URL, targetUrl: URL): boolean {
+  if (allowedUrl.protocol !== targetUrl.protocol) {
+    return false;
+  }
+
+  const allowedHost = allowedUrl.hostname.toLowerCase();
+  const targetHost = targetUrl.hostname.toLowerCase();
+
+  if (allowedHost.startsWith("*.")) {
+    const parentDomain = allowedHost.slice(1);
+    if (targetHost === parentDomain.slice(1)) {
+      return allowedUrl.port === targetUrl.port;
+    }
+    if (!targetHost.endsWith(parentDomain)) {
       return false;
     }
+    return allowedUrl.port === targetUrl.port;
+  }
+
+  if (allowedHost !== targetHost) {
+    return false;
+  }
+
+  const allowedPort =
+    allowedUrl.port || (allowedUrl.protocol === "https:" ? "443" : "80");
+  const targetPort =
+    targetUrl.port || (targetUrl.protocol === "https:" ? "443" : "80");
+  return allowedPort === targetPort;
+}
+
+function matchesWildcardPath(allowedUrl: URL, targetUrl: URL): boolean {
+  const allowedPath = allowedUrl.pathname.replace(/\/+$/, "");
+  if (allowedPath.endsWith("/*")) {
+    const allowedPrefix = allowedPath.slice(0, -1);
+    const targetPath = targetUrl.pathname;
+    return (
+      targetPath === allowedPrefix || targetPath.startsWith(allowedPrefix + "/")
+    );
+  }
+  return allowedPath === targetUrl.pathname.replace(/\/+$/, "");
+}
+
+export function isRedirectUrlAllowed(
+  allowedUrls: string[],
+  targetUrl: string,
+): boolean {
+  const parsedTarget = safeParseUrl(targetUrl);
+  if (!parsedTarget) {
+    return false;
+  }
+
+  return allowedUrls.some((allowedUrl) => {
+    const parsedAllowed = safeParseUrl(allowedUrl);
+    if (!parsedAllowed) {
+      return false;
+    }
+
+    if (!originsMatch(parsedAllowed, parsedTarget)) {
+      return false;
+    }
+
+    return matchesWildcardPath(parsedAllowed, parsedTarget);
   });
 }
 
