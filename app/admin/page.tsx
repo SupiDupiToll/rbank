@@ -20,6 +20,8 @@ export default async function AdminPage() {
   return (
     <>
       <AdminPanel
+        initialAirInCirculation={data.airInCirculation}
+        initialAirTransactions={data.airTransactions}
         initialFestgeldAccounts={data.festgeldAccounts}
         initialMerchants={data.merchants}
         initialSelectedCustomerId={data.users[0]?.customerId ?? ""}

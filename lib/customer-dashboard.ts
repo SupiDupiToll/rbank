@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { calculateBalanceCents } from "@/lib/banking";
+import { getBalancesByCurrency } from "@/lib/banking";
 import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 
 export async function getCustomerDashboardData(userId: string) {
@@ -16,8 +16,11 @@ export async function getCustomerDashboardData(userId: string) {
     })
   ]);
 
+  const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
+
   return {
-    balanceCents: calculateBalanceCents(transactions),
+    balanceCents: eurBalanceCents,
+    airBalance,
     transactions,
     festgeldAccounts
   };

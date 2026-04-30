@@ -77,11 +77,14 @@ export async function POST(request: Request) {
           }
 
           const payerTransactions = await tx.transaction.findMany({
-            where: { userId: payer.id },
-            select: { type: true, amount: true },
+            where: { userId: payer.id, currency: "EUR" },
+            select: { type: true, amount: true, currency: true },
           });
 
-          const payerBalanceCents = calculateBalanceCents(payerTransactions);
+          const payerBalanceCents = calculateBalanceCents(
+            payerTransactions,
+            "EUR",
+          );
 
           if (payerBalanceCents < body.amount) {
             throw new Error("PAYMENT_REJECTED");
@@ -92,6 +95,7 @@ export async function POST(request: Request) {
               userId: payer.id,
               type: "OUTGOING",
               amount: body.amount,
+              currency: "EUR",
               description: `Zahlung an ${recipient.customerId}`,
               date,
               source: "TRANSFER",
@@ -104,6 +108,7 @@ export async function POST(request: Request) {
               userId: recipient.id,
               type: "INCOMING",
               amount: body.amount,
+              currency: "EUR",
               description: `Zahlung von ${payer.customerId}`,
               date,
               source: "TRANSFER",

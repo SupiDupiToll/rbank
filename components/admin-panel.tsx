@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type {
+  AdminAirTransaction,
   AdminFestgeld,
   AdminMerchant,
   AdminTransaction,
   AdminUserRow,
 } from "@/lib/admin-dashboard";
-import { formatEuroFromCents } from "@/lib/money";
+import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { formatGermanDate, toDateInputValue } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,6 +22,8 @@ type AdminPanelProps = {
   initialUsers: AdminUserRow[];
   initialSelectedCustomerId: string;
   initialTransactions: AdminTransaction[];
+  initialAirTransactions: AdminAirTransaction[];
+  initialAirInCirculation: number;
   initialFestgeldAccounts: AdminFestgeld[];
   initialMerchants: AdminMerchant[];
 };
@@ -29,6 +32,8 @@ export function AdminPanel({
   initialUsers,
   initialSelectedCustomerId,
   initialTransactions,
+  initialAirTransactions,
+  initialAirInCirculation,
   initialFestgeldAccounts,
   initialMerchants,
 }: AdminPanelProps) {
@@ -38,6 +43,11 @@ export function AdminPanel({
   );
   const [transactions, setTransactions] =
     useState<AdminTransaction[]>(initialTransactions);
+  const [airTransactions, setAirTransactions] =
+    useState<AdminAirTransaction[]>(initialAirTransactions);
+  const [airInCirculation, setAirInCirculation] = useState(
+    initialAirInCirculation,
+  );
   const [festgeldAccounts, setFestgeldAccounts] = useState<AdminFestgeld[]>(
     initialFestgeldAccounts,
   );
@@ -47,6 +57,7 @@ export function AdminPanel({
   );
 
   const [txType, setTxType] = useState<"INCOMING" | "OUTGOING">("INCOMING");
+  const [txCurrency, setTxCurrency] = useState<"EUR" | "AIR">("EUR");
   const [txAmount, setTxAmount] = useState("");
   const [txDescription, setTxDescription] = useState("");
   const [txDate, setTxDate] = useState(toDateInputValue(new Date()));
@@ -115,6 +126,25 @@ export function AdminPanel({
     setFestgeldAccounts(data.accounts);
   }, []);
 
+  const loadAirTransactions = useCallback(async () => {
+    const response = await fetch("/api/admin/transactions?currency=AIR");
+    if (!response.ok) return;
+    const data = (await response.json()) as {
+      transactions: AdminAirTransaction[];
+    };
+    setAirTransactions(data.transactions);
+    setAirInCirculation(
+      data.transactions.reduce(
+        (sum, transaction) =>
+          sum +
+          (transaction.type === "INCOMING"
+            ? transaction.amount
+            : -transaction.amount),
+        0,
+      ),
+    );
+  }, []);
+
   const loadMerchants = useCallback(async () => {
     const response = await fetch("/api/admin/merchants");
     if (!response.ok) return;
@@ -161,6 +191,16 @@ export function AdminPanel({
   }, [initialMerchants.length, loadMerchants]);
 
   useEffect(() => {
+    if (initialAirTransactions.length === 0 && initialAirInCirculation === 0) {
+      void loadAirTransactions();
+    }
+  }, [
+    initialAirInCirculation,
+    initialAirTransactions.length,
+    loadAirTransactions,
+  ]);
+
+  useEffect(() => {
     if (
       selectedCustomerId !== initialSelectedCustomerId ||
       initialTransactions.length === 0
@@ -195,6 +235,7 @@ export function AdminPanel({
       body: JSON.stringify({
         customerId: selectedCustomerId,
         type: txType,
+        currency: txCurrency,
         amount,
         description: txDescription,
         date: txDate,
@@ -206,11 +247,16 @@ export function AdminPanel({
       return;
     }
 
-    setMessage("Transaktion gespeichert.");
+    setMessage(
+      txCurrency === "AIR"
+        ? "AIR-Prämie gespeichert."
+        : "Transaktion gespeichert.",
+    );
     setTxAmount("");
     setTxDescription("");
     await loadUsers();
     await loadTransactions(selectedCustomerId);
+    await loadAirTransactions();
   }
 
   async function submitFestgeld(event: React.FormEvent) {
@@ -279,6 +325,7 @@ export function AdminPanel({
     if (selectedCustomerId) {
       await loadTransactions(selectedCustomerId);
     }
+    await loadAirTransactions();
   }
 
   async function createMerchant(event: React.FormEvent) {
@@ -397,6 +444,16 @@ export function AdminPanel({
     if (selectedCustomerId) {
       await loadTransactions(selectedCustomerId);
     }
+    await loadAirTransactions();
+  }
+
+  function formatTransactionAmount(transaction: {
+    amount: number;
+    currency: "EUR" | "AIR";
+  }) {
+    return transaction.currency === "AIR"
+      ? formatAirFromUnits(transaction.amount)
+      : formatEuroFromCents(transaction.amount);
   }
 
   function downloadMerchantReport() {
@@ -426,7 +483,7 @@ export function AdminPanel({
               <thead>
                 <tr>
                   <Th>Kunde</Th>
-                  <Th>Kontostand</Th>
+                  <Th>Konten</Th>
                 </tr>
               </thead>
               <tbody>
@@ -445,7 +502,10 @@ export function AdminPanel({
                       </div>
                     </Td>
                     <Td className="font-bold">
-                      {formatEuroFromCents(user.balanceCents)}
+                      <div>{formatEuroFromCents(user.balanceCents)}</div>
+                      <div className="text-xs text-sky-300">
+                        {formatAirFromUnits(user.airBalance)}
+                      </div>
                     </Td>
                   </tr>
                 ))}
@@ -474,14 +534,30 @@ export function AdminPanel({
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Betrag (EUR)</Label>
+              <Label>Währung</Label>
+              <select
+                className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+                value={txCurrency}
+                onChange={(event) =>
+                  setTxCurrency(event.target.value as "EUR" | "AIR")
+                }
+              >
+                <option value="EUR">EUR</option>
+                <option value="AIR">AIR</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>
+                Betrag ({txCurrency}){" "}
+                {txCurrency === "AIR" ? "· Prämie auszahlen" : ""}
+              </Label>
               <Input
                 required
                 value={txAmount}
                 onChange={(event) => setTxAmount(event.target.value)}
               />
             </div>
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 md:col-span-3">
               <Label>Beschreibung</Label>
               <Input
                 required
@@ -538,6 +614,9 @@ export function AdminPanel({
                         >
                           {transaction.source}
                         </span>
+                        <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                          {transaction.currency}
+                        </span>
                         <span>{transaction.description}</span>
                       </div>
                     </Td>
@@ -549,7 +628,7 @@ export function AdminPanel({
                       }
                     >
                       {transaction.type === "INCOMING" ? "+ " : "- "}
-                      {formatEuroFromCents(transaction.amount)}
+                      {formatTransactionAmount(transaction)}
                     </Td>
                   </tr>
                 ))}
@@ -678,6 +757,80 @@ export function AdminPanel({
           </Table>
         </div>
       </Card>
+
+      <div className="grid gap-8 lg:grid-cols-12">
+        <Card className="space-y-4 lg:col-span-4">
+          <h2 className="text-2xl font-display font-bold">AirCoin</h2>
+          <div className="grid gap-4">
+            <MetricCard
+              label="Im Umlauf"
+              value={formatAirFromUnits(airInCirculation)}
+            />
+          </div>
+          <p className="text-sm text-slate-400">
+            AIR ist intern, bankweit buchbar und nicht in Echtgeld
+            konvertierbar.
+          </p>
+        </Card>
+
+        <Card className="lg:col-span-8">
+          <h2 className="mb-4 text-2xl font-display font-bold">
+            AIR-Transaktionen
+          </h2>
+          <div className="overflow-x-auto">
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Datum</Th>
+                  <Th>Kunde</Th>
+                  <Th>Beschreibung</Th>
+                  <Th>Betrag</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {airTransactions.map((transaction) => (
+                  <tr key={transaction.id}>
+                    <Td>{formatGermanDate(transaction.date)}</Td>
+                    <Td>
+                      <div className="font-semibold text-slate-100">
+                        {transaction.customerName ?? "Kunde"}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        #{transaction.customerId}
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex items-center gap-3">
+                        <span className="rounded-full bg-sky-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-200">
+                          {transaction.source}
+                        </span>
+                        <span>{transaction.description}</span>
+                      </div>
+                    </Td>
+                    <Td
+                      className={
+                        transaction.type === "INCOMING"
+                          ? "font-bold text-primary"
+                          : "font-bold text-red-400"
+                      }
+                    >
+                      {transaction.type === "INCOMING" ? "+ " : "- "}
+                      {formatAirFromUnits(transaction.amount)}
+                    </Td>
+                  </tr>
+                ))}
+                {airTransactions.length === 0 ? (
+                  <tr>
+                    <Td className="text-slate-400" colSpan={4}>
+                      Noch keine AIR-Transaktionen vorhanden.
+                    </Td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </Table>
+          </div>
+        </Card>
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">

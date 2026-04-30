@@ -69,6 +69,7 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
             userId: currentAccount.userId,
             type: "INCOMING",
             amount: interestAmount,
+            currency: "EUR",
             description: `Festgeldzins ${currentAccount.label}`,
             source: "ADMIN",
             date: new Date(),
@@ -100,11 +101,11 @@ export async function createFestgeldAccount(input: {
   return prisma.$transaction(
     async (tx) => {
       const transactions = await tx.transaction.findMany({
-        where: { userId: input.userId },
-        select: { type: true, amount: true },
+        where: { userId: input.userId, currency: "EUR" },
+        select: { type: true, amount: true, currency: true },
       });
 
-      const balanceCents = calculateBalanceCents(transactions);
+      const balanceCents = calculateBalanceCents(transactions, "EUR");
       if (balanceCents < input.amount) {
         throw new Error("INSUFFICIENT_FUNDS");
       }
@@ -114,6 +115,7 @@ export async function createFestgeldAccount(input: {
           userId: input.userId,
           type: "OUTGOING",
           amount: input.amount,
+          currency: "EUR",
           description: `Festgeldanlage ${input.label}`,
           source: "ADMIN",
           date: input.startDate,
@@ -154,6 +156,7 @@ export async function payoutUnlockedFestgeldAccount(accountId: string) {
         userId: account.userId,
         type: "INCOMING",
         amount: account.amount,
+        currency: "EUR",
         description: `Festgeldauszahlung ${account.label}`,
         source: "ADMIN",
         date: payoutDate,

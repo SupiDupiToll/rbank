@@ -37,6 +37,7 @@ export async function GET(request: Request, context: Params) {
         id: true,
         type: true,
         amount: true,
+        currency: true,
         description: true,
         source: true,
         transferId: true,

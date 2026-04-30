@@ -5,21 +5,26 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
-import { formatEuroFromCents } from "@/lib/money";
+import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type CustomerTransferFormProps = {
   balanceCents: number;
+  airBalance: number;
 };
+
+type TransferCurrency = "EUR" | "AIR";
 
 const PIN_LENGTH = 4;
 const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export function CustomerTransferForm({
   balanceCents,
+  airBalance,
 }: CustomerTransferFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<"form" | "pin">("form");
+  const [currency, setCurrency] = useState<TransferCurrency>("EUR");
   const [recipientCustomerId, setRecipientCustomerId] = useState("");
   const [resolvedRecipient, setResolvedRecipient] = useState("");
   const [amount, setAmount] = useState("");
@@ -32,6 +37,15 @@ export function CustomerTransferForm({
 
   const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
   const isAmountValid = Number.isInteger(amountCents) && amountCents > 0;
+  const availableBalance = currency === "AIR" ? airBalance : balanceCents;
+  const formattedAvailableBalance =
+    currency === "AIR"
+      ? formatAirFromUnits(availableBalance)
+      : formatEuroFromCents(availableBalance);
+  const formattedTransferAmount =
+    currency === "AIR"
+      ? formatAirFromUnits(amountCents)
+      : formatEuroFromCents(amountCents);
 
   useEffect(() => {
     const normalizedCustomerId = recipientCustomerId.trim();
@@ -90,6 +104,11 @@ export function CustomerTransferForm({
       return;
     }
 
+    if (amountCents > availableBalance) {
+      setMessage("Der verfügbare Kontostand reicht nicht aus.");
+      return;
+    }
+
     setMessage("");
     setStep("pin");
   }
@@ -125,6 +144,7 @@ export function CustomerTransferForm({
         body: JSON.stringify({
           recipientCustomerId: recipientCustomerId.trim(),
           amount: amountCents,
+          currency,
           description: description.trim(),
           pin,
         }),
@@ -203,8 +223,14 @@ export function CustomerTransferForm({
         <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
           <p className="text-sm text-slate-300">Betrag</p>
           <p className="mt-2 text-3xl font-display text-primary">
-            {isAmountValid ? formatEuroFromCents(amountCents) : "0,00 €"}
+            {isAmountValid
+              ? formattedTransferAmount
+              : currency === "AIR"
+                ? "0 AIR"
+                : "0,00 €"}
           </p>
+          <p className="mt-4 text-sm text-slate-400">Währung</p>
+          <p className="mt-1 font-semibold text-slate-100">{currency}</p>
           <p className="mt-4 text-sm text-slate-400">Empfänger</p>
           <p className="mt-1 font-semibold text-slate-100">
             {resolvedRecipient || recipientCustomerId}
@@ -307,8 +333,24 @@ export function CustomerTransferForm({
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-200">
         Verfügbarer Kontostand:{" "}
         <span className="font-bold text-primary">
-          {formatEuroFromCents(balanceCents)}
+          {formattedAvailableBalance}
         </span>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-200">Währung</label>
+        <select
+          className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+          onChange={(event) => setCurrency(event.target.value as TransferCurrency)}
+          value={currency}
+        >
+          <option value="EUR">EUR</option>
+          <option value="AIR">AIR</option>
+        </select>
+        <p className="text-xs text-slate-400">
+          AIR ist eine interne Prämienwährung und kann nicht in Echtgeld
+          umgetauscht werden.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -335,7 +377,7 @@ export function CustomerTransferForm({
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-200">
-          Betrag in EUR
+          Betrag in {currency}
         </label>
         <Input
           inputMode="decimal"

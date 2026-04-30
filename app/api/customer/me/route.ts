@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { enforceRateLimit, requireCustomer, safeRoute } from "@/lib/api-helpers";
-import { calculateBalanceCents } from "@/lib/banking";
+import { getBalancesByCurrency } from "@/lib/banking";
 import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 
@@ -21,6 +21,7 @@ export async function GET(request: Request) {
         id: true,
         type: true,
         amount: true,
+        currency: true,
         description: true,
         source: true,
         transferId: true,
@@ -30,10 +31,11 @@ export async function GET(request: Request) {
       orderBy: [{ date: "desc" }, { createdAt: "desc" }]
     });
 
-    const balanceCents = calculateBalanceCents(transactions);
+    const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
 
     return NextResponse.json({
-      balanceCents,
+      balanceCents: eurBalanceCents,
+      airBalance,
       customerId: user.customerId,
       displayName: user.displayName,
       transactions

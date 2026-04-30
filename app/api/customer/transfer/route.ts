@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, TransactionCurrency } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       z.object({
         recipientCustomerId: customerIdSchema,
         amount: amountCentsSchema,
+        currency: z.nativeEnum(TransactionCurrency),
         description: safeTextSchema(120),
         pin: pinSchema,
       }),
@@ -79,11 +80,14 @@ export async function POST(request: Request) {
           });
 
           const senderTransactions = await tx.transaction.findMany({
-            where: { userId: user.id },
-            select: { type: true, amount: true },
+            where: { userId: user.id, currency: body.currency },
+            select: { type: true, amount: true, currency: true },
           });
 
-          const senderBalanceCents = calculateBalanceCents(senderTransactions);
+          const senderBalanceCents = calculateBalanceCents(
+            senderTransactions,
+            body.currency,
+          );
 
           if (
             !recipient ||
@@ -98,6 +102,7 @@ export async function POST(request: Request) {
               userId: user.id,
               type: "OUTGOING",
               amount: body.amount,
+              currency: body.currency,
               description: `Ueberweisung an ${recipient.customerId} · ${body.description}`,
               date,
               source: "TRANSFER",
@@ -120,6 +125,7 @@ export async function POST(request: Request) {
               userId: recipient.id,
               type: "INCOMING",
               amount: body.amount,
+              currency: body.currency,
               description: `Ueberweisung von ${user.customerId} · ${body.description}`,
               date,
               source: "TRANSFER",

@@ -72,7 +72,8 @@ export async function getCheckoutUserSummary(userId: string) {
       customerId: true,
       displayName: true,
       transactions: {
-        select: { type: true, amount: true },
+        where: { currency: "EUR" },
+        select: { type: true, amount: true, currency: true },
       },
     },
   });
@@ -85,7 +86,7 @@ export async function getCheckoutUserSummary(userId: string) {
     id: user.id,
     customerId: user.customerId,
     displayName: user.displayName ?? `Kunde ${user.customerId}`,
-    balanceCents: calculateBalanceCents(user.transactions),
+    balanceCents: calculateBalanceCents(user.transactions, "EUR"),
   };
 }
 
@@ -193,7 +194,8 @@ export async function completeCheckoutPayment(token: string, userId: string) {
           customerId: true,
           displayName: true,
           transactions: {
-            select: { type: true, amount: true },
+            where: { currency: "EUR" },
+            select: { type: true, amount: true, currency: true },
           },
         },
       });
@@ -202,7 +204,7 @@ export async function completeCheckoutPayment(token: string, userId: string) {
         throw new Error("USER_NOT_FOUND");
       }
 
-      const balanceCents = calculateBalanceCents(payer.transactions);
+      const balanceCents = calculateBalanceCents(payer.transactions, "EUR");
       if (balanceCents < session.amount) {
         throw new Error("INSUFFICIENT_FUNDS");
       }
@@ -214,6 +216,7 @@ export async function completeCheckoutPayment(token: string, userId: string) {
           userId: payer.id,
           type: "OUTGOING",
           amount: session.amount,
+          currency: "EUR",
           description,
           source: "CHECKOUT",
           date: paidAt,
@@ -296,6 +299,7 @@ export async function refundCompletedPayment(token: string) {
           userId: session.userId,
           type: "INCOMING",
           amount: session.amount,
+          currency: "EUR",
           description: `Rueckerstattung von ${session.merchant.name} · ${session.description}`,
           source: "REFUND",
           date: refundDate,

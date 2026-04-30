@@ -1,7 +1,8 @@
 import type { Route } from "next";
 import Link from "next/link";
-import { formatEuroFromCents } from "@/lib/money";
+import { getBalancesByCurrency } from "@/lib/banking";
 import { getCurrentAppUser } from "@/lib/current-user";
+import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 function HomeIcon() {
@@ -153,14 +154,10 @@ export default async function DashboardPage() {
     return null;
   }
 
-  const [incoming, outgoing, savings] = await Promise.all([
-    prisma.transaction.aggregate({
-      where: { userId: user.id, type: "INCOMING" },
-      _sum: { amount: true },
-    }),
-    prisma.transaction.aggregate({
-      where: { userId: user.id, type: "OUTGOING" },
-      _sum: { amount: true },
+  const [transactions, savings] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { userId: user.id },
+      select: { type: true, amount: true, currency: true },
     }),
     prisma.festgeldAccount.aggregate({
       where: { userId: user.id },
@@ -168,10 +165,9 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const balanceCents =
-    (incoming._sum.amount ?? 0) - (outgoing._sum.amount ?? 0);
+  const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
   const savingsTotal = savings._sum.amount ?? 0;
-  const totalCents = balanceCents + savingsTotal;
+  const totalCents = eurBalanceCents + savingsTotal;
 
   return (
     <div className="space-y-8 pb-8">
@@ -191,7 +187,13 @@ export default async function DashboardPage() {
           <div>
             <p className="text-slate-400">Girokonto</p>
             <p className="mt-1 font-semibold text-slate-100">
-              {formatEuroFromCents(balanceCents)}
+              {formatEuroFromCents(eurBalanceCents)}
+            </p>
+          </div>
+          <div>
+            <p className="text-slate-400">AirCoin Konto</p>
+            <p className="mt-1 font-semibold text-slate-100">
+              {formatAirFromUnits(airBalance)}
             </p>
           </div>
           {savingsTotal > 0 && (
@@ -202,6 +204,34 @@ export default async function DashboardPage() {
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+          Konten
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
+              Girokonto
+            </p>
+            <p className="mt-3 text-3xl font-display text-slate-100">
+              {formatEuroFromCents(eurBalanceCents)}
+            </p>
+            <p className="mt-2 text-sm text-slate-400">Standardkonto in EUR</p>
+          </div>
+          <div className="rounded-3xl border border-sky-400/20 bg-sky-500/5 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200">
+              AirCoin Konto
+            </p>
+            <p className="mt-3 text-3xl font-display text-slate-100">
+              {formatAirFromUnits(airBalance)}
+            </p>
+            <p className="mt-2 text-sm text-slate-400">
+              Interne Prämienwährung der Bank
+            </p>
+          </div>
         </div>
       </div>
 

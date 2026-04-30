@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { formatGermanDate } from "@/lib/date";
-import { formatEuroFromCents } from "@/lib/money";
+import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
@@ -35,18 +35,28 @@ export default async function TransactionsPage({
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
   });
 
-  // Calculate totals for summary
-  const incoming = transactions
+  const eurTransactions = transactions.filter(
+    (transaction) => transaction.currency === "EUR",
+  );
+  const airTransactions = transactions.filter(
+    (transaction) => transaction.currency === "AIR",
+  );
+  const incoming = eurTransactions
     .filter((t) => t.type === "INCOMING")
     .reduce((sum, t) => sum + t.amount, 0);
-  const outgoing = transactions
+  const outgoing = eurTransactions
     .filter((t) => t.type === "OUTGOING")
     .reduce((sum, t) => sum + t.amount, 0);
+  const airNet = airTransactions.reduce(
+    (sum, transaction) =>
+      sum + (transaction.type === "INCOMING" ? transaction.amount : -transaction.amount),
+    0,
+  );
 
   return (
     <div className="space-y-8 pb-8">
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl bg-primary/10 px-5 py-4">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
             Eingänge
@@ -61,6 +71,14 @@ export default async function TransactionsPage({
           </p>
           <p className="mt-2 text-3xl font-display text-red-400">
             -{formatEuroFromCents(outgoing)}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-sky-500/10 px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200/80">
+            AirCoin
+          </p>
+          <p className="mt-2 text-3xl font-display text-sky-200">
+            {formatAirFromUnits(airNet)}
           </p>
         </div>
       </div>
@@ -96,6 +114,9 @@ export default async function TransactionsPage({
                   >
                     {transaction.source === "TRANSFER" ? "P2P" : "Admin"}
                   </span>
+                  <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                    {transaction.currency}
+                  </span>
                 </div>
                 <p className="mt-1 text-sm text-slate-500">
                   {formatGermanDate(transaction.date)}
@@ -109,7 +130,11 @@ export default async function TransactionsPage({
                 }`}
               >
                 {transaction.type === "INCOMING" ? "+" : "-"}
-                {formatEuroFromCents(transaction.amount).replace("-", "")}
+                {(
+                  transaction.currency === "AIR"
+                    ? formatAirFromUnits(transaction.amount)
+                    : formatEuroFromCents(transaction.amount)
+                ).replace("-", "")}
               </p>
             </div>
           ))

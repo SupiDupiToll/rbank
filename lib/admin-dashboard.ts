@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { calculateBalanceCents } from "@/lib/banking";
+import { calculateBalanceCents, getBalancesByCurrency } from "@/lib/banking";
 import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
 
 export type AdminUserRow = {
@@ -7,16 +7,23 @@ export type AdminUserRow = {
   displayName: string | null;
   stackUserId: string;
   balanceCents: number;
+  airBalance: number;
 };
 
 export type AdminTransaction = {
   id: string;
   type: "INCOMING" | "OUTGOING";
   amount: number;
+  currency: "EUR" | "AIR";
   description: string;
   source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "REFUND";
   transferId: string | null;
   date: Date;
+};
+
+export type AdminAirTransaction = AdminTransaction & {
+  customerId: string;
+  customerName: string | null;
 };
 
 export type AdminFestgeld = {
@@ -74,7 +81,7 @@ export async function getAdminDashboardData() {
         customerId: true,
         displayName: true,
         stackUserId: true,
-        transactions: { select: { type: true, amount: true } }
+        transactions: { select: { type: true, amount: true, currency: true } }
       }
     }),
     prisma.festgeldAccount.findMany({
@@ -107,7 +114,8 @@ export async function getAdminDashboardData() {
     customerId: customer.customerId,
     displayName: customer.displayName,
     stackUserId: customer.stackUserId,
-    balanceCents: calculateBalanceCents(customer.transactions)
+    balanceCents: calculateBalanceCents(customer.transactions, "EUR"),
+    airBalance: calculateBalanceCents(customer.transactions, "AIR")
   }));
 
   const selectedUserId = users[0]?.id;
@@ -118,6 +126,7 @@ export async function getAdminDashboardData() {
           id: true,
           type: true,
           amount: true,
+          currency: true,
           description: true,
           source: true,
           transferId: true,
@@ -128,10 +137,46 @@ export async function getAdminDashboardData() {
       })
     : [];
 
+  const allAirTransactions = await prisma.transaction.findMany({
+    where: { currency: "AIR" },
+    select: {
+      id: true,
+      type: true,
+      amount: true,
+      currency: true,
+      description: true,
+      source: true,
+      transferId: true,
+      date: true,
+      createdAt: true,
+      user: {
+        select: {
+          customerId: true,
+          displayName: true,
+        },
+      },
+    },
+    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+  });
+
+  const airSummary = getBalancesByCurrency(
+    allAirTransactions.map((transaction) => ({
+      type: transaction.type,
+      amount: transaction.amount,
+      currency: transaction.currency,
+    })),
+  );
+
   return {
     users: mappedUsers,
     festgeldAccounts: accounts,
     initialTransactions,
+    airInCirculation: airSummary.airBalance,
+    airTransactions: allAirTransactions.map((transaction) => ({
+      ...transaction,
+      customerId: transaction.user.customerId,
+      customerName: transaction.user.displayName,
+    })),
     merchants: merchants.map((merchant) => {
       const completedSessions = merchant.paymentSessions.filter(
         (session) =>

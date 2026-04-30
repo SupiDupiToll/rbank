@@ -1,4 +1,10 @@
-import { PrismaClient, Role, TransactionSource, TransactionType } from "@prisma/client";
+import {
+  PrismaClient,
+  Role,
+  TransactionCurrency,
+  TransactionSource,
+  TransactionType,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -40,6 +46,7 @@ async function main() {
         userId: customerOne.id,
         type: TransactionType.INCOMING,
         amount: 250000,
+        currency: TransactionCurrency.EUR,
         description: "Gehalt April",
         date: new Date("2026-04-01"),
         source: TransactionSource.ADMIN
@@ -48,6 +55,7 @@ async function main() {
         userId: customerOne.id,
         type: TransactionType.OUTGOING,
         amount: 7450,
+        currency: TransactionCurrency.EUR,
         description: "Stromabschlag",
         date: new Date("2026-04-03"),
         source: TransactionSource.ADMIN
@@ -56,6 +64,7 @@ async function main() {
         userId: customerTwo.id,
         type: TransactionType.INCOMING,
         amount: 315000,
+        currency: TransactionCurrency.EUR,
         description: "Gehalt April",
         date: new Date("2026-04-01"),
         source: TransactionSource.ADMIN
@@ -64,6 +73,7 @@ async function main() {
         userId: customerTwo.id,
         type: TransactionType.OUTGOING,
         amount: 12500,
+        currency: TransactionCurrency.EUR,
         description: "Miete",
         date: new Date("2026-04-02"),
         source: TransactionSource.ADMIN
@@ -72,6 +82,7 @@ async function main() {
         userId: customerOne.id,
         type: TransactionType.OUTGOING,
         amount: 1800,
+        currency: TransactionCurrency.EUR,
         description: "Überweisung an 58302714 · Lunch",
         date: new Date("2026-04-04"),
         source: TransactionSource.TRANSFER,
@@ -81,10 +92,40 @@ async function main() {
         userId: customerTwo.id,
         type: TransactionType.INCOMING,
         amount: 1800,
+        currency: TransactionCurrency.EUR,
         description: "Überweisung von 47291836 · Lunch",
         date: new Date("2026-04-04"),
         source: TransactionSource.TRANSFER,
         transferId: "seed-transfer-1"
+      },
+      {
+        userId: customerOne.id,
+        type: TransactionType.INCOMING,
+        amount: 12500,
+        currency: TransactionCurrency.AIR,
+        description: "AIR-Prämie Willkommensbonus",
+        date: new Date("2026-04-05"),
+        source: TransactionSource.ADMIN
+      },
+      {
+        userId: customerOne.id,
+        type: TransactionType.OUTGOING,
+        amount: 2500,
+        currency: TransactionCurrency.AIR,
+        description: "Ueberweisung an 58302714 · AIR Bonus teilen",
+        date: new Date("2026-04-06"),
+        source: TransactionSource.TRANSFER,
+        transferId: "seed-air-transfer-1"
+      },
+      {
+        userId: customerTwo.id,
+        type: TransactionType.INCOMING,
+        amount: 2500,
+        currency: TransactionCurrency.AIR,
+        description: "Ueberweisung von 47291836 · AIR Bonus teilen",
+        date: new Date("2026-04-06"),
+        source: TransactionSource.TRANSFER,
+        transferId: "seed-air-transfer-1"
       }
     ]
   });

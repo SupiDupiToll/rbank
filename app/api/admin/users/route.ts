@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         customerId: true,
         displayName: true,
         stackUserId: true,
-        transactions: { select: { type: true, amount: true } }
+        transactions: { select: { type: true, amount: true, currency: true } }
       }
     });
 
@@ -31,7 +31,8 @@ export async function GET(request: Request) {
         customerId: customer.customerId,
         displayName: customer.displayName,
         stackUserId: customer.stackUserId,
-        balanceCents: calculateBalanceCents(customer.transactions)
+        balanceCents: calculateBalanceCents(customer.transactions, "EUR"),
+        airBalance: calculateBalanceCents(customer.transactions, "AIR")
       }))
     });
   });
