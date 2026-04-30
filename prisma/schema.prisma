@@ -8,18 +8,35 @@ datasource db {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  stackUserId     String            @unique
-  role            Role              @default(CUSTOMER)
-  createdAt       DateTime          @default(now())
-  customerId      String            @unique
-  displayName     String?
-  paymentPinHash  String?           @map("payment_pin_hash")
-  pinLockedUntil  DateTime?         @map("pin_locked_until")
-  festgeld        FestgeldAccount[]
+  id                    String            @id @default(cuid())
+  stackUserId           String            @unique
+  role                  Role              @default(CUSTOMER)
+  createdAt             DateTime          @default(now())
+  customerId            String            @unique
+  displayName           String?
+  paymentPinHash        String?           @map("payment_pin_hash")
+  pinLockedUntil        DateTime?         @map("pin_locked_until")
+  showDonationBoxesList Boolean           @default(false) @map("show_donation_boxes_list")
+  donationBoxes         DonationBox[]
+  festgeld              FestgeldAccount[]
+  paymentSessions       PaymentSession[]  @relation("CheckoutPayer")
+  receivedPayments      PaymentSession[]  @relation("CheckoutRecipient")
+  pinAttempts           PinAttempt[]
+  transactions          Transaction[]
+}
+
+model DonationBox {
+  id              String           @id @default(cuid())
+  userId          String
+  name            String
+  slug            String           @unique
+  createdAt       DateTime         @default(now()) @map("created_at")
+  isActive        Boolean          @default(true) @map("is_active")
   paymentSessions PaymentSession[]
-  pinAttempts     PinAttempt[]
-  transactions    Transaction[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 model Transaction {
@@ -90,19 +107,25 @@ model PaymentSession {
   status                 PaymentSessionStatus @default(PENDING)
   token                  String               @unique
   userId                 String?
+  recipientUserId        String?              @map("recipient_user_id")
+  donationBoxId          String?              @map("donation_box_id")
   paidAt                 DateTime?            @map("paid_at")
   completedTransactionId String?              @map("completed_transaction_id")
   refundTransactionId    String?              @map("refund_transaction_id")
   refundedAt             DateTime?            @map("refunded_at")
   createdAt              DateTime             @default(now()) @map("created_at")
   expiresAt              DateTime             @map("expires_at")
+  donationBox            DonationBox?         @relation(fields: [donationBoxId], references: [id])
   merchant               Merchant             @relation(fields: [merchantDbId], references: [id], onDelete: Cascade)
-  user                   User?                @relation(fields: [userId], references: [id])
+  recipientUser          User?                @relation("CheckoutRecipient", fields: [recipientUserId], references: [id])
+  user                   User?                @relation("CheckoutPayer", fields: [userId], references: [id])
   transactions           Transaction[]
 
   @@index([merchantDbId, createdAt])
   @@index([status, expiresAt])
   @@index([userId, createdAt])
+  @@index([recipientUserId, createdAt])
+  @@index([donationBoxId, createdAt])
 }
 
 model PinAttempt {
@@ -135,6 +158,7 @@ enum TransactionSource {
   ADMIN
   TRANSFER
   CHECKOUT
+  DONATION
   REFUND
 }
 

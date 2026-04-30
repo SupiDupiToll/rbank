@@ -256,7 +256,15 @@ export function getCheckoutPaymentUrl(token: string) {
 
 export type PaymentSessionWithRelations = Prisma.PaymentSessionGetPayload<{
   include: {
+    donationBox: true;
     merchant: true;
+    recipientUser: {
+      select: {
+        id: true;
+        customerId: true;
+        displayName: true;
+      };
+    };
     user: {
       select: {
         id: true;

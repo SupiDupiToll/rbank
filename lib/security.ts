@@ -4,6 +4,7 @@ export const MAX_AMOUNT_CENTS = 100_000_000;
 export const MAX_DESCRIPTION_LENGTH = 120;
 export const MAX_LABEL_LENGTH = 80;
 export const MAX_NAME_LENGTH = 80;
+export const MAX_SLUG_LENGTH = 64;
 export const MIN_PIN_LENGTH = 4;
 export const MAX_PIN_LENGTH = 6;
 export const MERCHANT_SECRET_LENGTH = 64;
@@ -31,6 +32,9 @@ export const merchantSecretSchema = z
   .string()
   .regex(new RegExp(`^[a-f0-9]{${MERCHANT_SECRET_LENGTH}}$`, "i"));
 export const paymentTokenSchema = z.string().regex(/^pay_[a-f0-9]{24,}$/i);
+export const donationBoxSlugSchema = z
+  .string()
+  .regex(new RegExp(`^[a-z0-9-]{3,${MAX_SLUG_LENGTH}}$`));
 export const urlSchema = z.string().url();
 
 export const safeTextSchema = (maxLength: number) =>

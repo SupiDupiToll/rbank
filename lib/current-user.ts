@@ -12,6 +12,7 @@ export type AppUser = {
   displayName: string | null;
   paymentPinHash: string | null;
   pinLockedUntil: Date | null;
+  showDonationBoxesList: boolean;
   role: "ADMIN" | "CUSTOMER";
 };
 
@@ -41,6 +42,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
       displayName: true,
       paymentPinHash: true,
       pinLockedUntil: true,
+      showDonationBoxesList: true,
       role: true,
     },
   });
@@ -63,6 +65,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
         displayName: true,
         paymentPinHash: true,
         pinLockedUntil: true,
+        showDonationBoxesList: true,
         role: true,
       },
     });
@@ -84,6 +87,7 @@ export const getCurrentAppUser = cache(async (): Promise<AppUser | null> => {
           displayName: true,
           paymentPinHash: true,
           pinLockedUntil: true,
+          showDonationBoxesList: true,
           role: true,
         },
       });

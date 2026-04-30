@@ -9,7 +9,15 @@ import {
 
 type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
   include: {
+    donationBox: true;
     merchant: true;
+    recipientUser: {
+      select: {
+        id: true;
+        customerId: true;
+        displayName: true;
+      };
+    };
     user: {
       select: {
         id: true;
@@ -26,7 +34,15 @@ export async function getPaymentSessionByToken(token: string) {
   return prisma.paymentSession.findUnique({
     where: { token },
     include: {
+      donationBox: true,
       merchant: true,
+      recipientUser: {
+        select: {
+          id: true,
+          customerId: true,
+          displayName: true,
+        },
+      },
       user: {
         select: {
           id: true,
@@ -58,7 +74,10 @@ export function serializePaymentSession(session: PaymentSessionRecord) {
     expiresAt: session.expiresAt.toISOString(),
     customerId: session.user?.customerId ?? null,
     customerName: session.user?.displayName ?? null,
+    donationBoxName: session.donationBox?.name ?? null,
     metadata: session.metadataJson ?? {},
+    recipientCustomerId: session.recipientUser?.customerId ?? null,
+    recipientName: session.recipientUser?.displayName ?? null,
     transactionId: session.completedTransactionId,
     refundedAt: session.refundedAt?.toISOString() ?? null,
   };
@@ -162,7 +181,15 @@ export async function completeCheckoutPayment(token: string, userId: string) {
       const session = await tx.paymentSession.findUnique({
         where: { token },
         include: {
+          donationBox: true,
           merchant: true,
+          recipientUser: {
+            select: {
+              id: true,
+              customerId: true,
+              displayName: true,
+            },
+          },
           user: {
             select: {
               id: true,
@@ -209,7 +236,14 @@ export async function completeCheckoutPayment(token: string, userId: string) {
         throw new Error("INSUFFICIENT_FUNDS");
       }
 
-      const description = `Checkout an ${session.merchant.name} · ${session.description}`;
+      if (session.recipientUser?.id === payer.id) {
+        throw new Error("SELF_DONATION_NOT_ALLOWED");
+      }
+
+      const isDonation = Boolean(session.recipientUserId);
+      const outgoingDescription = isDonation
+        ? `Spende an ${session.recipientUser?.displayName ?? session.recipientUser?.customerId ?? "Spendenbox"} · ${session.description}`
+        : `Checkout an ${session.merchant.name} · ${session.description}`;
 
       const transaction = await tx.transaction.create({
         data: {
@@ -217,12 +251,27 @@ export async function completeCheckoutPayment(token: string, userId: string) {
           type: "OUTGOING",
           amount: session.amount,
           currency: "EUR",
-          description,
-          source: "CHECKOUT",
+          description: outgoingDescription,
+          source: isDonation ? "DONATION" : "CHECKOUT",
           date: paidAt,
           paymentSessionId: session.id,
         },
       });
+
+      if (session.recipientUserId) {
+        await tx.transaction.create({
+          data: {
+            userId: session.recipientUserId,
+            type: "INCOMING",
+            amount: session.amount,
+            currency: "EUR",
+            description: `Spende von ${payer.displayName ?? payer.customerId} · ${session.description}`,
+            source: "DONATION",
+            date: paidAt,
+            paymentSessionId: session.id,
+          },
+        });
+      }
 
       const updatedSession = await tx.paymentSession.update({
         where: { id: session.id },
@@ -233,7 +282,15 @@ export async function completeCheckoutPayment(token: string, userId: string) {
           completedTransactionId: transaction.id,
         },
         include: {
+          donationBox: true,
           merchant: true,
+          recipientUser: {
+            select: {
+              id: true,
+              customerId: true,
+              displayName: true,
+            },
+          },
           user: {
             select: {
               id: true,

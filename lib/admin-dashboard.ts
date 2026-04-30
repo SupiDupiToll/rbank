@@ -16,7 +16,7 @@ export type AdminTransaction = {
   amount: number;
   currency: "EUR" | "AIR";
   description: string;
-  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "REFUND";
+  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND";
   transferId: string | null;
   date: Date;
 };

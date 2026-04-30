@@ -123,7 +123,24 @@ function SettingsIcon() {
   );
 }
 
-const quickActions = [
+function DonationBoxIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 4.5h15A1.5 1.5 0 0 1 21 6v12a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6a1.5 1.5 0 0 1 1.5-1.5Zm3 3h9m-9 4.5h9m-9 4.5h5.25"
+      />
+    </svg>
+  );
+}
+const baseQuickActions = [
   {
     href: "/dashboard/transfer" as Route,
     label: "Überweisen",
@@ -168,6 +185,19 @@ export default async function DashboardPage() {
   const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
   const savingsTotal = savings._sum.amount ?? 0;
   const totalCents = eurBalanceCents + savingsTotal;
+  const quickActions = [
+    ...baseQuickActions.slice(0, 4),
+    ...(user.showDonationBoxesList
+      ? [
+          {
+            href: "/dashboard/spendenboxen" as Route,
+            label: "Spendenboxen",
+            icon: DonationBoxIcon,
+          },
+        ]
+      : []),
+    baseQuickActions[4],
+  ];
 
   return (
     <div className="space-y-8 pb-8">
@@ -229,7 +259,7 @@ export default async function DashboardPage() {
               {formatAirFromUnits(airBalance)}
             </p>
             <p className="mt-2 text-sm text-slate-400">
-              Interne Prämienwährung der Bank
+              Kleine eigene Währung :D
             </p>
           </div>
         </div>
@@ -240,7 +270,12 @@ export default async function DashboardPage() {
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
           Schnellzugriff
         </p>
-        <div className="grid grid-cols-5 gap-3">
+        <div
+          className="grid gap-3"
+          style={{
+            gridTemplateColumns: `repeat(${quickActions.length}, minmax(0, 1fr))`,
+          }}
+        >
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (

@@ -10,6 +10,7 @@ import { NavigationLoadingBar } from "@/components/navigation-loading-bar";
 type CustomerShellProps = {
   customerId: string;
   displayName: string | null;
+  showDonationBoxesList: boolean;
   children: React.ReactNode;
 };
 
@@ -112,6 +113,32 @@ function SavingsIcon({ className }: NavIconProps) {
   );
 }
 
+function DonationBoxIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M6 7.5h12M6 12h12m-12 4.5h7.5M4.5 4.5h15A1.5 1.5 0 0 1 21 6v12a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6a1.5 1.5 0 0 1 1.5-1.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M9.75 9.75h.008v.008H9.75zm4.5 0h.008v.008h-.008z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+    </svg>
+  );
+}
+
 function SettingsIcon({ className }: NavIconProps) {
   return (
     <svg
@@ -131,7 +158,7 @@ function SettingsIcon({ className }: NavIconProps) {
   );
 }
 
-const navigation = [
+const baseNavigation = [
   { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
   {
     href: "/dashboard/transfer" as Route,
@@ -153,19 +180,32 @@ const navigation = [
     label: "Festgeld",
     icon: SavingsIcon,
   },
-  {
-    href: "/dashboard/settings" as Route,
-    label: "Einstellungen",
-    icon: SettingsIcon,
-  },
 ];
 
 export function CustomerShell({
   customerId,
   displayName,
+  showDonationBoxesList,
   children,
 }: CustomerShellProps) {
   const pathname = usePathname();
+  const navigation = [
+    ...baseNavigation,
+    ...(showDonationBoxesList
+      ? [
+          {
+            href: "/dashboard/spendenboxen" as Route,
+            label: "Spendenboxen",
+            icon: DonationBoxIcon,
+          },
+        ]
+      : []),
+    {
+      href: "/dashboard/settings" as Route,
+      label: "Einstellungen",
+      icon: SettingsIcon,
+    },
+  ];
   const currentPage =
     navigation.find((item) => item.href === pathname)?.label ?? "Dashboard";
 
@@ -236,7 +276,10 @@ export function CustomerShell({
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-background-dark/95 px-2 pt-2 backdrop-blur-xl lg:hidden"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
-        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
+        <div
+          className="mx-auto grid max-w-md gap-1"
+          style={{ gridTemplateColumns: `repeat(${navigation.length}, minmax(0, 1fr))` }}
+        >
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;

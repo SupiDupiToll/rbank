@@ -8,6 +8,14 @@ type TransactionsPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
+const sourceLabels = {
+  ADMIN: "Admin",
+  TRANSFER: "P2P",
+  CHECKOUT: "Checkout",
+  DONATION: "Spende",
+  REFUND: "Refund",
+} as const;
+
 export default async function TransactionsPage({
   searchParams,
 }: TransactionsPageProps) {
@@ -109,10 +117,14 @@ export default async function TransactionsPage({
                     className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                       transaction.source === "TRANSFER"
                         ? "bg-primary/10 text-primary"
-                        : "bg-slate-800 text-slate-400"
+                        : transaction.source === "DONATION"
+                          ? "bg-emerald-500/10 text-emerald-300"
+                          : transaction.source === "CHECKOUT"
+                            ? "bg-sky-500/10 text-sky-200"
+                            : "bg-slate-800 text-slate-400"
                     }`}
                   >
-                    {transaction.source === "TRANSFER" ? "P2P" : "Admin"}
+                    {sourceLabels[transaction.source]}
                   </span>
                   <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-300">
                     {transaction.currency}

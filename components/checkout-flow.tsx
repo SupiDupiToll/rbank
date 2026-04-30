@@ -23,7 +23,10 @@ type CheckoutSession = {
   expiresAt: string;
   customerId: string | null;
   customerName: string | null;
+  donationBoxName: string | null;
   metadata: unknown;
+  recipientCustomerId: string | null;
+  recipientName: string | null;
   transactionId: string | null;
   refundedAt: string | null;
 };
@@ -52,6 +55,14 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState(initialSession.transactionId);
+  const payeeName =
+    initialSession.recipientName ?? initialSession.merchant.name;
+  const paymentHeadline = initialSession.donationBoxName
+    ? `Spende an ${payeeName}`
+    : `Bezahlung an ${initialSession.merchant.name}`;
+  const paymentBadge = initialSession.donationBoxName
+    ? "Spendenbox"
+    : "RBank Pay";
 
   const remainingBalance = useMemo(() => {
     if (!checkoutUser) {
@@ -173,8 +184,8 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   }
 
   return (
-    <CheckoutShell merchantName={initialSession.merchant.name}>
-      <Card className="overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-slate-950/90 p-0">
+      <CheckoutShell merchantName={initialSession.merchant.name}>
+        <Card className="overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-slate-950/90 p-0">
         <div className="border-b border-slate-800 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-slate-950 px-6 py-6">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/15 text-xl font-black text-emerald-200">
@@ -182,10 +193,10 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.32em] text-emerald-300">
-                RBank Pay
+                {paymentBadge}
               </p>
               <h1 className="mt-2 text-2xl font-black text-white">
-                Bezahlung an {initialSession.merchant.name}
+                {paymentHeadline}
               </h1>
               <p className="mt-1 text-sm text-slate-300">🔒 Sichere Verbindung</p>
             </div>
@@ -198,6 +209,11 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
             <p className="mt-2 text-4xl font-black text-white">
               {formatEuroFromCents(initialSession.amount)}
             </p>
+            {initialSession.donationBoxName ? (
+              <p className="mt-3 text-sm font-semibold text-emerald-200">
+                {initialSession.donationBoxName}
+              </p>
+            ) : null}
             <p className="mt-3 text-sm text-slate-300">{initialSession.description}</p>
           </div>
 
@@ -291,7 +307,10 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                     value={remainingBalance !== null ? formatEuroFromCents(remainingBalance) : "-"}
                     negative={Boolean(remainingBalance !== null && remainingBalance < 0)}
                   />
-                  <Row label="An" value={initialSession.merchant.name} />
+                  <Row label="An" value={payeeName} />
+                  {initialSession.donationBoxName ? (
+                    <Row label="Spendenbox" value={initialSession.donationBoxName} />
+                  ) : null}
                 </div>
               </div>
 

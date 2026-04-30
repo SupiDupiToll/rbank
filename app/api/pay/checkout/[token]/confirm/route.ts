@@ -45,6 +45,13 @@ export async function POST(_request: Request, context: Params) {
         return NextResponse.json({ error: "Nicht genug Guthaben." }, { status: 409 });
       }
 
+      if (error.message === "SELF_DONATION_NOT_ALLOWED") {
+        return NextResponse.json(
+          { error: "Eigene Spendenboxen koennen nicht selbst bezahlt werden." },
+          { status: 409 },
+        );
+      }
+
       if (["EXPIRED", "COMPLETED", "CANCELLED", "REFUNDED"].includes(error.message)) {
         return NextResponse.json({ error: "Zahlung ist nicht mehr verfuegbar.", status: error.message }, { status: 409 });
       }
