@@ -74,19 +74,26 @@ export function PublicDonationBox({
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 px-4 py-10 sm:px-6">
-      <header className="rounded-[2rem] border border-emerald-400/20 bg-gradient-to-br from-emerald-500/15 via-slate-950 to-slate-950 px-6 py-8">
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-emerald-300">
+    <div className="mx-auto max-w-xl space-y-8 px-4 py-10 sm:px-6">
+      <header className="relative overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900/40 px-6 py-10 sm:px-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-white/20" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-white/10" />
+        <div className="relative z-10">
+          <p className="text-sm font-bold uppercase tracking-widest text-primary">
           RBank Spendenbox
-        </p>
-        <h1 className="mt-3 text-4xl font-display text-slate-100">{name}</h1>
-        <p className="mt-3 text-base text-slate-300">
-          Spende direkt ueber diese Spendenbox mit deinem RBank-Konto.
-        </p>
+          </p>
+          <h1 className="mt-4 text-5xl font-display font-black leading-[1.1] tracking-tight text-slate-100 sm:text-6xl">
+            {name}
+          </h1>
+          <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate-400">
+            Spende direkt ueber diese Spendenbox mit deinem RBank-Konto und
+            bestaetige die Zahlung spaeter sicher mit deiner PIN.
+          </p>
+        </div>
       </header>
 
       {success ? (
-        <Card className="border border-green-500/20 bg-green-500/10">
+        <Card className="rounded-xl border border-primary/20 bg-primary/10 p-6">
           <p className="text-sm font-semibold text-green-200">
             Die Spende wurde gestartet. Wenn die Zahlung erfolgreich war, wurde
             der Betrag direkt gutgeschrieben.
@@ -94,22 +101,27 @@ export function PublicDonationBox({
         </Card>
       ) : null}
 
-      <Card className="space-y-5 rounded-[2rem] border border-slate-800/70 bg-slate-950/80">
+      <Card className="space-y-6 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6 sm:p-8">
         <div>
-          <p className="text-sm text-slate-400">Betrag</p>
+          <p className="text-sm font-bold uppercase tracking-widest text-primary">
+            Beitrag
+          </p>
           <Input
+            className="mt-3"
             inputMode="decimal"
             onChange={(event) => setAmount(event.target.value)}
             placeholder="10,00"
             value={amount}
           />
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-3 text-lg text-slate-400">
             {isAmountValid ? formatEuroFromCents(amountCents) : "0,00 €"}
           </p>
         </div>
 
         <div>
-          <p className="mb-2 text-sm text-slate-400">Nachricht optional</p>
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-slate-400">
+            Nachricht optional
+          </p>
           <Input
             maxLength={120}
             onChange={(event) => setDescription(event.target.value)}
@@ -122,7 +134,7 @@ export function PublicDonationBox({
 
         {isAuthenticated ? (
           <Button
-            className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+            className="h-14 w-full rounded-full bg-primary text-background-dark text-lg font-bold"
             disabled={!isAmountValid || isSubmitting}
             onClick={() => void handleSubmit()}
             type="button"
@@ -130,7 +142,7 @@ export function PublicDonationBox({
             {isSubmitting ? "Leitet weiter..." : "Mit RBank spenden"}
           </Button>
         ) : (
-          <Button asChild className="h-14 w-full rounded-2xl">
+          <Button asChild className="h-14 w-full rounded-full text-lg font-bold">
             <Link href={`/login?redirect=${encodeURIComponent(`/spendenbox/${slug}`)}`}>
               Mit RBank anmelden
             </Link>

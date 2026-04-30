@@ -16,7 +16,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Manrope", "sans-serif"],
-        display: ["DM Serif Display", "serif"]
+        display: ["Playfair Display", "serif"]
       },
       borderRadius: {
         DEFAULT: "1.5rem",

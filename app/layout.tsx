@@ -1,7 +1,20 @@
 import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
+import { Manrope, Playfair_Display } from "next/font/google";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/stack/server";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-manrope",
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  variable: "--font-playfair-display",
+});
 
 export const viewport: Viewport = {
   themeColor: "#0f1115",
@@ -93,7 +106,7 @@ export default function RootLayout({
           href="/splash/14promax-portrait.png"
         />
       </head>
-      <body>
+      <body className={`${manrope.variable} ${playfairDisplay.variable}`}>
         <StackProvider app={stackServerApp}>
           <StackTheme>
             <div className="pointer-events-none absolute right-0 top-0 hidden h-64 w-64 -mr-32 -mt-32 rounded-full bg-primary/10 blur-3xl lg:block" />

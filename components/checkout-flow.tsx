@@ -212,35 +212,43 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
 
   return (
     <CheckoutShell merchantName={initialSession.merchant.name}>
-      <Card className="overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-slate-950/90 p-0">
-        <div className="border-b border-slate-800 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-slate-950 px-6 py-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/15 text-xl font-black text-emerald-200">
+      <Card className="overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900/40 p-0">
+        <div className="relative overflow-hidden border-b border-slate-800 px-6 py-8 sm:px-8">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-white/20" />
+          <div className="pointer-events-none absolute -bottom-14 -left-14 h-28 w-28 rounded-full bg-white/10" />
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-xl font-black text-primary">
               {initialSession.merchant.name.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.32em] text-emerald-300">
+              <p className="text-sm font-bold uppercase tracking-widest text-primary">
                 {paymentBadge}
               </p>
-              <h1 className="mt-2 text-2xl font-black text-white">
+              <h1 className="mt-3 text-4xl font-display font-black leading-[1.1] tracking-tight text-white sm:text-5xl">
                 {paymentHeadline}
               </h1>
+              <p className="mt-3 text-base leading-relaxed text-slate-400">
+                Sicherer Checkout mit PIN-Bestaetigung und direkter Belastung
+                deines RBank-Kontos.
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-6 px-6 py-6">
-          <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/70 p-5">
-            <p className="text-sm text-slate-400">Betrag</p>
-            <p className="mt-2 text-4xl font-black text-white">
+        <div className="space-y-8 px-6 py-6 sm:px-8 sm:py-8">
+          <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+            <p className="text-sm font-bold uppercase tracking-widest text-primary">
+              Betrag
+            </p>
+            <p className="mt-3 text-5xl font-display font-black tracking-tight text-white">
               {formatEuroFromCents(initialSession.amount)}
             </p>
             {initialSession.donationBoxName ? (
-              <p className="mt-3 text-sm font-semibold text-emerald-200">
+              <p className="mt-4 text-sm font-bold uppercase tracking-widest text-slate-400">
                 {initialSession.donationBoxName}
               </p>
             ) : null}
-            <p className="mt-3 text-sm text-slate-300">
+            <p className="mt-4 text-base leading-relaxed text-slate-400">
               {initialSession.description}
             </p>
           </div>
@@ -338,7 +346,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
 
           {checkoutUser ? (
             <div className="space-y-5">
-              <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/80 p-5">
+              <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
                 <p className="text-sm text-slate-400">
                   Hallo, {checkoutUser.displayName}
                 </p>
@@ -375,8 +383,8 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                   Nicht genug Guthaben
                 </p>
               ) : null}
-              <div className="space-y-4 rounded-[1.5rem] border border-slate-800 bg-slate-900/60 p-5">
-                <p className="text-sm font-semibold text-slate-200">
+              <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-primary">
                   PIN bestaetigen
                 </p>
                 <div className="grid grid-cols-6 gap-3">
@@ -454,10 +462,10 @@ function CheckoutShell({
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center">
         <div className="w-full">
           <div className="mb-4 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.35em] text-emerald-300">
+            <p className="text-sm font-bold uppercase tracking-widest text-primary">
               RBank Checkout
             </p>
-            <p className="mt-2 text-sm text-slate-400">{merchantName}</p>
+            <p className="mt-3 text-base text-slate-400">{merchantName}</p>
           </div>
           {children}
         </div>
@@ -478,16 +486,18 @@ function StatusCard({ session }: { session: CheckoutSession }) {
     "Zahlung nicht verfuegbar";
 
   return (
-    <Card className="rounded-[2rem] border border-slate-800 bg-slate-950/90 p-8 text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">
+    <Card className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-8 text-center">
+      <p className="text-sm font-bold uppercase tracking-widest text-primary">
         Status
       </p>
-      <h1 className="mt-4 text-3xl font-black text-white">{title}</h1>
-      <p className="mt-4 text-sm text-slate-300">
+      <h1 className="mt-5 text-4xl font-display font-black tracking-tight text-white">
+        {title}
+      </h1>
+      <p className="mt-4 text-lg leading-relaxed text-slate-400">
         {formatEuroFromCents(session.amount)} · {session.description}
       </p>
       <a
-        className="mt-8 inline-flex h-12 items-center justify-center rounded-full border border-slate-700 px-6 text-sm font-bold text-slate-100 transition hover:bg-slate-800"
+        className="mt-8 inline-flex h-14 items-center justify-center rounded-full border-2 border-slate-800 px-8 text-lg font-bold text-slate-100 transition-colors hover:bg-slate-800"
         href={
           session.status === "COMPLETED"
             ? session.redirectUrl
@@ -512,14 +522,14 @@ function SuccessState({
   transactionId: string | null;
 }) {
   return (
-    <Card className="rounded-[2rem] border border-emerald-500/20 bg-slate-950/90 p-8 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-400/15 text-4xl text-emerald-300">
+    <Card className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-8 text-center">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-4xl text-primary">
         ✓
       </div>
-      <h1 className="mt-6 text-3xl font-black text-white">
+      <h1 className="mt-6 text-4xl font-display font-black tracking-tight text-white">
         Zahlung erfolgreich!
       </h1>
-      <p className="mt-4 text-sm text-slate-300">
+      <p className="mt-4 text-lg leading-relaxed text-slate-400">
         {formatEuroFromCents(amount)} wurden an {merchantName} ueberwiesen.
       </p>
       {transactionId ? (
@@ -528,7 +538,7 @@ function SuccessState({
         </p>
       ) : null}
       <a
-        className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-emerald-400 px-6 text-sm font-bold text-slate-950"
+        className="mt-8 inline-flex h-14 items-center justify-center rounded-full bg-primary px-8 text-lg font-bold text-background-dark"
         href={redirectUrl}
       >
         Jetzt zum Shop zurueck

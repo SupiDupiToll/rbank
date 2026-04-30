@@ -13,8 +13,16 @@ body {
     overflow-x: hidden;
 }
 
+.dark {
+    color-scheme: dark;
+}
+
+body {
+    font-family: var(--font-manrope), sans-serif;
+}
+
 .font-display {
-    font-: Georgia, Cambria, "Times New Roman", Times, serif;
+    font-family: var(--font-playfair-display), serif;
 }
 
 .glass-card {
