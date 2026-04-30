@@ -1,10 +1,16 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import {
+  enforceCsrf,
+  enforceSameOrigin,
+  requireCustomer,
+} from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import {
   createPaymentExpiryDate,
   generatePaymentToken,
   getCheckoutPaymentUrl,
+  setCheckoutCookie,
 } from "@/lib/payments";
 import { ensureDonationMerchant } from "@/lib/donation-boxes";
 import {
@@ -18,6 +24,20 @@ type Params = {
 };
 
 export async function POST(request: Request, context: Params) {
+  const { error, user } = await requireCustomer();
+  if (error || !user) {
+    return NextResponse.json(
+      { error: "Bitte zuerst anmelden.", loginRequired: true },
+      { status: 401 },
+    );
+  }
+
+  const originError = enforceSameOrigin(request);
+  if (originError) return originError;
+
+  const csrfError = enforceCsrf(request);
+  if (csrfError) return csrfError;
+
   const { slug } = await context.params;
   const parsedSlug = donationBoxSlugSchema.safeParse(slug);
 
@@ -72,6 +92,13 @@ export async function POST(request: Request, context: Params) {
     );
   }
 
+  if (donationBox.userId === user.id) {
+    return NextResponse.json(
+      { error: "Eigene Spendenboxen koennen nicht selbst bezahlt werden." },
+      { status: 409 },
+    );
+  }
+
   const merchant = await ensureDonationMerchant();
   const token = generatePaymentToken();
   const expiresAt = createPaymentExpiryDate();
@@ -97,6 +124,8 @@ export async function POST(request: Request, context: Params) {
       donationBoxId: donationBox.id,
     },
   });
+
+  await setCheckoutCookie(session.token, user.id);
 
   return NextResponse.json({
     token: session.token,

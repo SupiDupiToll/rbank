@@ -1,22 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { formatEuroFromCents } from "@/lib/money";
 
 type Props = {
   slug: string;
   name: string;
-  ownerName: string;
+  isAuthenticated: boolean;
   success: boolean;
 };
 
 export function PublicDonationBox({
   slug,
   name,
-  ownerName,
+  isAuthenticated,
   success,
 }: Props) {
   const [amount, setAmount] = useState("");
@@ -41,6 +43,7 @@ export function PublicDonationBox({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
         },
         body: JSON.stringify({
           amount: amountCents,
@@ -50,8 +53,14 @@ export function PublicDonationBox({
 
       const data = (await response.json()) as {
         error?: string;
+        loginRequired?: boolean;
         paymentUrl?: string;
       };
+
+      if (response.status === 401 && data.loginRequired) {
+        window.location.href = `/login?redirect=${encodeURIComponent(`/spendenbox/${slug}`)}`;
+        return;
+      }
 
       if (!response.ok || !data.paymentUrl) {
         setMessage(data.error ?? "Spendenlink konnte nicht gestartet werden.");
@@ -72,7 +81,7 @@ export function PublicDonationBox({
         </p>
         <h1 className="mt-3 text-4xl font-display text-slate-100">{name}</h1>
         <p className="mt-3 text-base text-slate-300">
-          Unterstuetze {ownerName} direkt mit deinem RBank-Konto.
+          Spende direkt ueber diese Spendenbox mit deinem RBank-Konto.
         </p>
       </header>
 
@@ -111,14 +120,22 @@ export function PublicDonationBox({
 
         {message ? <p className="text-sm text-rose-300">{message}</p> : null}
 
-        <Button
-          className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-          disabled={!isAmountValid || isSubmitting}
-          onClick={() => void handleSubmit()}
-          type="button"
-        >
-          {isSubmitting ? "Leitet weiter..." : "Mit RBank spenden"}
-        </Button>
+        {isAuthenticated ? (
+          <Button
+            className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+            disabled={!isAmountValid || isSubmitting}
+            onClick={() => void handleSubmit()}
+            type="button"
+          >
+            {isSubmitting ? "Leitet weiter..." : "Mit RBank spenden"}
+          </Button>
+        ) : (
+          <Button asChild className="h-14 w-full rounded-2xl">
+            <Link href={`/login?redirect=${encodeURIComponent(`/spendenbox/${slug}`)}`}>
+              Mit RBank anmelden
+            </Link>
+          </Button>
+        )}
       </Card>
     </div>
   );

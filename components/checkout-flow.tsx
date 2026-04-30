@@ -55,8 +55,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState(initialSession.transactionId);
-  const payeeName =
-    initialSession.recipientName ?? initialSession.merchant.name;
+  const payeeName = initialSession.donationBoxName ?? initialSession.merchant.name;
   const paymentHeadline = initialSession.donationBoxName
     ? `Spende an ${payeeName}`
     : `Bezahlung an ${initialSession.merchant.name}`;
@@ -307,10 +306,10 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                     value={remainingBalance !== null ? formatEuroFromCents(remainingBalance) : "-"}
                     negative={Boolean(remainingBalance !== null && remainingBalance < 0)}
                   />
-                  <Row label="An" value={payeeName} />
-                  {initialSession.donationBoxName ? (
-                    <Row label="Spendenbox" value={initialSession.donationBoxName} />
-                  ) : null}
+                  <Row
+                    label={initialSession.donationBoxName ? "Spendenbox" : "An"}
+                    value={payeeName}
+                  />
                 </div>
               </div>
 

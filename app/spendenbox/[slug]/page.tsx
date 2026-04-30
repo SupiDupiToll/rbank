@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { PublicDonationBox } from "@/components/public-donation-box";
+import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { donationBoxSlugSchema } from "@/lib/security";
 
@@ -12,6 +13,7 @@ export default async function DonationBoxPage({
   params,
   searchParams,
 }: Props) {
+  const currentUser = await getCurrentAppUser();
   const [{ slug }, { status }] = await Promise.all([params, searchParams]);
   const parsedSlug = donationBoxSlugSchema.safeParse(slug);
 
@@ -21,14 +23,6 @@ export default async function DonationBoxPage({
 
   const donationBox = await prisma.donationBox.findUnique({
     where: { slug: parsedSlug.data },
-    include: {
-      user: {
-        select: {
-          customerId: true,
-          displayName: true,
-        },
-      },
-    },
   });
 
   if (!donationBox || !donationBox.isActive) {
@@ -38,10 +32,8 @@ export default async function DonationBoxPage({
   return (
     <main className="min-h-screen bg-background-dark text-slate-100">
       <PublicDonationBox
+        isAuthenticated={Boolean(currentUser)}
         name={donationBox.name}
-        ownerName={
-          donationBox.user.displayName ?? `Kunde ${donationBox.user.customerId}`
-        }
         slug={donationBox.slug}
         success={status === "success"}
       />
