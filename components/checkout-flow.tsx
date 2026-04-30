@@ -50,12 +50,19 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [message, setMessage] = useState("");
-  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(null);
-  const [transactionId, setTransactionId] = useState(initialSession.transactionId);
-  const payeeName = initialSession.donationBoxName ?? initialSession.merchant.name;
+  const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(
+    null,
+  );
+  const [transactionId, setTransactionId] = useState(
+    initialSession.transactionId,
+  );
+  const payeeName =
+    initialSession.donationBoxName ?? initialSession.merchant.name;
   const paymentHeadline = initialSession.donationBoxName
     ? `Spende an ${payeeName}`
     : `Bezahlung an ${initialSession.merchant.name}`;
@@ -88,13 +95,16 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
     setMessage("");
 
     try {
-      const response = await fetch(`/api/pay/checkout/${initialSession.token}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/pay/checkout/${initialSession.token}/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ customerId, pin }),
         },
-        body: JSON.stringify({ customerId, pin }),
-      });
+      );
 
       const data = (await response.json()) as {
         error?: string;
@@ -151,9 +161,12 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/pay/checkout/${initialSession.token}/cancel`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/pay/checkout/${initialSession.token}/cancel`,
+        {
+          method: "POST",
+        },
+      );
       const data = (await response.json()) as { redirectUrl?: string };
       window.location.href = data.redirectUrl ?? initialSession.cancelUrl;
     } finally {
@@ -183,8 +196,8 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   }
 
   return (
-      <CheckoutShell merchantName={initialSession.merchant.name}>
-        <Card className="overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-slate-950/90 p-0">
+    <CheckoutShell merchantName={initialSession.merchant.name}>
+      <Card className="overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-slate-950/90 p-0">
         <div className="border-b border-slate-800 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-slate-950 px-6 py-6">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/15 text-xl font-black text-emerald-200">
@@ -197,7 +210,6 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
               <h1 className="mt-2 text-2xl font-black text-white">
                 {paymentHeadline}
               </h1>
-              <p className="mt-1 text-sm text-slate-300">🔒 Sichere Verbindung</p>
             </div>
           </div>
         </div>
@@ -213,12 +225,17 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                 {initialSession.donationBoxName}
               </p>
             ) : null}
-            <p className="mt-3 text-sm text-slate-300">{initialSession.description}</p>
+            <p className="mt-3 text-sm text-slate-300">
+              {initialSession.description}
+            </p>
           </div>
 
           {!showLogin && !checkoutUser ? (
             <div className="space-y-4">
-              <Button className="h-14 w-full rounded-2xl text-base" onClick={() => setShowLogin(true)}>
+              <Button
+                className="h-14 w-full rounded-2xl text-base"
+                onClick={() => setShowLogin(true)}
+              >
                 Mit RBank bezahlen
               </Button>
               <button
@@ -241,7 +258,9 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                   inputMode="numeric"
                   maxLength={8}
                   onChange={(event) =>
-                    setCustomerId(event.target.value.replace(/\D/g, "").slice(0, 8))
+                    setCustomerId(
+                      event.target.value.replace(/\D/g, "").slice(0, 8),
+                    )
                   }
                   placeholder="47291836"
                   value={customerId}
@@ -250,7 +269,9 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-slate-200">PIN</label>
+                  <label className="text-sm font-semibold text-slate-200">
+                    PIN
+                  </label>
                   <button
                     className="text-sm font-semibold text-emerald-300"
                     onClick={() => setShowPin((current) => !current)}
@@ -273,13 +294,19 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
               </div>
 
               {remainingAttempts !== null ? (
-                <p className="text-sm text-amber-300">Noch {remainingAttempts} Versuche</p>
+                <p className="text-sm text-amber-300">
+                  Noch {remainingAttempts} Versuche
+                </p>
               ) : null}
-              {message ? <p className="text-sm text-rose-300">{message}</p> : null}
+              {message ? (
+                <p className="text-sm text-rose-300">{message}</p>
+              ) : null}
 
               <Button
                 className="h-14 w-full rounded-2xl text-base"
-                disabled={isSubmitting || customerId.length !== 8 || pin.length < 4}
+                disabled={
+                  isSubmitting || customerId.length !== 8 || pin.length < 4
+                }
                 onClick={() => void submitLogin()}
               >
                 {isSubmitting ? "Pruefung laeuft..." : "Weiter"}
@@ -297,14 +324,29 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
           {checkoutUser ? (
             <div className="space-y-5">
               <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/80 p-5">
-                <p className="text-sm text-slate-400">Hallo, {checkoutUser.displayName}</p>
+                <p className="text-sm text-slate-400">
+                  Hallo, {checkoutUser.displayName}
+                </p>
                 <div className="mt-4 space-y-3 text-sm">
-                  <Row label="Kontostand" value={formatEuroFromCents(checkoutUser.balanceCents)} />
-                  <Row label="Belastung" value={`- ${formatEuroFromCents(initialSession.amount)}`} negative />
+                  <Row
+                    label="Kontostand"
+                    value={formatEuroFromCents(checkoutUser.balanceCents)}
+                  />
+                  <Row
+                    label="Belastung"
+                    value={`- ${formatEuroFromCents(initialSession.amount)}`}
+                    negative
+                  />
                   <Row
                     label="Verbleibend"
-                    value={remainingBalance !== null ? formatEuroFromCents(remainingBalance) : "-"}
-                    negative={Boolean(remainingBalance !== null && remainingBalance < 0)}
+                    value={
+                      remainingBalance !== null
+                        ? formatEuroFromCents(remainingBalance)
+                        : "-"
+                    }
+                    negative={Boolean(
+                      remainingBalance !== null && remainingBalance < 0,
+                    )}
                   />
                   <Row
                     label={initialSession.donationBoxName ? "Spendenbox" : "An"}
@@ -318,11 +360,16 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                   Nicht genug Guthaben
                 </p>
               ) : null}
-              {message ? <p className="text-sm text-rose-300">{message}</p> : null}
+              {message ? (
+                <p className="text-sm text-rose-300">{message}</p>
+              ) : null}
 
               <Button
                 className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                disabled={isProcessing || Boolean(remainingBalance !== null && remainingBalance < 0)}
+                disabled={
+                  isProcessing ||
+                  Boolean(remainingBalance !== null && remainingBalance < 0)
+                }
                 onClick={() => void submitPayment()}
               >
                 Jetzt bezahlen
@@ -343,7 +390,9 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 px-6">
           <div className="space-y-5 text-center">
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-300" />
-            <p className="text-lg font-semibold text-white">Zahlung wird verarbeitet...</p>
+            <p className="text-lg font-semibold text-white">
+              Zahlung wird verarbeitet...
+            </p>
           </div>
         </div>
       ) : null}
@@ -382,18 +431,26 @@ function StatusCard({ session }: { session: CheckoutSession }) {
     EXPIRED: "Dieser Zahlungslink ist abgelaufen",
     REFUNDED: "Diese Zahlung wurde bereits erstattet",
   } as const;
-  const title = titleMap[session.status as keyof typeof titleMap] ?? "Zahlung nicht verfuegbar";
+  const title =
+    titleMap[session.status as keyof typeof titleMap] ??
+    "Zahlung nicht verfuegbar";
 
   return (
     <Card className="rounded-[2rem] border border-slate-800 bg-slate-950/90 p-8 text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">Status</p>
+      <p className="text-xs font-bold uppercase tracking-[0.32em] text-slate-400">
+        Status
+      </p>
       <h1 className="mt-4 text-3xl font-black text-white">{title}</h1>
       <p className="mt-4 text-sm text-slate-300">
         {formatEuroFromCents(session.amount)} · {session.description}
       </p>
       <a
         className="mt-8 inline-flex h-12 items-center justify-center rounded-full border border-slate-700 px-6 text-sm font-bold text-slate-100 transition hover:bg-slate-800"
-        href={session.status === "COMPLETED" ? session.redirectUrl : session.cancelUrl}
+        href={
+          session.status === "COMPLETED"
+            ? session.redirectUrl
+            : session.cancelUrl
+        }
       >
         Zurueck zum Shop
       </a>
@@ -417,7 +474,9 @@ function SuccessState({
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-400/15 text-4xl text-emerald-300">
         ✓
       </div>
-      <h1 className="mt-6 text-3xl font-black text-white">Zahlung erfolgreich!</h1>
+      <h1 className="mt-6 text-3xl font-black text-white">
+        Zahlung erfolgreich!
+      </h1>
       <p className="mt-4 text-sm text-slate-300">
         {formatEuroFromCents(amount)} wurden an {merchantName} ueberwiesen.
       </p>
@@ -448,7 +507,13 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-slate-400">{label}</span>
-      <span className={negative ? "font-bold text-rose-200" : "font-bold text-white"}>{value}</span>
+      <span
+        className={
+          negative ? "font-bold text-rose-200" : "font-bold text-white"
+        }
+      >
+        {value}
+      </span>
     </div>
   );
 }

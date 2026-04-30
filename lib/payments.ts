@@ -151,13 +151,22 @@ export async function setCheckoutCookie(token: string, userId: string) {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: `/pay/${token}`,
+    path: "/",
     maxAge: CHECKOUT_SESSION_TTL_MS / 1000,
   });
 }
 
 export async function clearCheckoutCookie(token: string) {
   const jar = await cookies();
+  jar.set({
+    name: `${CHECKOUT_COOKIE_PREFIX}${token}`,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires: new Date(0),
+  });
   jar.set({
     name: `${CHECKOUT_COOKIE_PREFIX}${token}`,
     value: "",
