@@ -48,6 +48,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const [showLogin, setShowLogin] = useState(Boolean(checkoutUser));
   const [customerId, setCustomerId] = useState("");
   const [pin, setPin] = useState("");
+  const [paymentPin, setPaymentPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [message, setMessage] = useState("");
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(
@@ -69,6 +70,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const paymentBadge = initialSession.donationBoxName
     ? "Spendenbox"
     : "RBank Pay";
+  const paymentPinMinLength = 4;
 
   const remainingBalance = useMemo(() => {
     if (!checkoutUser) {
@@ -124,19 +126,30 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   }
 
   async function submitPayment() {
+    if (paymentPin.length < paymentPinMinLength) {
+      setMessage("Bitte die PIN eingeben.");
+      return;
+    }
+
     setIsProcessing(true);
     setMessage("");
+    setRemainingAttempts(null);
 
     try {
       const [response] = await Promise.all([
         fetch(`/api/pay/checkout/${initialSession.token}/confirm`, {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ pin: paymentPin }),
         }),
         new Promise((resolve) => window.setTimeout(resolve, 1500)),
       ]);
 
       const data = (await response.json()) as {
         error?: string;
+        remainingAttempts?: number;
         transactionId?: string;
         redirectUrl?: string;
       };
@@ -144,12 +157,14 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
       if (!response.ok) {
         setIsProcessing(false);
         setMessage(data.error ?? "Zahlung konnte nicht ausgefuehrt werden.");
+        setRemainingAttempts(data.remainingAttempts ?? null);
         router.refresh();
         return;
       }
 
       setTransactionId(data.transactionId ?? null);
       setSuccessRedirectUrl(data.redirectUrl ?? initialSession.redirectUrl);
+      setPaymentPin("");
       setIsProcessing(false);
     } catch {
       setIsProcessing(false);
@@ -360,6 +375,32 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                   Nicht genug Guthaben
                 </p>
               ) : null}
+              <div className="space-y-4 rounded-[1.5rem] border border-slate-800 bg-slate-900/60 p-5">
+                <p className="text-sm font-semibold text-slate-200">
+                  PIN bestaetigen
+                </p>
+                <div className="grid grid-cols-6 gap-3">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <div
+                      key={index}
+                      aria-hidden="true"
+                      className={`flex h-14 items-center justify-center rounded-2xl border text-2xl ${
+                        index < paymentPin.length
+                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                          : "border-slate-800 bg-slate-950/70 text-slate-500"
+                      }`}
+                    >
+                      {index < paymentPin.length ? "*" : ""}
+                    </div>
+                  ))}
+                </div>
+                <PinKeypad value={paymentPin} onChange={setPaymentPin} />
+                {remainingAttempts !== null ? (
+                  <p className="text-sm text-amber-300">
+                    Noch {remainingAttempts} Versuche
+                  </p>
+                ) : null}
+              </div>
               {message ? (
                 <p className="text-sm text-rose-300">{message}</p>
               ) : null}
@@ -368,6 +409,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                 className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
                 disabled={
                   isProcessing ||
+                  paymentPin.length < paymentPinMinLength ||
                   Boolean(remainingBalance !== null && remainingBalance < 0)
                 }
                 onClick={() => void submitPayment()}

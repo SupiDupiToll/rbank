@@ -26,11 +26,19 @@ type Props = {
 function DonationBoxRow({
   item,
   action = "copy",
+  onRename,
+  onDelete,
 }: {
   item: DonationBoxItem;
   action?: "copy" | "open";
+  onRename?: (previousId: string, item: DonationBoxItem) => void;
+  onDelete?: (item: DonationBoxItem) => void;
 }) {
   const [message, setMessage] = useState("");
+  const [draftName, setDraftName] = useState(item.name);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleAction() {
     if (action === "open") {
@@ -46,11 +54,122 @@ function DonationBoxRow({
     }
   }
 
+  async function handleDelete() {
+    if (!onDelete) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Spendenbox "${item.name}" wirklich loeschen?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/customer/donation-boxes/${item.id}`, {
+        method: "DELETE",
+        headers: {
+          [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+        },
+      });
+
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setMessage(data.error ?? "Spendenbox konnte nicht geloescht werden.");
+        return;
+      }
+
+      onDelete(item);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  async function handleRename() {
+    if (!onRename) {
+      return;
+    }
+
+    if (!draftName.trim()) {
+      setMessage("Bitte einen Namen eingeben.");
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/customer/donation-boxes/${item.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+        },
+        body: JSON.stringify({ name: draftName.trim() }),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        donationBox?: DonationBoxItem;
+      };
+
+      if (!response.ok || !data.donationBox) {
+        setMessage(data.error ?? "Spendenbox konnte nicht umbenannt werden.");
+        return;
+      }
+
+      onRename(item.id, data.donationBox);
+      setDraftName(data.donationBox.name);
+      setIsEditing(false);
+      setMessage("Spendenbox wurde umbenannt.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-100">{item.name}</p>
+          {isEditing ? (
+            <div className="space-y-2">
+              <Input
+                maxLength={80}
+                onChange={(event) => setDraftName(event.target.value)}
+                value={draftName}
+              />
+              <div className="flex gap-2">
+                <Button
+                  className="h-9 rounded-full px-4"
+                  disabled={isSaving}
+                  onClick={() => void handleRename()}
+                  type="button"
+                >
+                  {isSaving ? "Speichert..." : "Speichern"}
+                </Button>
+                <Button
+                  className="h-9 rounded-full px-4"
+                  disabled={isSaving}
+                  onClick={() => {
+                    setDraftName(item.name);
+                    setIsEditing(false);
+                    setMessage("");
+                  }}
+                  type="button"
+                  variant="outline"
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="truncate font-semibold text-slate-100">{item.name}</p>
+          )}
           <p className="mt-1 text-sm text-slate-400">
             von {item.ownerName} · #{item.ownerCustomerId}
           </p>
@@ -66,14 +185,42 @@ function DonationBoxRow({
             {item.link}
           </a>
         </div>
-        <Button
-          className="h-10 shrink-0 rounded-full px-4"
-          onClick={() => void handleAction()}
-          type="button"
-          variant="outline"
-        >
-          {action === "open" ? "Oeffnen" : "Link kopieren"}
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          <Button
+            className="h-10 rounded-full px-4"
+            onClick={() => void handleAction()}
+            type="button"
+            variant="outline"
+          >
+            {action === "open" ? "Oeffnen" : "Link kopieren"}
+          </Button>
+          {onRename ? (
+            <Button
+              className="h-10 rounded-full px-4"
+              disabled={isEditing || isSaving || isDeleting}
+              onClick={() => {
+                setDraftName(item.name);
+                setIsEditing(true);
+                setMessage("");
+              }}
+              type="button"
+              variant="outline"
+            >
+              Umbenennen
+            </Button>
+          ) : null}
+          {onDelete ? (
+            <Button
+              className="h-10 rounded-full border-red-500/30 px-4 text-red-300 hover:bg-red-500/10"
+              disabled={isDeleting || isSaving}
+              onClick={() => void handleDelete()}
+              type="button"
+              variant="outline"
+            >
+              {isDeleting ? "Loescht..." : "Loeschen"}
+            </Button>
+          ) : null}
+        </div>
       </div>
       {message ? <p className="mt-3 text-sm text-slate-300">{message}</p> : null}
     </div>
@@ -128,6 +275,23 @@ export function DonationBoxesDashboard({
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handleDelete(item: DonationBoxItem) {
+    setOwnBoxes((current) => current.filter((entry) => entry.id !== item.id));
+    setAllBoxes((current) => current.filter((entry) => entry.id !== item.id));
+    setMessage(`Spendenbox "${item.name}" wurde geloescht.`);
+    router.refresh();
+  }
+
+  function handleRename(previousId: string, updatedItem: DonationBoxItem) {
+    setOwnBoxes((current) =>
+      current.map((entry) => (entry.id === previousId ? updatedItem : entry)),
+    );
+    setAllBoxes((current) =>
+      current.map((entry) => (entry.id === previousId ? updatedItem : entry)),
+    );
+    router.refresh();
   }
 
   return (
@@ -189,7 +353,14 @@ export function DonationBoxesDashboard({
             </p>
           </Card>
         ) : (
-          ownBoxes.map((item) => <DonationBoxRow item={item} key={item.id} />)
+          ownBoxes.map((item) => (
+            <DonationBoxRow
+              item={item}
+              key={item.id}
+              onRename={handleRename}
+              onDelete={handleDelete}
+            />
+          ))
         )}
       </section>
 
