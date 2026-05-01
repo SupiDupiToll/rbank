@@ -54,7 +54,6 @@ export type AdminMerchant = {
   id: string;
   name: string;
   merchantId: string;
-  allowedRedirectUrls: string[];
   webhookUrl: string | null;
   isActive: boolean;
   createdAt: Date;
@@ -187,7 +186,6 @@ export async function getAdminDashboardData() {
         id: merchant.id,
         name: merchant.name,
         merchantId: merchant.merchantId,
-        allowedRedirectUrls: merchant.allowedRedirectUrls,
         webhookUrl: merchant.webhookUrl,
         isActive: merchant.isActive,
         createdAt: merchant.createdAt,

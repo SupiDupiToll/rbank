@@ -17,7 +17,7 @@ import {
 } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
-import { safeTextSchema, urlSchema } from "@/lib/security";
+import { safeTextSchema } from "@/lib/security";
 
 export async function GET(request: Request) {
   return safeRoute(async () => {
@@ -58,8 +58,7 @@ export async function POST(request: Request) {
       request,
       z.object({
         name: safeTextSchema(80),
-        allowedRedirectUrls: z.array(urlSchema).min(1),
-        webhookUrl: urlSchema.nullish(),
+        webhookUrl: z.string().nullish(),
       }),
     );
 
@@ -79,7 +78,7 @@ export async function POST(request: Request) {
         merchantSecretHash,
         webhookSecretHash,
         webhookSecretEnc,
-        allowedRedirectUrls: body.allowedRedirectUrls,
+        allowedRedirectUrls: [],
         webhookUrl: body.webhookUrl ?? null,
       },
     });
@@ -89,7 +88,6 @@ export async function POST(request: Request) {
         id: merchant.id,
         name: merchant.name,
         merchantId: merchant.merchantId,
-        allowedRedirectUrls: merchant.allowedRedirectUrls,
         webhookUrl: merchant.webhookUrl,
         isActive: merchant.isActive,
         createdAt: merchant.createdAt,

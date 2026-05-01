@@ -70,7 +70,6 @@ export function AdminPanel({
   const [fgEndDate, setFgEndDate] = useState("");
 
   const [merchantName, setMerchantName] = useState("");
-  const [merchantRedirectUrls, setMerchantRedirectUrls] = useState("");
   const [merchantWebhookUrl, setMerchantWebhookUrl] = useState("");
   const [merchantActive, setMerchantActive] = useState(true);
   const [credentialsModal, setCredentialsModal] = useState<{
@@ -89,14 +88,12 @@ export function AdminPanel({
   const hydrateMerchantForm = useCallback((merchant: AdminMerchant | null) => {
     if (!merchant) {
       setMerchantName("");
-      setMerchantRedirectUrls("");
       setMerchantWebhookUrl("");
       setMerchantActive(true);
       return;
     }
 
     setMerchantName(merchant.name);
-    setMerchantRedirectUrls(merchant.allowedRedirectUrls.join("\n"));
     setMerchantWebhookUrl(merchant.webhookUrl ?? "");
     setMerchantActive(merchant.isActive);
   }, []);
@@ -334,11 +331,6 @@ export function AdminPanel({
     setMessage("");
     setCredentialsModal(null);
 
-    const redirectUrls = merchantRedirectUrls
-      .split("\n")
-      .map((value) => value.trim())
-      .filter(Boolean);
-
     const response = await fetch("/api/admin/merchants", {
       method: "POST",
       headers: {
@@ -347,7 +339,6 @@ export function AdminPanel({
       },
       body: JSON.stringify({
         name: merchantName,
-        allowedRedirectUrls: redirectUrls,
         webhookUrl: merchantWebhookUrl || null,
       }),
     });
@@ -391,22 +382,16 @@ export function AdminPanel({
 
     setMessage("");
 
-    const redirectUrls = merchantRedirectUrls
-      .split("\n")
-      .map((value) => value.trim())
-      .filter(Boolean);
-
     const response = await fetch(
       `/api/admin/merchants/${selectedMerchant.merchantId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
         },
         body: JSON.stringify({
           name: merchantName,
-          allowedRedirectUrls: redirectUrls,
           webhookUrl: merchantWebhookUrl || null,
           isActive: merchantActive,
         }),
@@ -846,17 +831,6 @@ export function AdminPanel({
               />
             </div>
             <div className="space-y-2">
-              <Label>Erlaubte Redirect-URLs</Label>
-              <textarea
-                className="min-h-32 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
-                onChange={(event) =>
-                  setMerchantRedirectUrls(event.target.value)
-                }
-                placeholder={"https://shop.de/success\nhttps://shop.de/cancel"}
-                value={merchantRedirectUrls}
-              />
-            </div>
-            <div className="space-y-2">
               <Label>Webhook-URL (optional)</Label>
               <Input
                 value={merchantWebhookUrl}
@@ -957,16 +931,6 @@ export function AdminPanel({
                       }
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Erlaubte Redirect-URLs</Label>
-                  <textarea
-                    className="min-h-28 w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
-                    onChange={(event) =>
-                      setMerchantRedirectUrls(event.target.value)
-                    }
-                    value={merchantRedirectUrls}
-                  />
                 </div>
                 <label className="flex items-center gap-3 text-sm text-slate-200">
                   <input

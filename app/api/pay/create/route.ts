@@ -6,9 +6,8 @@ import {
   createPaymentExpiryDate,
   generatePaymentToken,
   getCheckoutPaymentUrl,
-  isRedirectUrlAllowed,
 } from "@/lib/payments";
-import { amountCentsSchema, safeTextSchema, urlSchema } from "@/lib/security";
+import { amountCentsSchema, safeTextSchema } from "@/lib/security";
 
 export async function POST(request: Request) {
   const { merchant, error } = await authenticateMerchantRequest(request);
@@ -31,8 +30,8 @@ export async function POST(request: Request) {
       amount: amountCentsSchema,
       currency: z.literal("EUR").default("EUR"),
       description: safeTextSchema(120),
-      redirectUrl: urlSchema,
-      cancelUrl: urlSchema,
+      redirectUrl: z.string(),
+      cancelUrl: z.string(),
       metadata: z.record(z.string(), z.string()).optional(),
     })
     .safeParse(rawBody);
@@ -40,16 +39,6 @@ export async function POST(request: Request) {
   if (!parsedBody.success) {
     return NextResponse.json(
       { error: "Ungueltige Eingabedaten." },
-      { status: 400 },
-    );
-  }
-
-  if (
-    !isRedirectUrlAllowed(parsedBody.data.redirectUrl) ||
-    !isRedirectUrlAllowed(parsedBody.data.cancelUrl)
-  ) {
-    return NextResponse.json(
-      { error: "Redirect-URL ist nicht gueltig." },
       { status: 400 },
     );
   }

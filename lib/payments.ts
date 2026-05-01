@@ -83,34 +83,6 @@ export function createPaymentExpiryDate() {
   return new Date(Date.now() + CHECKOUT_SESSION_TTL_MS);
 }
 
-const BLOCKED_PROTOCOLS = new Set([
-  "javascript:",
-  "data:",
-  "file:",
-  "blob:",
-  "ftp:",
-]);
-const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
-
-function safeParseUrl(value: string): URL | null {
-  try {
-    const url = new URL(value);
-    if (BLOCKED_PROTOCOLS.has(url.protocol)) {
-      return null;
-    }
-    if (!ALLOWED_PROTOCOLS.has(url.protocol)) {
-      return null;
-    }
-    return url;
-  } catch {
-    return null;
-  }
-}
-
-export function isRedirectUrlAllowed(targetUrl: string): boolean {
-  return safeParseUrl(targetUrl) !== null;
-}
-
 export function getPaymentStatus(session: {
   status: PaymentSessionStatus;
   expiresAt: Date;

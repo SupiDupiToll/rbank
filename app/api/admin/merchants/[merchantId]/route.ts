@@ -11,7 +11,7 @@ import {
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
-import { merchantIdSchema, safeTextSchema, urlSchema } from "@/lib/security";
+import { merchantIdSchema, safeTextSchema } from "@/lib/security";
 
 type Params = {
   params: Promise<{ merchantId: string }>;
@@ -28,7 +28,11 @@ export async function PATCH(request: Request, context: Params) {
     const csrfError = enforceCsrf(request);
     if (csrfError) return csrfError;
 
-    const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
+    const rateLimitError = await enforceRateLimit(
+      request,
+      rateLimitPolicies.adminApi,
+      user.id,
+    );
     if (rateLimitError) return rateLimitError;
 
     const { merchantId } = await context.params;
@@ -38,8 +42,7 @@ export async function PATCH(request: Request, context: Params) {
       request,
       z.object({
         name: safeTextSchema(80),
-        allowedRedirectUrls: z.array(urlSchema).min(1),
-        webhookUrl: urlSchema.nullish(),
+        webhookUrl: z.string().nullish(),
         isActive: z.boolean(),
       }),
     );
@@ -48,7 +51,7 @@ export async function PATCH(request: Request, context: Params) {
       where: { merchantId: parsedMerchantId },
       data: {
         name: body.name,
-        allowedRedirectUrls: body.allowedRedirectUrls,
+        allowedRedirectUrls: [],
         webhookUrl: body.webhookUrl ?? null,
         isActive: body.isActive,
       },
