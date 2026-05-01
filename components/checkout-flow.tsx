@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { formatEuroFromCents } from "@/lib/money";
 
 type CheckoutSession = {
@@ -45,9 +44,6 @@ type Props = {
 
 export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
   const router = useRouter();
-  const [showLogin, setShowLogin] = useState(Boolean(checkoutUser));
-  const [customerId, setCustomerId] = useState("");
-  const [pin, setPin] = useState("");
   const [paymentPin, setPaymentPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [message, setMessage] = useState("");
@@ -91,39 +87,6 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
 
     return () => window.clearTimeout(timeout);
   }, [successRedirectUrl]);
-
-  async function submitLogin() {
-    setIsSubmitting(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(
-        `/api/pay/checkout/${initialSession.token}/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ customerId, pin }),
-        },
-      );
-
-      const data = (await response.json()) as {
-        error?: string;
-        remainingAttempts?: number;
-      };
-
-      if (!response.ok) {
-        setMessage(data.error ?? "Login fehlgeschlagen.");
-        setRemainingAttempts(data.remainingAttempts ?? null);
-        return;
-      }
-
-      router.refresh();
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
 
   async function submitPayment() {
     if (paymentPin.length < paymentPinMinLength) {
@@ -253,97 +216,6 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
             </p>
           </div>
 
-          {!showLogin && !checkoutUser ? (
-            <div className="space-y-4">
-              <Button
-                className="h-14 w-full rounded-2xl text-base"
-                onClick={() => setShowLogin(true)}
-              >
-                Mit RBank bezahlen
-              </Button>
-              <button
-                className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200"
-                onClick={() => void cancelPayment()}
-                type="button"
-              >
-                Abbrechen
-              </button>
-            </div>
-          ) : null}
-
-          {showLogin && !checkoutUser ? (
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-200">
-                  CustomerID
-                </label>
-                <Input
-                  inputMode="numeric"
-                  maxLength={8}
-                  onChange={(event) =>
-                    setCustomerId(
-                      event.target.value.replace(/\D/g, "").slice(0, 8),
-                    )
-                  }
-                  placeholder="47291836"
-                  value={customerId}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-slate-200">
-                    PIN
-                  </label>
-                  <button
-                    className="text-sm font-semibold text-emerald-300"
-                    onClick={() => setShowPin((current) => !current)}
-                    type="button"
-                  >
-                    {showPin ? "Verbergen" : "Anzeigen"}
-                  </button>
-                </div>
-                <Input
-                  inputMode="numeric"
-                  maxLength={6}
-                  onChange={(event) =>
-                    setPin(event.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  placeholder="1234"
-                  type={showPin ? "text" : "password"}
-                  value={pin}
-                />
-                <PinKeypad value={pin} onChange={setPin} />
-              </div>
-
-              {remainingAttempts !== null ? (
-                <p className="text-sm text-amber-300">
-                  Noch {remainingAttempts} Versuche
-                </p>
-              ) : null}
-              {message ? (
-                <p className="text-sm text-rose-300">{message}</p>
-              ) : null}
-
-              <Button
-                className="h-14 w-full rounded-2xl text-base"
-                disabled={
-                  isSubmitting || customerId.length !== 8 || pin.length < 4
-                }
-                onClick={() => void submitLogin()}
-              >
-                {isSubmitting ? "Pruefung laeuft..." : "Weiter"}
-              </Button>
-              <button
-                className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200"
-                onClick={() => void cancelPayment()}
-                type="button"
-              >
-                Abbrechen
-              </button>
-            </div>
-          ) : null}
-
           {checkoutUser ? (
             <div className="space-y-5">
               <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
@@ -388,7 +260,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                   PIN bestaetigen
                 </p>
                 <div className="grid grid-cols-6 gap-3">
-                  {Array.from({ length: 6 }, (_, index) => (
+                  {Array.from({ length: 4 }, (_, index) => (
                     <div
                       key={index}
                       aria-hidden="true"

@@ -5,6 +5,7 @@ import {
   completeCheckoutPayment,
   getPaymentSessionByToken,
 } from "@/lib/payment-gateway";
+import { getCurrentAppUser } from "@/lib/current-user";
 import { getCheckoutCookieUserId, getPaymentStatus } from "@/lib/payments";
 import {
   clearPinAttempts,
@@ -37,9 +38,12 @@ export async function POST(request: Request, context: Params) {
     return NextResponse.json({ error: "Zahlung ist nicht mehr verfuegbar.", status }, { status: 409 });
   }
 
-  const userId = await getCheckoutCookieUserId(parsedToken.data);
+  const checkoutCookieUserId = await getCheckoutCookieUserId(parsedToken.data);
+  const currentUser = checkoutCookieUserId ? null : await getCurrentAppUser();
+  const userId = checkoutCookieUserId ?? currentUser?.id ?? null;
+
   if (!userId) {
-    return NextResponse.json({ error: "Checkout-Anmeldung fehlt." }, { status: 401 });
+    return NextResponse.json({ error: "Bitte zuerst anmelden." }, { status: 401 });
   }
 
   let rawBody: unknown;

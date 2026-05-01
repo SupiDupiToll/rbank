@@ -43,8 +43,9 @@ export function AdminPanel({
   );
   const [transactions, setTransactions] =
     useState<AdminTransaction[]>(initialTransactions);
-  const [airTransactions, setAirTransactions] =
-    useState<AdminAirTransaction[]>(initialAirTransactions);
+  const [airTransactions, setAirTransactions] = useState<AdminAirTransaction[]>(
+    initialAirTransactions,
+  );
   const [airInCirculation, setAirInCirculation] = useState(
     initialAirInCirculation,
   );
@@ -1062,7 +1063,7 @@ async function payWithRBank() {
 export async function POST(req) {
   const { orderId, amount } = await req.json();
 
-  const res = await fetch('https://rbank.de/api/pay/create', {
+  const res = await fetch('https://rbank.sdtoll.de/api/pay/create', {
     method: 'POST',
     headers: {
       'Authorization': \`Bearer \${MERCHANT_ID}:\${MERCHANT_SECRET}\`,
@@ -1085,7 +1086,7 @@ export async function POST(req) {
 export async function GET(req) {
   const token = req.nextUrl.searchParams.get('token');
 
-  const res = await fetch(\`https://rbank.de/api/pay/verify/\${token}\`, {
+  const res = await fetch(\`https://rbank.sdtoll.de/api/pay/verify/\${token}\`, {
     headers: { 'Authorization': \`Bearer \${MERCHANT_ID}:\${MERCHANT_SECRET}\` }
   });
 

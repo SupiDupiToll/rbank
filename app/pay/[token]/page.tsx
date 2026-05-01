@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CheckoutFlow } from "@/components/checkout-flow";
+import { getCurrentAppUser } from "@/lib/current-user";
 import { getCheckoutUserSummary, getPaymentSessionByToken, serializePaymentSession } from "@/lib/payment-gateway";
-import { getCheckoutCookieUserId } from "@/lib/payments";
 import { paymentTokenSchema } from "@/lib/security";
+import { stackServerApp } from "@/stack/server";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -15,15 +16,20 @@ export default async function PayPage({ params }: Props) {
     notFound();
   }
 
-  const session = await getPaymentSessionByToken(parsedToken.data);
+  const [session, user, stackUser] = await Promise.all([
+    getPaymentSessionByToken(parsedToken.data),
+    getCurrentAppUser(),
+    stackServerApp.getUser(),
+  ]);
   if (!session) {
     notFound();
   }
 
-  const checkoutUserId = await getCheckoutCookieUserId(parsedToken.data);
-  const checkoutUser = checkoutUserId
-    ? await getCheckoutUserSummary(checkoutUserId)
-    : null;
+  if (!user || !stackUser) {
+    redirect(`/login?redirect=${encodeURIComponent(`/pay/${parsedToken.data}`)}`);
+  }
+
+  const checkoutUser = await getCheckoutUserSummary(user.id);
 
   return (
     <CheckoutFlow
