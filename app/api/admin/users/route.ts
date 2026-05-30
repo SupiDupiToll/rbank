@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { enforceRateLimit, requireAdmin, safeRoute } from "@/lib/api-helpers";
 import { calculateBalanceCents } from "@/lib/banking";
-import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
     if (rateLimitError) return rateLimitError;
 
-    await settleMaturedFestgeldAccounts();
+    await settleCustomerAccounting();
 
     const users = await prisma.user.findMany({
       where: { role: "CUSTOMER" },

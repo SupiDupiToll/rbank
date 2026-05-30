@@ -331,7 +331,7 @@ export function CustomerTransferForm({
       }}
     >
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-200">
-        Verfügbarer Kontostand:{" "}
+        Aktueller Kontostand:{" "}
         <span className="font-bold text-primary">
           {formattedAvailableBalance}
         </span>

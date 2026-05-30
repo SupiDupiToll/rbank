@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { getBalancesByCurrency } from "@/lib/banking";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -170,6 +171,8 @@ export default async function DashboardPage() {
   if (!user) {
     return null;
   }
+
+  await settleCustomerAccounting(user.id);
 
   const [transactions, savings] = await Promise.all([
     prisma.transaction.findMany({

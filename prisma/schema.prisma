@@ -160,6 +160,7 @@ enum TransactionSource {
   CHECKOUT
   DONATION
   REFUND
+  OVERDRAFT_INTEREST
 }
 
 enum FestgeldStatus {

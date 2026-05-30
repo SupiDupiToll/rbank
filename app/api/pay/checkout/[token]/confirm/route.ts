@@ -123,10 +123,6 @@ export async function POST(request: Request, context: Params) {
     });
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === "INSUFFICIENT_FUNDS") {
-        return NextResponse.json({ error: "Nicht genug Guthaben." }, { status: 409 });
-      }
-
       if (error.message === "SELF_DONATION_NOT_ALLOWED") {
         return NextResponse.json(
           { error: "Eigene Spendenboxen koennen nicht selbst bezahlt werden." },

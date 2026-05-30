@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents, getBalancesByCurrency } from "@/lib/banking";
-import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 
 export type AdminUserRow = {
   customerId: string;
@@ -16,7 +16,7 @@ export type AdminTransaction = {
   amount: number;
   currency: "EUR" | "AIR";
   description: string;
-  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND";
+  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND" | "OVERDRAFT_INTEREST";
   transferId: string | null;
   date: Date;
 };
@@ -65,7 +65,7 @@ export type AdminMerchant = {
 };
 
 export async function getAdminDashboardData() {
-  await settleMaturedFestgeldAccounts();
+  await settleCustomerAccounting();
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -9,7 +9,8 @@ import {
   requireAdmin,
   safeRoute
 } from "@/lib/api-helpers";
-import { createFestgeldAccount, settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { createFestgeldAccount } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import {
   amountCentsSchema,
@@ -59,24 +60,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ungueltige Daten." }, { status: 400 });
     }
 
-    try {
-      const { account } = await createFestgeldAccount({
-        userId: accountHolder.id,
-        label: body.label,
-        amount: body.amount,
-        interestRate: body.interestRate,
-        startDate: body.startDate,
-        endDate: body.endDate
-      });
+    const { account } = await createFestgeldAccount({
+      userId: accountHolder.id,
+      label: body.label,
+      amount: body.amount,
+      interestRate: body.interestRate,
+      startDate: body.startDate,
+      endDate: body.endDate
+    });
 
-      return NextResponse.json({ account }, { status: 201 });
-    } catch (creationError) {
-      if (creationError instanceof Error && creationError.message === "INSUFFICIENT_FUNDS") {
-        return NextResponse.json({ error: "Nicht genuegend Guthaben fuer die Festgeldanlage." }, { status: 400 });
-      }
-
-      throw creationError;
-    }
+    return NextResponse.json({ account }, { status: 201 });
   });
 }
 
@@ -88,7 +81,7 @@ export async function GET(request: Request) {
     const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
     if (rateLimitError) return rateLimitError;
 
-    await settleMaturedFestgeldAccounts();
+    await settleCustomerAccounting();
 
     const accounts = await prisma.festgeldAccount.findMany({
       orderBy: [{ endDate: "asc" }, { createdAt: "desc" }],

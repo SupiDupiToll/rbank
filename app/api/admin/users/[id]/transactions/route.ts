@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { enforceRateLimit, parseInput, requireAdmin, safeRoute } from "@/lib/api-helpers";
-import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { customerIdSchema } from "@/lib/security";
 
@@ -29,7 +29,7 @@ export async function GET(request: Request, context: Params) {
       return NextResponse.json({ transactions: [] });
     }
 
-    await settleMaturedFestgeldAccounts(accountHolder.id);
+    await settleCustomerAccounting(accountHolder.id);
 
     const transactions = await prisma.transaction.findMany({
       where: { userId: accountHolder.id },

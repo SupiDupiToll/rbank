@@ -1,5 +1,6 @@
 import { CustomerTransferForm } from "@/components/customer-transfer-form";
 import { getBalancesByCurrency } from "@/lib/banking";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +11,8 @@ export default async function TransferPage() {
   if (!user) {
     return null;
   }
+
+  await settleCustomerAccounting(user.id);
 
   const transactions = await prisma.transaction.findMany({
     where: { userId: user.id },

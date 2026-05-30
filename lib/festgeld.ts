@@ -1,6 +1,6 @@
 import { Prisma, type FestgeldAccount } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { calculateBalanceCents } from "@/lib/banking";
+import { settleOverdraftInterest } from "@/lib/overdraft";
 
 export function getFestgeldDurationDays(startDate: Date, endDate: Date) {
   const millisecondsPerDay = 24 * 60 * 60 * 1000;
@@ -84,7 +84,7 @@ export async function settleMaturedFestgeldAccounts(userId?: string) {
           interestCreditedAt: new Date(),
         },
       });
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 }
 
@@ -97,19 +97,10 @@ export async function createFestgeldAccount(input: {
   endDate: Date;
 }) {
   await settleMaturedFestgeldAccounts(input.userId);
+  await settleOverdraftInterest(input.userId);
 
   return prisma.$transaction(
     async (tx) => {
-      const transactions = await tx.transaction.findMany({
-        where: { userId: input.userId, currency: "EUR" },
-        select: { type: true, amount: true, currency: true },
-      });
-
-      const balanceCents = calculateBalanceCents(transactions, "EUR");
-      if (balanceCents < input.amount) {
-        throw new Error("INSUFFICIENT_FUNDS");
-      }
-
       const lockTransaction = await tx.transaction.create({
         data: {
           userId: input.userId,

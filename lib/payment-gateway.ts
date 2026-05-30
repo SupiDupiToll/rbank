@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents } from "@/lib/banking";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import {
   clearCheckoutCookie,
   decryptWebhookSecret,
@@ -84,6 +85,8 @@ export function serializePaymentSession(session: PaymentSessionRecord) {
 }
 
 export async function getCheckoutUserSummary(userId: string) {
+  await settleCustomerAccounting(userId);
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -175,6 +178,7 @@ export async function sendMerchantWebhook(sessionToken: string) {
 
 export async function completeCheckoutPayment(token: string, userId: string) {
   const paidAt = new Date();
+  await settleCustomerAccounting(userId);
 
   const result = await prisma.$transaction(
     async (tx) => {
@@ -220,20 +224,11 @@ export async function completeCheckoutPayment(token: string, userId: string) {
           id: true,
           customerId: true,
           displayName: true,
-          transactions: {
-            where: { currency: "EUR" },
-            select: { type: true, amount: true, currency: true },
-          },
         },
       });
 
       if (!payer) {
         throw new Error("USER_NOT_FOUND");
-      }
-
-      const balanceCents = calculateBalanceCents(payer.transactions, "EUR");
-      if (balanceCents < session.amount) {
-        throw new Error("INSUFFICIENT_FUNDS");
       }
 
       if (session.recipientUser?.id === payer.id) {

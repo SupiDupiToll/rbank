@@ -6,8 +6,8 @@ import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import {
   calculateFestgeldInterestCents,
-  settleMaturedFestgeldAccounts,
 } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 
 export default async function FestgeldPage() {
   const user = await getCurrentAppUser();
@@ -16,7 +16,7 @@ export default async function FestgeldPage() {
     return null;
   }
 
-  await settleMaturedFestgeldAccounts(user.id);
+  await settleCustomerAccounting(user.id);
 
   const festgeldAccounts = await prisma.festgeldAccount.findMany({
     where: { userId: user.id },

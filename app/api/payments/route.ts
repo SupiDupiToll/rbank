@@ -10,7 +10,7 @@ import {
   requireCustomerWithPin,
   safeRoute,
 } from "@/lib/api-helpers";
-import { calculateBalanceCents } from "@/lib/banking";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { verifyPin } from "@/lib/pin";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
@@ -33,6 +33,8 @@ export async function POST(request: Request) {
       recipient.id,
     );
     if (rateLimitError) return rateLimitError;
+
+    await settleCustomerAccounting(recipient.id);
 
     const body = await parseJsonBody(
       request,
@@ -74,20 +76,6 @@ export async function POST(request: Request) {
 
           if (!isValidPin) {
             throw new Error("INVALID_PIN");
-          }
-
-          const payerTransactions = await tx.transaction.findMany({
-            where: { userId: payer.id, currency: "EUR" },
-            select: { type: true, amount: true, currency: true },
-          });
-
-          const payerBalanceCents = calculateBalanceCents(
-            payerTransactions,
-            "EUR",
-          );
-
-          if (payerBalanceCents < body.amount) {
-            throw new Error("PAYMENT_REJECTED");
           }
 
           const outgoingTransaction = await tx.transaction.create({

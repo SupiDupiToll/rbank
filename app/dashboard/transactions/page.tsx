@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { formatGermanDate } from "@/lib/date";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
@@ -14,6 +15,7 @@ const sourceLabels = {
   CHECKOUT: "Checkout",
   DONATION: "Spende",
   REFUND: "Refund",
+  OVERDRAFT_INTEREST: "Dispozins",
 } as const;
 
 export default async function TransactionsPage({
@@ -24,6 +26,8 @@ export default async function TransactionsPage({
   if (!user) {
     return null;
   }
+
+  await settleCustomerAccounting(user.id);
 
   const { q = "" } = await searchParams;
   const query = q.trim();

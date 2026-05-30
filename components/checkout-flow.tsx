@@ -250,11 +250,6 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
                 </div>
               </div>
 
-              {remainingBalance !== null && remainingBalance < 0 ? (
-                <p className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                  Nicht genug Guthaben
-                </p>
-              ) : null}
               <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
                 <p className="text-sm font-bold uppercase tracking-widest text-primary">
                   PIN bestaetigen
@@ -287,11 +282,7 @@ export function CheckoutFlow({ initialSession, checkoutUser }: Props) {
 
               <Button
                 className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                disabled={
-                  isProcessing ||
-                  paymentPin.length < paymentPinMinLength ||
-                  Boolean(remainingBalance !== null && remainingBalance < 0)
-                }
+                disabled={isProcessing || paymentPin.length < paymentPinMinLength}
                 onClick={() => void submitPayment()}
               >
                 Jetzt bezahlen

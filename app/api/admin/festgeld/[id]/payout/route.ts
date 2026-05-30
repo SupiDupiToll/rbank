@@ -7,7 +7,8 @@ import {
   requireAdmin,
   safeRoute
 } from "@/lib/api-helpers";
-import { payoutUnlockedFestgeldAccount, settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { payoutUnlockedFestgeldAccount } from "@/lib/festgeld";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
@@ -33,7 +34,7 @@ export async function POST(request: Request, context: Params) {
     const { id } = await context.params;
     const accountId = parseInput(cuidSchema, id);
 
-    await settleMaturedFestgeldAccounts();
+    await settleCustomerAccounting();
 
     const account = await prisma.festgeldAccount.findUnique({
       where: { id: accountId }

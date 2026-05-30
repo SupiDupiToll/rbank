@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getBalancesByCurrency } from "@/lib/banking";
-import { settleMaturedFestgeldAccounts } from "@/lib/festgeld";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 
 export async function getCustomerDashboardData(userId: string) {
-  await settleMaturedFestgeldAccounts(userId);
+  await settleCustomerAccounting(userId);
 
   const [transactions, festgeldAccounts] = await Promise.all([
     prisma.transaction.findMany({

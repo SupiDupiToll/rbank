@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { DonationBoxesDashboard } from "@/components/donation-boxes-dashboard";
 import { getDonationBoxUrl } from "@/lib/donation-boxes";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
@@ -10,6 +11,8 @@ export default async function DonationBoxesPage() {
   if (!user) {
     return null;
   }
+
+  await settleCustomerAccounting(user.id);
 
   if (!user.showDonationBoxesList) {
     redirect("/dashboard/settings");

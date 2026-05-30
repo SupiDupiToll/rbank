@@ -11,7 +11,7 @@ import {
   requireCustomerWithPin,
   safeRoute,
 } from "@/lib/api-helpers";
-import { calculateBalanceCents } from "@/lib/banking";
+import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import {
   amountCentsSchema,
@@ -38,6 +38,8 @@ export async function POST(request: Request) {
       user.id,
     );
     if (rateLimitError) return rateLimitError;
+
+    await settleCustomerAccounting(user.id);
 
     const body = await parseJsonBody(
       request,
@@ -79,21 +81,7 @@ export async function POST(request: Request) {
             select: { id: true, customerId: true, role: true },
           });
 
-          const senderTransactions = await tx.transaction.findMany({
-            where: { userId: user.id, currency: body.currency },
-            select: { type: true, amount: true, currency: true },
-          });
-
-          const senderBalanceCents = calculateBalanceCents(
-            senderTransactions,
-            body.currency,
-          );
-
-          if (
-            !recipient ||
-            recipient.role !== "CUSTOMER" ||
-            senderBalanceCents < body.amount
-          ) {
+          if (!recipient || recipient.role !== "CUSTOMER") {
             throw new Error("TRANSFER_REJECTED");
           }
 

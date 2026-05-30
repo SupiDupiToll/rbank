@@ -28,6 +28,48 @@ type AdminPanelProps = {
   initialMerchants: AdminMerchant[];
 };
 
+function getTransactionSourceMeta(source: AdminTransaction["source"]) {
+  if (source === "TRANSFER") {
+    return {
+      label: "TRANSFER",
+      className: "bg-primary/10 text-primary",
+    };
+  }
+
+  if (source === "CHECKOUT") {
+    return {
+      label: "CHECKOUT",
+      className: "bg-emerald-500/10 text-emerald-300",
+    };
+  }
+
+  if (source === "DONATION") {
+    return {
+      label: "DONATION",
+      className: "bg-sky-500/10 text-sky-200",
+    };
+  }
+
+  if (source === "REFUND") {
+    return {
+      label: "REFUND",
+      className: "bg-sky-500/10 text-sky-300",
+    };
+  }
+
+  if (source === "OVERDRAFT_INTEREST") {
+    return {
+      label: "DISPOZINS",
+      className: "bg-amber-500/10 text-amber-300",
+    };
+  }
+
+  return {
+    label: source,
+    className: "bg-slate-800 text-slate-300",
+  };
+}
+
 export function AdminPanel({
   initialUsers,
   initialSelectedCustomerId,
@@ -587,18 +629,8 @@ export function AdminPanel({
                     <Td>{formatGermanDate(transaction.date)}</Td>
                     <Td>
                       <div className="flex items-center gap-3">
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                            transaction.source === "TRANSFER"
-                              ? "bg-primary/10 text-primary"
-                              : transaction.source === "CHECKOUT"
-                                ? "bg-emerald-500/10 text-emerald-300"
-                                : transaction.source === "REFUND"
-                                  ? "bg-sky-500/10 text-sky-300"
-                                  : "bg-slate-800 text-slate-300"
-                          }`}
-                        >
-                          {transaction.source}
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${getTransactionSourceMeta(transaction.source).className}`}>
+                          {getTransactionSourceMeta(transaction.source).label}
                         </span>
                         <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
                           {transaction.currency}
