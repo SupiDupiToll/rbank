@@ -83,6 +83,24 @@ function ListIcon() {
   );
 }
 
+function LoanIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5.25 12h13.5m-13.5 4.5h13.5M5.25 7.5h13.5M12 21.75v-9m-6.75 3h13.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H5.25A1.5 1.5 0 0 0 3.75 6v8.25a1.5 1.5 0 0 0 1.5 1.5Z"
+      />
+    </svg>
+  );
+}
+
 function PiggyIcon() {
   return (
     <svg
@@ -157,6 +175,7 @@ const baseQuickActions = [
     label: "Verlauf",
     icon: ListIcon,
   },
+  { href: "/dashboard/kredite" as Route, label: "Kredite", icon: LoanIcon },
   { href: "/dashboard/festgeld" as Route, label: "Festgeld", icon: PiggyIcon },
   {
     href: "/dashboard/settings" as Route,
@@ -174,7 +193,7 @@ export default async function DashboardPage() {
 
   await settleCustomerAccounting(user.id);
 
-  const [transactions, savings] = await Promise.all([
+  const [transactions, savings, loans] = await Promise.all([
     prisma.transaction.findMany({
       where: { userId: user.id },
       select: { type: true, amount: true, currency: true },
@@ -183,13 +202,20 @@ export default async function DashboardPage() {
       where: { userId: user.id },
       _sum: { amount: true },
     }),
+    prisma.loan.aggregate({
+      where: { userId: user.id, status: "ACTIVE" },
+      _sum: { remainingAmount: true },
+    }),
   ]);
 
   const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
   const savingsTotal = savings._sum.amount ?? 0;
-  const totalCents = eurBalanceCents + savingsTotal;
+  const loanDebt = loans._sum.remainingAmount ?? 0;
+  const totalCents = eurBalanceCents + savingsTotal - loanDebt;
+  const mainActions = baseQuickActions.filter((a) => a.label !== "Einstellungen");
+  const settingsAction = baseQuickActions.find((a) => a.label === "Einstellungen");
   const quickActions = [
-    ...baseQuickActions.slice(0, 4),
+    ...mainActions,
     ...(user.showDonationBoxesList
       ? [
           {
@@ -199,7 +225,7 @@ export default async function DashboardPage() {
           },
         ]
       : []),
-    baseQuickActions[4],
+    ...(settingsAction ? [settingsAction] : []),
   ];
 
   return (
@@ -234,6 +260,14 @@ export default async function DashboardPage() {
               <p className="text-slate-400">Festgeld</p>
               <p className="mt-1 font-semibold text-slate-100">
                 {formatEuroFromCents(savingsTotal)}
+              </p>
+            </div>
+          )}
+          {loanDebt > 0 && (
+            <div>
+              <p className="text-slate-400">Kreditschuld</p>
+              <p className="mt-1 font-semibold text-red-400">
+                -{formatEuroFromCents(loanDebt)}
               </p>
             </div>
           )}

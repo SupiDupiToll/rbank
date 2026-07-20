@@ -27,6 +27,10 @@ export default async function AdminPage() {
         initialSelectedCustomerId={data.users[0]?.customerId ?? ""}
         initialTransactions={data.initialTransactions}
         initialUsers={data.users}
+        initialLoanProducts={data.loanProducts}
+        initialPendingLoans={data.pendingLoans}
+        initialActiveLoans={data.activeLoans}
+        initialCompletedLoans={data.completedLoans}
       />
       <PWAInstallBanner />
     </>

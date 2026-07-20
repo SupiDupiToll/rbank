@@ -158,6 +158,25 @@ function SettingsIcon({ className }: NavIconProps) {
   );
 }
 
+function LoanIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M5.25 12h13.5m-13.5 4.5h13.5M5.25 7.5h13.5M12 21.75v-9m-6.75 3h13.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H5.25A1.5 1.5 0 0 0 3.75 6v8.25a1.5 1.5 0 0 0 1.5 1.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 const baseNavigation = [
   { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
   {
@@ -174,6 +193,11 @@ const baseNavigation = [
     href: "/dashboard/transactions" as Route,
     label: "Transaktionen",
     icon: TransactionsIcon,
+  },
+  {
+    href: "/dashboard/kredite" as Route,
+    label: "Kredite",
+    icon: LoanIcon,
   },
   {
     href: "/dashboard/festgeld" as Route,

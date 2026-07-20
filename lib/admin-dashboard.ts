@@ -16,7 +16,7 @@ export type AdminTransaction = {
   amount: number;
   currency: "EUR" | "AIR";
   description: string;
-  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND" | "OVERDRAFT_INTEREST";
+  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND" | "OVERDRAFT_INTEREST" | "LOAN_DISBURSEMENT" | "LOAN_REPAYMENT";
   transferId: string | null;
   date: Date;
 };
@@ -35,6 +35,34 @@ export type AdminFestgeld = {
   status: "ACTIVE" | "UNLOCKED" | "PAID_OUT";
   startDate: Date;
   endDate: Date;
+};
+
+export type AdminLoan = {
+  id: string;
+  amount: number;
+  interestRate: number;
+  termMonths: number;
+  monthlyPayment: number;
+  remainingAmount: number;
+  status: "PENDING" | "APPROVED" | "ACTIVE" | "COMPLETED" | "REJECTED" | "CANCELLED";
+  purpose: string | null;
+  createdAt: Date;
+  approvedAt: Date | null;
+  paidOffAt: Date | null;
+  user: { customerId: string; displayName: string | null };
+  loanProduct: { name: string } | null;
+};
+
+export type AdminLoanProduct = {
+  id: string;
+  name: string;
+  description: string;
+  minAmount: number;
+  maxAmount: number;
+  minTermMonths: number;
+  maxTermMonths: number;
+  interestRate: number;
+  isActive: boolean;
 };
 
 export type AdminMerchantSession = {
@@ -71,7 +99,7 @@ export async function getAdminDashboardData() {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [users, accounts, merchants] = await Promise.all([
+  const [users, accounts, merchants, loanProducts, pendingLoans, activeLoans, completedLoans] = await Promise.all([
     prisma.user.findMany({
       where: { role: "CUSTOMER" },
       orderBy: { createdAt: "asc" },
@@ -106,7 +134,33 @@ export async function getAdminDashboardData() {
           },
         },
       },
-    })
+    }),
+    prisma.loanProduct.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.loan.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { customerId: true, displayName: true } },
+        loanProduct: { select: { name: true } },
+      },
+    }),
+    prisma.loan.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { customerId: true, displayName: true } },
+        loanProduct: { select: { name: true } },
+      },
+    }),
+    prisma.loan.findMany({
+      where: { status: "COMPLETED" },
+      orderBy: { paidOffAt: "desc" },
+      take: 20,
+      include: {
+        user: { select: { customerId: true, displayName: true } },
+        loanProduct: { select: { name: true } },
+      },
+    }),
   ]);
 
   const mappedUsers = users.map((customer) => ({
@@ -176,6 +230,10 @@ export async function getAdminDashboardData() {
       customerId: transaction.user.customerId,
       customerName: transaction.user.displayName,
     })),
+    loanProducts,
+    pendingLoans,
+    activeLoans,
+    completedLoans,
     merchants: merchants.map((merchant) => {
       const completedSessions = merchant.paymentSessions.filter(
         (session) =>

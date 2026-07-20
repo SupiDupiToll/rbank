@@ -16,6 +16,8 @@ const sourceLabels = {
   DONATION: "Spende",
   REFUND: "Refund",
   OVERDRAFT_INTEREST: "Dispozins",
+  LOAN_DISBURSEMENT: "Kredit",
+  LOAN_REPAYMENT: "Rate",
 } as const;
 
 export default async function TransactionsPage({

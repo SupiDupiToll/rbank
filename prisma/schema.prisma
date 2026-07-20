@@ -23,6 +23,7 @@ model User {
   receivedPayments      PaymentSession[]  @relation("CheckoutRecipient")
   pinAttempts           PinAttempt[]
   transactions          Transaction[]
+  loans                 Loan[]
 }
 
 model DonationBox {
@@ -139,6 +140,66 @@ model PinAttempt {
   @@index([ip, createdAt])
 }
 
+model LoanProduct {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  minAmount     Int      @map("min_amount")
+  maxAmount     Int      @map("max_amount")
+  minTermMonths Int      @map("min_term_months")
+  maxTermMonths Int      @map("max_term_months")
+  interestRate  Float    @map("interest_rate")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  loans         Loan[]
+
+  @@index([isActive])
+}
+
+model Loan {
+  id                     String        @id @default(cuid())
+  userId                 String        @map("user_id")
+  loanProductId          String?       @map("loan_product_id")
+  amount                 Int
+  interestRate           Float         @map("interest_rate")
+  termMonths             Int           @map("term_months")
+  monthlyPayment         Int           @map("monthly_payment")
+  totalInterest          Int           @map("total_interest")
+  totalRepayment         Int           @map("total_repayment")
+  remainingAmount        Int           @map("remaining_amount")
+  status                 LoanStatus    @default(PENDING)
+  purpose                String?
+  approvedAt             DateTime?     @map("approved_at")
+  approvedByUserId       String?       @map("approved_by_user_id")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  disbursementTxId       String?       @map("disbursement_tx_id")
+  paidOffAt              DateTime?     @map("paid_off_at")
+  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loanProduct            LoanProduct?  @relation(fields: [loanProductId], references: [id])
+  payments               LoanPayment[]
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+}
+
+model LoanPayment {
+  id                String        @id @default(cuid())
+  loanId            String        @map("loan_id")
+  installmentNumber Int           @map("installment_number")
+  scheduledDate     DateTime      @map("scheduled_date")
+  paidAt            DateTime?     @map("paid_at")
+  amount            Int
+  principalPortion  Int           @map("principal_portion")
+  interestPortion   Int           @map("interest_portion")
+  remainingBalance  Int           @map("remaining_balance")
+  status            PaymentStatus @default(SCHEDULED)
+  transactionId     String?       @map("transaction_id")
+  loan              Loan          @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId, installmentNumber])
+  @@index([loanId, status])
+}
+
 enum Role {
   ADMIN
   CUSTOMER
@@ -161,6 +222,24 @@ enum TransactionSource {
   DONATION
   REFUND
   OVERDRAFT_INTEREST
+  LOAN_DISBURSEMENT
+  LOAN_REPAYMENT
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  SCHEDULED
+  PAID
+  SKIPPED
+  LATE
 }
 
 enum FestgeldStatus {

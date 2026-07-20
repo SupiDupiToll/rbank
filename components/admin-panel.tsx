@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { MerchantCredentialsModal } from "@/components/merchant-credentials-modal";
+import { AdminLoans } from "@/components/admin-loans";
+import type { AdminLoan, AdminLoanProduct } from "@/lib/admin-dashboard";
 
 type AdminPanelProps = {
   initialUsers: AdminUserRow[];
@@ -26,6 +28,10 @@ type AdminPanelProps = {
   initialAirInCirculation: number;
   initialFestgeldAccounts: AdminFestgeld[];
   initialMerchants: AdminMerchant[];
+  initialLoanProducts: AdminLoanProduct[];
+  initialPendingLoans: AdminLoan[];
+  initialActiveLoans: AdminLoan[];
+  initialCompletedLoans: AdminLoan[];
 };
 
 function getTransactionSourceMeta(source: AdminTransaction["source"]) {
@@ -64,6 +70,20 @@ function getTransactionSourceMeta(source: AdminTransaction["source"]) {
     };
   }
 
+  if (source === "LOAN_DISBURSEMENT") {
+    return {
+      label: "KREDIT",
+      className: "bg-blue-500/10 text-blue-300",
+    };
+  }
+
+  if (source === "LOAN_REPAYMENT") {
+    return {
+      label: "RATE",
+      className: "bg-violet-500/10 text-violet-300",
+    };
+  }
+
   return {
     label: source,
     className: "bg-slate-800 text-slate-300",
@@ -78,6 +98,10 @@ export function AdminPanel({
   initialAirInCirculation,
   initialFestgeldAccounts,
   initialMerchants,
+  initialLoanProducts,
+  initialPendingLoans,
+  initialActiveLoans,
+  initialCompletedLoans,
 }: AdminPanelProps) {
   const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
   const [selectedCustomerId, setSelectedCustomerId] = useState(
@@ -775,6 +799,13 @@ export function AdminPanel({
           </Table>
         </div>
       </Card>
+
+      <AdminLoans
+        initialProducts={initialLoanProducts}
+        initialPendingLoans={initialPendingLoans}
+        initialActiveLoans={initialActiveLoans}
+        initialCompletedLoans={initialCompletedLoans}
+      />
 
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-4">
