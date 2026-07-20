@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminPanel } from "@/components/admin-panel";
 import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import { getCurrentAppUser } from "@/lib/current-user";
+import { ToastContainer } from "@/components/ui/toast";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 export default async function AdminPage() {
@@ -19,6 +20,7 @@ export default async function AdminPage() {
 
   return (
     <>
+      <ToastContainer />
       <AdminPanel
         initialAirInCirculation={data.airInCirculation}
         initialAirTransactions={data.airTransactions}
@@ -31,6 +33,9 @@ export default async function AdminPage() {
         initialPendingLoans={data.pendingLoans}
         initialActiveLoans={data.activeLoans}
         initialCompletedLoans={data.completedLoans}
+        totalBalanceCents={data.totalBalanceCents}
+        activeFestgeldVolume={data.activeFestgeldVolume}
+        activeLoanVolume={data.activeLoanVolume}
       />
       <PWAInstallBanner />
     </>

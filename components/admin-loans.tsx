@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
+import { toast } from "@/components/ui/toast";
 
 type AdminLoansProps = {
   initialProducts: AdminLoanProduct[];
@@ -36,8 +37,6 @@ export function AdminLoans({
   const [newMinTerm, setNewMinTerm] = useState("6");
   const [newMaxTerm, setNewMaxTerm] = useState("12");
   const [newRate, setNewRate] = useState("4.5");
-
-  const [message, setMessage] = useState("");
 
   const loadProducts = useCallback(async () => {
     const res = await fetch("/api/admin/loans/products");
@@ -68,7 +67,6 @@ export function AdminLoans({
 
   async function createProduct(event: React.FormEvent) {
     event.preventDefault();
-    setMessage("");
 
     const response = await fetch("/api/admin/loans/products", {
       method: "POST",
@@ -89,48 +87,45 @@ export function AdminLoans({
 
     const data = await response.json();
     if (!response.ok) {
-      setMessage(data.error ?? "Fehler beim Erstellen.");
+      toast(data.error ?? "Fehler beim Erstellen.", "error");
       return;
     }
 
-    setMessage("Produkt erstellt.");
+    toast("Produkt erstellt.", "success");
     setNewName("");
     setNewDescription("");
     await loadProducts();
   }
 
   async function approveLoan(loanId: string) {
-    setMessage("");
     const res = await fetch(`/api/admin/loans/${loanId}/approve`, {
       method: "POST",
       headers: { [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie() },
     });
     const data = await res.json();
     if (!res.ok) {
-      setMessage(data.error ?? "Fehler bei Genehmigung.");
+      toast(data.error ?? "Fehler bei Genehmigung.", "error");
       return;
     }
-    setMessage("Kredit genehmigt und ausgezahlt.");
+    toast("Kredit genehmigt und ausgezahlt.", "success");
     await loadLoans();
   }
 
   async function rejectLoan(loanId: string) {
-    setMessage("");
     const res = await fetch(`/api/admin/loans/${loanId}/reject`, {
       method: "POST",
       headers: { [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie() },
     });
     const data = await res.json();
     if (!res.ok) {
-      setMessage(data.error ?? "Fehler bei Ablehnung.");
+      toast(data.error ?? "Fehler bei Ablehnung.", "error");
       return;
     }
-    setMessage("Kredit abgelehnt.");
+    toast("Kredit abgelehnt.", "success");
     await loadLoans();
   }
 
   async function toggleProductActive(productId: string, isActive: boolean) {
-    setMessage("");
     const res = await fetch(`/api/admin/loans/products/${productId}`, {
       method: "PATCH",
       headers: {
@@ -140,7 +135,7 @@ export function AdminLoans({
       body: JSON.stringify({ isActive: !isActive }),
     });
     if (!res.ok) {
-      setMessage("Fehler beim Umschalten.");
+      toast("Fehler beim Umschalten.", "error");
       return;
     }
     await loadProducts();
@@ -457,7 +452,6 @@ export function AdminLoans({
         </Card>
       ) : null}
 
-      {message ? <p className="text-sm text-primary">{message}</p> : null}
     </div>
   );
 }

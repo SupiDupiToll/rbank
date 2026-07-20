@@ -220,10 +220,19 @@ export async function getAdminDashboardData() {
     })),
   );
 
+  const totalBalanceCents = mappedUsers.reduce((sum, u) => sum + u.balanceCents, 0);
+  const activeFestgeldVolume = accounts
+    .filter((a) => a.status === "ACTIVE")
+    .reduce((sum, a) => sum + a.amount, 0);
+  const activeLoanVolume = activeLoans.reduce((sum, l) => sum + l.remainingAmount, 0);
+
   return {
     users: mappedUsers,
     festgeldAccounts: accounts,
     initialTransactions,
+    totalBalanceCents,
+    activeFestgeldVolume,
+    activeLoanVolume,
     airInCirculation: airSummary.airBalance,
     airTransactions: allAirTransactions.map((transaction) => ({
       ...transaction,

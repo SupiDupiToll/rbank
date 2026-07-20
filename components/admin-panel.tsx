@@ -18,7 +18,10 @@ import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { MerchantCredentialsModal } from "@/components/merchant-credentials-modal";
 import { AdminLoans } from "@/components/admin-loans";
+import { toast } from "@/components/ui/toast";
 import type { AdminLoan, AdminLoanProduct } from "@/lib/admin-dashboard";
+
+type TabId = "dashboard" | "customers" | "festgeld" | "loans" | "merchants" | "aircoin" | "shop";
 
 type AdminPanelProps = {
   initialUsers: AdminUserRow[];
@@ -32,6 +35,9 @@ type AdminPanelProps = {
   initialPendingLoans: AdminLoan[];
   initialActiveLoans: AdminLoan[];
   initialCompletedLoans: AdminLoan[];
+  totalBalanceCents: number;
+  activeFestgeldVolume: number;
+  activeLoanVolume: number;
 };
 
 function getTransactionSourceMeta(source: AdminTransaction["source"]) {
@@ -90,6 +96,16 @@ function getTransactionSourceMeta(source: AdminTransaction["source"]) {
   };
 }
 
+const tabs: { id: TabId; label: string }[] = [
+  { id: "dashboard", label: "Übersicht" },
+  { id: "customers", label: "Kunden" },
+  { id: "festgeld", label: "Festgeld" },
+  { id: "loans", label: "Kredite" },
+  { id: "merchants", label: "Händler" },
+  { id: "aircoin", label: "AirCoin" },
+  { id: "shop", label: "Shop" },
+];
+
 export function AdminPanel({
   initialUsers,
   initialSelectedCustomerId,
@@ -102,8 +118,13 @@ export function AdminPanel({
   initialPendingLoans,
   initialActiveLoans,
   initialCompletedLoans,
+  totalBalanceCents,
+  activeFestgeldVolume,
+  activeLoanVolume,
 }: AdminPanelProps) {
+  const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [users, setUsers] = useState<AdminUserRow[]>(initialUsers);
+  const [customerSearch, setCustomerSearch] = useState("");
   const [selectedCustomerId, setSelectedCustomerId] = useState(
     initialSelectedCustomerId,
   );
@@ -119,6 +140,7 @@ export function AdminPanel({
     initialFestgeldAccounts,
   );
   const [merchants, setMerchants] = useState<AdminMerchant[]>(initialMerchants);
+  const [merchantSearch, setMerchantSearch] = useState("");
   const [selectedMerchantId, setSelectedMerchantId] = useState(
     initialMerchants[0]?.merchantId ?? "",
   );
@@ -144,8 +166,6 @@ export function AdminPanel({
     merchantSecret: string;
     webhookSecret: string;
   } | null>(null);
-
-  const [message, setMessage] = useState("");
 
   const selectedMerchant =
     merchants.find((merchant) => merchant.merchantId === selectedMerchantId) ??
@@ -282,11 +302,10 @@ export function AdminPanel({
 
   async function submitTransaction(event: React.FormEvent) {
     event.preventDefault();
-    setMessage("");
 
     const amount = Math.round(Number(txAmount) * 100);
     if (!selectedCustomerId || Number.isNaN(amount) || amount <= 0) {
-      setMessage("Bitte gueltige Werte eingeben.");
+      toast("Bitte gültige Werte eingeben.", "error");
       return;
     }
 
@@ -307,14 +326,15 @@ export function AdminPanel({
     });
 
     if (!response.ok) {
-      setMessage("Transaktion konnte nicht gespeichert werden.");
+      toast("Transaktion konnte nicht gespeichert werden.", "error");
       return;
     }
 
-    setMessage(
+    toast(
       txCurrency === "AIR"
         ? "AIR-Prämie gespeichert."
         : "Transaktion gespeichert.",
+      "success",
     );
     setTxAmount("");
     setTxDescription("");
@@ -325,7 +345,6 @@ export function AdminPanel({
 
   async function submitFestgeld(event: React.FormEvent) {
     event.preventDefault();
-    setMessage("");
 
     const amount = Math.round(Number(fgAmount) * 100);
     const interestRate = Number(fgRate);
@@ -336,7 +355,7 @@ export function AdminPanel({
       amount <= 0 ||
       Number.isNaN(interestRate)
     ) {
-      setMessage("Bitte gueltige Festgeld-Werte eingeben.");
+      toast("Bitte gültige Festgeld-Werte eingeben.", "error");
       return;
     }
 
@@ -358,18 +377,16 @@ export function AdminPanel({
 
     const data = (await response.json()) as { error?: string };
     if (!response.ok) {
-      setMessage(data.error ?? "Festgeldkonto konnte nicht erstellt werden.");
+      toast(data.error ?? "Festgeldkonto konnte nicht erstellt werden.", "error");
       return;
     }
 
-    setMessage("Festgeldkonto erstellt.");
+    toast("Festgeldkonto erstellt.", "success");
     setFgAmount("");
     await loadFestgeld();
   }
 
   async function payoutFestgeld(accountId: string) {
-    setMessage("");
-
     const response = await fetch(`/api/admin/festgeld/${accountId}/payout`, {
       method: "POST",
       headers: {
@@ -379,11 +396,11 @@ export function AdminPanel({
 
     const data = (await response.json()) as { error?: string };
     if (!response.ok) {
-      setMessage(data.error ?? "Auszahlung fehlgeschlagen.");
+      toast(data.error ?? "Auszahlung fehlgeschlagen.", "error");
       return;
     }
 
-    setMessage("Festgeld wurde ausgezahlt.");
+    toast("Festgeld wurde ausgezahlt.", "success");
     await loadFestgeld();
     await loadUsers();
     if (selectedCustomerId) {
@@ -394,7 +411,6 @@ export function AdminPanel({
 
   async function createMerchant(event: React.FormEvent) {
     event.preventDefault();
-    setMessage("");
     setCredentialsModal(null);
 
     const response = await fetch("/api/admin/merchants", {
@@ -417,7 +433,7 @@ export function AdminPanel({
     };
 
     if (!response.ok) {
-      setMessage(data.error ?? "Haendler konnte nicht erstellt werden.");
+      toast(data.error ?? "Händler konnte nicht erstellt werden.", "error");
       return;
     }
 
@@ -434,7 +450,7 @@ export function AdminPanel({
       });
     }
 
-    setMessage("Haendler erstellt. Zugangsdaten wurden geoeffnet.");
+    toast("Händler erstellt. Zugangsdaten wurden geöffnet.", "success");
     await loadMerchants();
     if (data.merchant?.merchantId) {
       setSelectedMerchantId(data.merchant.merchantId);
@@ -445,8 +461,6 @@ export function AdminPanel({
     if (!selectedMerchant) {
       return;
     }
-
-    setMessage("");
 
     const response = await fetch(
       `/api/admin/merchants/${selectedMerchant.merchantId}`,
@@ -466,17 +480,15 @@ export function AdminPanel({
 
     const data = (await response.json()) as { error?: string };
     if (!response.ok) {
-      setMessage(data.error ?? "Haendler konnte nicht gespeichert werden.");
+      toast(data.error ?? "Händler konnte nicht gespeichert werden.", "error");
       return;
     }
 
-    setMessage("Haendler gespeichert.");
+    toast("Händler gespeichert.", "success");
     await loadMerchants();
   }
 
   async function refundPayment(token: string) {
-    setMessage("");
-
     const response = await fetch(`/api/admin/payments/${token}/refund`, {
       method: "POST",
       headers: {
@@ -486,11 +498,11 @@ export function AdminPanel({
 
     const data = (await response.json()) as { error?: string };
     if (!response.ok) {
-      setMessage(data.error ?? "Rueckerstattung fehlgeschlagen.");
+      toast(data.error ?? "Rückerstattung fehlgeschlagen.", "error");
       return;
     }
 
-    setMessage("Rueckerstattung ausgefuehrt.");
+    toast("Rückerstattung ausgeführt.", "success");
     await loadMerchants();
     await loadUsers();
     if (selectedCustomerId) {
@@ -527,9 +539,70 @@ export function AdminPanel({
         </div>
       </header>
 
+      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 p-1">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
+              activeTab === tab.id
+                ? "bg-primary text-background-dark"
+                : "text-slate-400 hover:text-slate-100"
+            }`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "dashboard" ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <KpiCard
+            label="Kunden"
+            value={users.length.toString()}
+            sub={`${formatEuroFromCents(totalBalanceCents)} Gesamt`}
+          />
+          <KpiCard
+            label="Einlagen"
+            value={formatEuroFromCents(totalBalanceCents)}
+            sub={`${users.length} Kunden`}
+          />
+          <KpiCard
+            label="Festgeld"
+            value={formatEuroFromCents(activeFestgeldVolume)}
+            sub={`${initialFestgeldAccounts.filter((a) => a.status === "ACTIVE").length} aktiv`}
+          />
+          <KpiCard
+            label="Kreditvolumen"
+            value={formatEuroFromCents(activeLoanVolume)}
+            sub={`${initialActiveLoans.length} aktiv`}
+          />
+          <KpiCard
+            label="Kreditanfragen"
+            value={initialPendingLoans.length.toString()}
+            sub={initialPendingLoans.length > 0 ? "Ausstehend" : "Keine"}
+          />
+          <KpiCard
+            label="AirCoin"
+            value={formatAirFromUnits(airInCirculation)}
+            sub="Im Umlauf"
+          />
+        </div>
+      ) : null}
+
+      {activeTab === "customers" ? (
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="lg:col-span-5">
-          <h2 className="mb-4 text-2xl font-display font-bold">Kunden</h2>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-display font-bold">Kunden</h2>
+            <input
+              className="w-full max-w-48 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Suchen..."
+              value={customerSearch}
+              onChange={(e) => setCustomerSearch(e.target.value)}
+            />
+          </div>
           <div className="overflow-x-auto">
             <Table>
               <thead>
@@ -539,7 +612,15 @@ export function AdminPanel({
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {users.filter((u) => {
+                  const q = customerSearch.toLowerCase();
+                  if (!q) return true;
+                  return (
+                    u.customerId.toLowerCase().includes(q) ||
+                    (u.displayName ?? "").toLowerCase().includes(q) ||
+                    u.stackUserId.toLowerCase().includes(q)
+                  );
+                }).map((user) => (
                   <tr
                     key={user.customerId}
                     className={`cursor-pointer transition-colors ${selectedCustomerId === user.customerId ? "bg-primary/10" : "hover:bg-slate-800/40"}`}
@@ -635,52 +716,62 @@ export function AdminPanel({
         </Card>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12">
-        <Card className="lg:col-span-7">
-          <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
-          <div className="overflow-x-auto">
-            <Table>
-              <thead>
-                <tr>
-                  <Th>Datum</Th>
-                  <Th>Beschreibung</Th>
-                  <Th>Betrag</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <Td>{formatGermanDate(transaction.date)}</Td>
-                    <Td>
-                      <div className="flex items-center gap-3">
-                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${getTransactionSourceMeta(transaction.source).className}`}>
-                          {getTransactionSourceMeta(transaction.source).label}
-                        </span>
-                        <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                          {transaction.currency}
-                        </span>
-                        <span>{transaction.description}</span>
-                      </div>
-                    </Td>
-                    <Td
-                      className={
-                        transaction.type === "INCOMING"
-                          ? "font-bold text-primary"
-                          : "font-bold text-red-400"
-                      }
-                    >
-                      {transaction.type === "INCOMING" ? "+ " : "- "}
-                      {formatTransactionAmount(transaction)}
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Card>
+      ) : null}
 
+      {activeTab === "customers" ? (
+      <Card>
+        <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
+        <div className="overflow-x-auto">
+          <Table>
+            <thead>
+              <tr>
+                <Th>Datum</Th>
+                <Th>Beschreibung</Th>
+                <Th>Betrag</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((transaction) => (
+                <tr key={transaction.id}>
+                  <Td>{formatGermanDate(transaction.date)}</Td>
+                  <Td>
+                    <div className="flex items-center gap-3">
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${getTransactionSourceMeta(transaction.source).className}`}>
+                        {getTransactionSourceMeta(transaction.source).label}
+                      </span>
+                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                        {transaction.currency}
+                      </span>
+                      <span>{transaction.description}</span>
+                    </div>
+                  </Td>
+                  <Td
+                    className={
+                      transaction.type === "INCOMING"
+                        ? "font-bold text-primary"
+                        : "font-bold text-red-400"
+                    }
+                  >
+                    {transaction.type === "INCOMING" ? "+ " : "- "}
+                    {formatTransactionAmount(transaction)}
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      </Card>
+      ) : null}
+
+      {activeTab === "festgeld" ? (
+      <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">
-          <h2 className="text-2xl font-display font-bold">Festgeld</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-display font-bold">Festgeld</h2>
+            <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">
+              {activeFestgeldVolume > 0 ? `${festgeldAccounts.filter((a) => a.status === "ACTIVE").length} aktiv` : "Keine"}
+            </span>
+          </div>
           <form className="space-y-4" onSubmit={submitFestgeld}>
             <div className="space-y-2">
               <Label>Bezeichnung</Label>
@@ -733,6 +824,9 @@ export function AdminPanel({
         </Card>
       </div>
 
+      ) : null}
+
+      {activeTab === "festgeld" ? (
       <Card>
         <h2 className="mb-4 text-2xl font-display font-bold">Festgeldkonten</h2>
         <div className="overflow-x-auto">
@@ -800,13 +894,18 @@ export function AdminPanel({
         </div>
       </Card>
 
+      ) : null}
+
+      {activeTab === "loans" ? (
       <AdminLoans
         initialProducts={initialLoanProducts}
         initialPendingLoans={initialPendingLoans}
         initialActiveLoans={initialActiveLoans}
         initialCompletedLoans={initialCompletedLoans}
       />
+      ) : null}
 
+      {activeTab === "aircoin" ? (
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-4">
           <h2 className="text-2xl font-display font-bold">AirCoin</h2>
@@ -881,9 +980,12 @@ export function AdminPanel({
         </Card>
       </div>
 
+      ) : null}
+
+      {activeTab === "merchants" ? (
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">
-          <h2 className="text-2xl font-display font-bold">Haendler anlegen</h2>
+          <h2 className="text-2xl font-display font-bold">Händler anlegen</h2>
           <form className="space-y-4" onSubmit={createMerchant}>
             <div className="space-y-2">
               <Label>Name</Label>
@@ -908,7 +1010,13 @@ export function AdminPanel({
 
         <Card className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-display font-bold">Haendler</h2>
+            <h2 className="text-2xl font-display font-bold">Händler</h2>
+            <input
+              className="w-full max-w-48 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Suchen..."
+              value={merchantSearch}
+              onChange={(e) => setMerchantSearch(e.target.value)}
+            />
             {selectedMerchant ? (
               <Button
                 onClick={downloadMerchantReport}
@@ -922,7 +1030,14 @@ export function AdminPanel({
 
           <div className="grid gap-4 md:grid-cols-[260px_minmax(0,1fr)]">
             <div className="space-y-3">
-              {merchants.map((merchant) => (
+              {merchants.filter((m) => {
+                const q = merchantSearch.toLowerCase();
+                if (!q) return true;
+                return (
+                  m.name.toLowerCase().includes(q) ||
+                  m.merchantId.toLowerCase().includes(q)
+                );
+              }).map((merchant) => (
                 <button
                   key={merchant.merchantId}
                   className={`w-full rounded-2xl border p-4 text-left transition ${
@@ -1070,6 +1185,9 @@ export function AdminPanel({
         </Card>
       </div>
 
+      ) : null}
+
+      {activeTab === "shop" ? (
       <Card className="space-y-4">
         <h2 className="text-2xl font-display font-bold">Shop-Integration</h2>
         <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-200">
@@ -1125,8 +1243,7 @@ export async function GET(req) {
 }`}
         </pre>
       </Card>
-
-      {message ? <p className="text-sm text-primary">{message}</p> : null}
+      ) : null}
 
       {credentialsModal ? (
         <MerchantCredentialsModal
@@ -1148,6 +1265,18 @@ function MetricCard({ label, value }: { label: string; value: string }) {
         {label}
       </p>
       <p className="mt-3 text-2xl font-black text-white">{value}</p>
+    </div>
+  );
+}
+
+function KpiCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-950/80 p-5 transition-colors hover:border-slate-700">
+      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-black text-white">{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{sub}</p>
     </div>
   );
 }
