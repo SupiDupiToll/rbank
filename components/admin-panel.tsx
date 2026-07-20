@@ -635,7 +635,17 @@ export function AdminPanel({
                       </div>
                     </Td>
                     <Td className="font-bold">
-                      <div>{formatEuroFromCents(user.balanceCents)}</div>
+                      <div className="flex items-center gap-2">
+                        <span>{formatEuroFromCents(user.balanceCents)}</span>
+                        {user.balanceCents === user.computedBalanceCents ? (
+                          <span className="text-emerald-400" title="Balance stimmt überein">✓</span>
+                        ) : (
+                          <span className="text-red-400" title="Balance weicht ab!">⚠</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        berechnet: {formatEuroFromCents(user.computedBalanceCents)}
+                      </div>
                       <div className="text-xs text-sky-300">
                         {formatAirFromUnits(user.airBalance)}
                       </div>

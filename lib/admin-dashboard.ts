@@ -7,6 +7,7 @@ export type AdminUserRow = {
   displayName: string | null;
   stackUserId: string;
   balanceCents: number;
+  computedBalanceCents: number;
   airBalance: number;
 };
 
@@ -109,6 +110,7 @@ export async function getAdminDashboardData() {
         customerId: true,
         displayName: true,
         stackUserId: true,
+        balanceCents: true,
         transactions: { select: { type: true, amount: true, currency: true } }
       }
     }),
@@ -168,7 +170,8 @@ export async function getAdminDashboardData() {
     customerId: customer.customerId,
     displayName: customer.displayName,
     stackUserId: customer.stackUserId,
-    balanceCents: calculateBalanceCents(customer.transactions, "EUR"),
+    balanceCents: customer.balanceCents,
+    computedBalanceCents: calculateBalanceCents(customer.transactions, "EUR"),
     airBalance: calculateBalanceCents(customer.transactions, "AIR")
   }));
 
