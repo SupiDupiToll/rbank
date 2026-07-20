@@ -132,7 +132,7 @@ export async function approveLoan(loanId: string, adminUserId: string) {
         amount: loan.amount,
         currency: "EUR",
         description: `Kreditauszahlung · ${loan.purpose ?? loan.loanProduct?.name ?? "Kredit"} (${loan.termMonths} Monate, ${loan.interestRate.toFixed(2)}%)`,
-        source: "LOAN_DISBURSEMENT",
+        source: "ADMIN",
         date: now,
       },
     });
@@ -193,7 +193,7 @@ export async function getNextPayment(loanId: string) {
   });
 }
 
-export async function makePayment(loanId: string, userId: string) {
+export async function makePayment(loanId: string, userId: string, allowOverdraft = false) {
   return prisma.$transaction(async (tx) => {
     const loan = await tx.loan.findUnique({ where: { id: loanId } });
     if (!loan || loan.userId !== userId) throw new Error("LOAN_NOT_FOUND");
@@ -206,10 +206,11 @@ export async function makePayment(loanId: string, userId: string) {
 
     if (!nextPayment) throw new Error("NO_PAYMENT_DUE");
 
-    const balance = await getUserBalanceCentsTx(tx, userId);
-
-    if (balance < nextPayment.amount) {
-      throw new Error("INSUFFICIENT_BALANCE");
+    if (!allowOverdraft) {
+      const balance = await getUserBalanceCentsTx(tx, userId);
+      if (balance < nextPayment.amount) {
+        throw new Error("INSUFFICIENT_BALANCE");
+      }
     }
 
     const now = new Date();
@@ -220,7 +221,7 @@ export async function makePayment(loanId: string, userId: string) {
         amount: nextPayment.amount,
         currency: "EUR",
         description: `Kreditrate ${nextPayment.installmentNumber}/${loan.termMonths}`,
-        source: "LOAN_REPAYMENT",
+        source: "ADMIN",
         date: now,
       },
     });
@@ -301,7 +302,7 @@ export async function payoffLoan(loanId: string, userId: string) {
         amount: totalPayoffAmount,
         currency: "EUR",
         description: "Kredit vorzeitig getilgt",
-        source: "LOAN_REPAYMENT",
+        source: "ADMIN",
         date: now,
       },
     });
@@ -346,6 +347,13 @@ export async function sendPaymentReminders() {
   });
 
   for (const payment of upcomingPayments) {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (payment.lastReminderSentAt && payment.lastReminderSentAt >= todayStart) {
+      continue;
+    }
+
     const user = payment.loan.user;
     await sendLoanReminderEmail(
       user.stackUserId,
@@ -354,6 +362,11 @@ export async function sendPaymentReminders() {
        <p>Ihre Kreditrate über ${(payment.amount / 100).toFixed(2)} EUR ist am ${payment.scheduledDate.toLocaleDateString("de-DE")} fällig.</p>
        <p>Rate Nr. ${payment.installmentNumber}</p>`
     );
+
+    await prisma.loanPayment.update({
+      where: { id: payment.id },
+      data: { lastReminderSentAt: now },
+    });
   }
 
   return upcomingPayments.length;
@@ -382,7 +395,7 @@ export async function processDuePayments(userId?: string) {
 
   for (const payment of duePayments) {
     try {
-      await makePayment(payment.loanId, payment.loan.userId);
+      await makePayment(payment.loanId, payment.loan.userId, true);
       await prisma.transaction.create({
         data: {
           userId: payment.loan.userId,

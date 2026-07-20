@@ -195,10 +195,11 @@ model LoanPayment {
   amount            Int
   principalPortion  Int           @map("principal_portion")
   interestPortion   Int           @map("interest_portion")
-  remainingBalance  Int           @map("remaining_balance")
-  status            PaymentStatus @default(SCHEDULED)
-  transactionId     String?       @map("transaction_id")
-  loan              Loan          @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  remainingBalance    Int           @map("remaining_balance")
+  status              PaymentStatus @default(SCHEDULED)
+  transactionId       String?       @map("transaction_id")
+  lastReminderSentAt  DateTime?     @map("last_reminder_sent_at")
+  loan                Loan          @relation(fields: [loanId], references: [id], onDelete: Cascade)
 
   @@index([loanId, installmentNumber])
   @@index([loanId, status])
