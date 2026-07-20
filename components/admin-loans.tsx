@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { AdminLoan, AdminLoanProduct } from "@/lib/admin-dashboard";
 import { formatEuroFromCents } from "@/lib/money";
-import { formatGermanDate, toDateInputValue } from "@/lib/date";
+import { formatGermanDate } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,18 @@ export function AdminLoans({
   const [newMinTerm, setNewMinTerm] = useState("6");
   const [newMaxTerm, setNewMaxTerm] = useState("12");
   const [newRate, setNewRate] = useState("4.5");
+  const [newOneTimeFee, setNewOneTimeFee] = useState("");
+
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editMinAmount, setEditMinAmount] = useState("");
+  const [editMaxAmount, setEditMaxAmount] = useState("");
+  const [editMinTerm, setEditMinTerm] = useState("");
+  const [editMaxTerm, setEditMaxTerm] = useState("");
+  const [editRate, setEditRate] = useState("");
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editOneTimeFee, setEditOneTimeFee] = useState("");
 
   const loadProducts = useCallback(async () => {
     const res = await fetch("/api/admin/loans/products");
@@ -65,6 +77,73 @@ export function AdminLoans({
     }
   }, []);
 
+  function startEdit(product: AdminLoanProduct) {
+    setEditingProductId(product.id);
+    setEditName(product.name);
+    setEditDescription(product.description);
+    setEditMinAmount(String(product.minAmount / 100));
+    setEditMaxAmount(String(product.maxAmount / 100));
+    setEditMinTerm(String(product.minTermMonths));
+    setEditMaxTerm(String(product.maxTermMonths));
+    setEditRate(String(product.interestRate));
+    setEditIsActive(product.isActive);
+    setEditOneTimeFee(product.oneTimeFeeCents != null ? String(product.oneTimeFeeCents / 100) : "");
+  }
+
+  function cancelEdit() {
+    setEditingProductId(null);
+  }
+
+  async function saveEdit(productId: string) {
+    const body: Record<string, unknown> = {
+      name: editName,
+      description: editDescription,
+      minAmount: Math.round(Number(editMinAmount) * 100),
+      maxAmount: Math.round(Number(editMaxAmount) * 100),
+      minTermMonths: Number(editMinTerm),
+      maxTermMonths: Number(editMaxTerm),
+      interestRate: Number(editRate),
+      isActive: editIsActive,
+    };
+    if (editOneTimeFee !== "") {
+      body.oneTimeFeeCents = Math.round(Number(editOneTimeFee) * 100);
+    } else {
+      body.oneTimeFeeCents = null;
+    }
+
+    const res = await fetch(`/api/admin/loans/products/${productId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error ?? "Fehler beim Speichern.", "error");
+      return;
+    }
+    toast("Produkt aktualisiert.", "success");
+    setEditingProductId(null);
+    await loadProducts();
+  }
+
+  async function deleteProduct(productId: string) {
+    if (!window.confirm("Produkt wirklich löschen?")) return;
+    const res = await fetch(`/api/admin/loans/products/${productId}`, {
+      method: "DELETE",
+      headers: { [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie() },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error ?? "Fehler beim Löschen.", "error");
+      return;
+    }
+    toast("Produkt gelöscht.", "success");
+    await loadProducts();
+  }
+
   async function createProduct(event: React.FormEvent) {
     event.preventDefault();
 
@@ -82,6 +161,7 @@ export function AdminLoans({
         minTermMonths: Number(newMinTerm),
         maxTermMonths: Number(newMaxTerm),
         interestRate: Number(newRate),
+        oneTimeFeeCents: newOneTimeFee !== "" ? Math.round(Number(newOneTimeFee) * 100) : null,
       }),
     });
 
@@ -122,6 +202,21 @@ export function AdminLoans({
       return;
     }
     toast("Kredit abgelehnt.", "success");
+    await loadLoans();
+  }
+
+  async function deleteLoan(loanId: string) {
+    if (!window.confirm("Kreditanfrage wirklich löschen?")) return;
+    const res = await fetch(`/api/admin/loans/${loanId}`, {
+      method: "DELETE",
+      headers: { [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie() },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.error ?? "Fehler beim Löschen.", "error");
+      return;
+    }
+    toast("Kreditanfrage gelöscht.", "success");
     await loadLoans();
   }
 
@@ -217,6 +312,16 @@ export function AdminLoans({
                 onChange={(e) => setNewRate(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Einmalgebühr (EUR)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newOneTimeFee}
+                onChange={(e) => setNewOneTimeFee(e.target.value)}
+                placeholder="0 = keine Gebühr"
+              />
+            </div>
             <Button className="h-14 w-full" type="submit">
               Produkt erstellen
             </Button>
@@ -235,45 +340,166 @@ export function AdminLoans({
                   <Th>Betrag</Th>
                   <Th>Laufzeit</Th>
                   <Th>Zins</Th>
+                  <Th>Gebühr</Th>
                   <Th>Aktiv</Th>
+                  <Th>Aktion</Th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <Td>
-                      <div className="font-bold text-slate-100">
-                        {product.name}
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        {product.description}
-                      </div>
-                    </Td>
-                    <Td>
-                      {formatEuroFromCents(product.minAmount)} –{" "}
-                      {formatEuroFromCents(product.maxAmount)}
-                    </Td>
-                    <Td>
-                      {product.minTermMonths}–{product.maxTermMonths} Monate
-                    </Td>
-                    <Td>{product.interestRate.toFixed(2)}%</Td>
-                    <Td>
-                      <button
-                        className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                          product.isActive
-                            ? "bg-primary/10 text-primary"
-                            : "bg-slate-800 text-slate-400"
-                        }`}
-                        onClick={() =>
-                          void toggleProductActive(product.id, product.isActive)
-                        }
-                        type="button"
-                      >
-                        {product.isActive ? "Aktiv" : "Inaktiv"}
-                      </button>
-                    </Td>
-                  </tr>
-                ))}
+                {products.map((product) =>
+                  editingProductId === product.id ? (
+                    <tr key={product.id}>
+                      <Td>
+                        <div className="space-y-2">
+                          <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            placeholder="Name"
+                          />
+                          <Input
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder="Beschreibung"
+                          />
+                        </div>
+                      </Td>
+                      <Td>
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            value={editMinAmount}
+                            onChange={(e) => setEditMinAmount(e.target.value)}
+                            placeholder="Min. EUR"
+                          />
+                          <Input
+                            type="number"
+                            value={editMaxAmount}
+                            onChange={(e) => setEditMaxAmount(e.target.value)}
+                            placeholder="Max. EUR"
+                          />
+                        </div>
+                      </Td>
+                      <Td>
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            value={editMinTerm}
+                            onChange={(e) => setEditMinTerm(e.target.value)}
+                            placeholder="Min. Monate"
+                          />
+                          <Input
+                            type="number"
+                            value={editMaxTerm}
+                            onChange={(e) => setEditMaxTerm(e.target.value)}
+                            placeholder="Max. Monate"
+                          />
+                        </div>
+                      </Td>
+                      <Td>
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editRate}
+                            onChange={(e) => setEditRate(e.target.value)}
+                            placeholder="Zins %"
+                          />
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id={`active-${product.id}`}
+                              checked={editIsActive}
+                              onChange={(e) => setEditIsActive(e.target.checked)}
+                              className="h-4 w-4 rounded border-slate-600 bg-slate-800"
+                            />
+                            <Label htmlFor={`active-${product.id}`} className="text-xs">
+                              Aktiv
+                            </Label>
+                          </div>
+                        </div>
+                      </Td>
+                      <Td>
+                        <Input
+                          type="number"
+                          value={editOneTimeFee}
+                          onChange={(e) => setEditOneTimeFee(e.target.value)}
+                          placeholder="Gebühr EUR"
+                        />
+                      </Td>
+                      <Td>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            onClick={() => void saveEdit(product.id)}
+                          >
+                            Speichern
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={cancelEdit}
+                          >
+                            Abbrechen
+                          </Button>
+                        </div>
+                      </Td>
+                    </tr>
+                  ) : (
+                    <tr key={product.id}>
+                      <Td>
+                        <div className="font-bold text-slate-100">
+                          {product.name}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {product.description}
+                        </div>
+                      </Td>
+                      <Td>
+                        {formatEuroFromCents(product.minAmount)} –{" "}
+                        {formatEuroFromCents(product.maxAmount)}
+                      </Td>
+                      <Td>
+                        {product.minTermMonths}–{product.maxTermMonths} Monate
+                      </Td>
+                      <Td>{product.interestRate.toFixed(2)}%</Td>
+                      <Td>
+                        {product.oneTimeFeeCents
+                          ? formatEuroFromCents(product.oneTimeFeeCents)
+                          : "—"}
+                      </Td>
+                      <Td>
+                        <button
+                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                            product.isActive
+                              ? "bg-primary/10 text-primary"
+                              : "bg-slate-800 text-slate-400"
+                          }`}
+                          onClick={() =>
+                            void toggleProductActive(product.id, product.isActive)
+                          }
+                          type="button"
+                        >
+                          {product.isActive ? "Aktiv" : "Inaktiv"}
+                        </button>
+                      </Td>
+                      <Td>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            variant="outline"
+                            onClick={() => startEdit(product)}
+                          >
+                            Bearbeiten
+                          </Button>
+                          <button
+                            className="rounded-lg bg-red-500/15 px-3 py-1 text-xs font-bold text-red-300"
+                            onClick={() => void deleteProduct(product.id)}
+                            type="button"
+                          >
+                            Löschen
+                          </button>
+                        </div>
+                      </Td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </Table>
           </div>
@@ -333,6 +559,13 @@ export function AdminLoans({
                           type="button"
                         >
                           Ablehnen
+                        </button>
+                        <button
+                          className="rounded-lg bg-slate-600/30 px-3 py-1 text-xs font-bold text-slate-300"
+                          onClick={() => void deleteLoan(loan.id)}
+                          type="button"
+                        >
+                          Löschen
                         </button>
                       </div>
                     </Td>

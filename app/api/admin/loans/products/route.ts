@@ -52,6 +52,7 @@ export async function POST(request: Request) {
         minTermMonths: z.number().int().min(1).max(120),
         maxTermMonths: z.number().int().min(1).max(120),
         interestRate: z.number().min(0).max(100),
+        oneTimeFeeCents: z.number().int().min(0).nullable().optional(),
       }),
     );
 

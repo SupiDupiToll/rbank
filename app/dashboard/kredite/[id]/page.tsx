@@ -40,7 +40,6 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
   if (!loan) notFound();
 
   const paidCount = loan.payments.filter((p) => p.status === "PAID").length;
-  const skippedCount = loan.payments.filter((p) => p.status === "SKIPPED").length;
   const paidPrincipal = loan.payments
     .filter((p) => p.status === "PAID")
     .reduce((s, p) => s + p.principalPortion, 0);
@@ -90,6 +89,12 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
             <p className="mt-2 text-2xl font-display text-slate-100">
               {formatEuroFromCents(loan.amount)}
             </p>
+            {loan.oneTimeFeeCents && loan.oneTimeFeeCents > 0 ? (
+              <p className="mt-1 text-xs text-slate-400">
+                + {formatEuroFromCents(loan.oneTimeFeeCents)} Einmalgebühr
+                {loan.oneTimeFeePaid ? " (bezahlt)" : ""}
+              </p>
+            ) : null}
           </Card>
           <Card className="border-slate-800 bg-slate-900/60">
             <p className="text-sm text-slate-400">Monatsrate</p>
@@ -109,7 +114,7 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
             <p className="text-sm text-slate-400">Zinssatz</p>
             <p className="mt-2 text-lg font-semibold text-slate-100">
-              {loan.interestRate.toFixed(2)}% p.a.
+              {loan.interestRate === 0 ? "Zinsfrei" : `${loan.interestRate.toFixed(2)}% p.a.`}
             </p>
           </div>
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
@@ -119,7 +124,6 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
             </p>
             <p className="text-xs text-slate-400">
               {paidCount} bezahlt
-              {skippedCount > 0 ? ` · ${skippedCount} ausgesetzt` : ""}
             </p>
           </div>
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
@@ -205,18 +209,14 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
                         className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                           payment.status === "PAID"
                             ? "bg-primary/10 text-primary"
-                            : payment.status === "SKIPPED"
-                              ? "bg-slate-800 text-slate-400"
-                              : payment.status === "LATE"
+                            : payment.status === "LATE"
                                 ? "bg-red-500/10 text-red-300"
                                 : "bg-slate-800 text-amber-300"
                         }`}
                       >
                         {payment.status === "PAID"
                           ? "Bezahlt"
-                          : payment.status === "SKIPPED"
-                            ? "Ausgesetzt"
-                            : payment.status === "LATE"
+                          : payment.status === "LATE"
                               ? "Ueberfaellig"
                               : payment.scheduledDate <= new Date()
                                 ? "Faellig"

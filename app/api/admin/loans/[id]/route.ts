@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
+  enforceCsrf,
   enforceRateLimit,
+  enforceSameOrigin,
   parseInput,
   requireAdmin,
   safeRoute,
@@ -36,5 +38,28 @@ export async function GET(request: Request, context: Params) {
     }
 
     return NextResponse.json({ loan });
+  });
+}
+
+export async function DELETE(request: Request, context: Params) {
+  return safeRoute(async () => {
+    const { error, user } = await requireAdmin();
+    if (error || !user) return error;
+
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
+    const csrfError = enforceCsrf(request);
+    if (csrfError) return csrfError;
+
+    const rateLimitError = await enforceRateLimit(request, rateLimitPolicies.adminApi, user.id);
+    if (rateLimitError) return rateLimitError;
+
+    const { id } = await context.params;
+    const loanId = parseInput(cuidSchema, id);
+
+    await prisma.loan.delete({ where: { id: loanId } });
+
+    return NextResponse.json({ success: true });
   });
 }

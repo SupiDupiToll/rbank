@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { settleOverdraftInterest } from "@/lib/overdraft";
+import { sendLoanReminderEmail } from "@/lib/email";
 
 export function calculateAnnuity(amount: number, annualRate: number, termMonths: number) {
   if (amount <= 0 || termMonths <= 0) return 0;
@@ -21,17 +22,39 @@ export function generateAmortizationSchedule(amount: number, annualRate: number,
     interestPortion: number;
     remainingBalance: number;
   }> = [];
+  let totalInterestScheduled = 0;
 
   for (let i = 1; i <= termMonths; i++) {
-    const interestPortion = Math.round(remaining * monthlyRate);
-    let principalPortion = monthlyPayment - interestPortion;
     const isLast = i === termMonths;
+    let interestPortion: number;
+    let principalPortion: number;
+    let paymentAmount: number;
+
     if (isLast) {
+      interestPortion = Math.round(remaining * monthlyRate);
+      if (annualRate > 0 && remaining > 0 && interestPortion < 1) {
+        interestPortion = 1;
+      }
       principalPortion = remaining;
-    } else if (principalPortion > remaining) {
-      principalPortion = remaining;
+      paymentAmount = principalPortion + interestPortion;
+    } else {
+      interestPortion = Math.round(remaining * monthlyRate);
+      if (annualRate > 0 && remaining > 0 && interestPortion < 1) {
+        interestPortion = 1;
+      }
+      principalPortion = monthlyPayment - interestPortion;
+      if (principalPortion < 0) {
+        interestPortion = monthlyPayment;
+        principalPortion = 0;
+      } else if (principalPortion > remaining) {
+        principalPortion = remaining;
+        interestPortion = 0;
+        paymentAmount = principalPortion;
+      }
+      paymentAmount = principalPortion + interestPortion;
     }
-    const paymentAmount = principalPortion + interestPortion;
+
+    totalInterestScheduled += interestPortion;
     remaining -= principalPortion;
     if (remaining < 0) remaining = 0;
 
@@ -57,14 +80,48 @@ export async function approveLoan(loanId: string, adminUserId: string) {
     if (!loan) throw new Error("LOAN_NOT_FOUND");
     if (loan.status !== "PENDING") throw new Error("LOAN_NOT_PENDING");
 
-    const { schedule, monthlyPayment } = generateAmortizationSchedule(
-      loan.amount,
-      loan.interestRate,
-      loan.termMonths,
-    );
+    let schedule: Array<{
+      installmentNumber: number;
+      amount: number;
+      principalPortion: number;
+      interestPortion: number;
+      remainingBalance: number;
+    }>;
+    let monthlyPayment: number;
+    let totalRepayment: number;
+    let totalInterest: number;
 
-    const totalRepayment = schedule.reduce((sum, p) => sum + p.amount, 0);
-    const totalInterest = totalRepayment - loan.amount;
+    if (loan.interestRate === 0 && loan.oneTimeFeeCents && loan.oneTimeFeeCents > 0) {
+      monthlyPayment = Math.round(loan.amount / loan.termMonths);
+      let remaining = loan.amount;
+      const flatSchedule = [];
+      for (let i = 1; i <= loan.termMonths; i++) {
+        const isLast = i === loan.termMonths;
+        const principalPortion = isLast ? remaining : monthlyPayment;
+        const amount = isLast ? principalPortion + loan.oneTimeFeeCents : principalPortion;
+        remaining -= principalPortion;
+        flatSchedule.push({
+          installmentNumber: i,
+          amount,
+          principalPortion,
+          interestPortion: 0,
+          remainingBalance: remaining,
+        });
+      }
+      schedule = flatSchedule;
+      totalRepayment = loan.amount + loan.oneTimeFeeCents;
+      totalInterest = 0;
+    } else {
+      const result = generateAmortizationSchedule(
+        loan.amount,
+        loan.interestRate,
+        loan.termMonths,
+      );
+      schedule = result.schedule;
+      monthlyPayment = result.monthlyPayment;
+      totalRepayment = schedule.reduce((sum, p) => sum + p.amount, 0);
+      totalInterest = totalRepayment - loan.amount;
+    }
 
     const now = new Date();
 
@@ -83,10 +140,7 @@ export async function approveLoan(loanId: string, adminUserId: string) {
     const scheduledDates = schedule.map((_, i) => {
       const date = new Date(now);
       date.setMonth(date.getMonth() + i + 1);
-      date.setDate(1);
-      if (date.getMonth() > now.getMonth() + i + 1) {
-        date.setDate(0);
-      }
+      date.setDate(0);
       return date;
     });
 
@@ -230,7 +284,10 @@ export async function payoffLoan(loanId: string, userId: string) {
 
     const monthlyRate = loan.interestRate / 100 / 12;
     const currentInterest = Math.round(loan.remainingAmount * monthlyRate);
-    const totalPayoffAmount = loan.remainingAmount + currentInterest;
+    let totalPayoffAmount = loan.remainingAmount + currentInterest;
+    if (loan.oneTimeFeeCents && loan.oneTimeFeeCents > 0 && !loan.oneTimeFeePaid) {
+      totalPayoffAmount += loan.oneTimeFeeCents;
+    }
 
     const balance = await getUserBalanceCentsTx(tx, userId);
     if (balance < totalPayoffAmount) {
@@ -260,6 +317,7 @@ export async function payoffLoan(loanId: string, userId: string) {
         status: "COMPLETED",
         remainingAmount: 0,
         paidOffAt: now,
+        oneTimeFeePaid: true,
       },
     });
 
@@ -267,52 +325,47 @@ export async function payoffLoan(loanId: string, userId: string) {
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 
-export async function deferPayment(loanId: string, userId: string) {
-  return prisma.$transaction(async (tx) => {
-    const loan = await tx.loan.findUnique({ where: { id: loanId } });
-    if (!loan || loan.userId !== userId) throw new Error("LOAN_NOT_FOUND");
-    if (loan.status !== "ACTIVE") throw new Error("LOAN_NOT_ACTIVE");
+export async function sendPaymentReminders() {
+  const threeDaysFromNow = new Date();
+  threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
-    const nextPayment = await tx.loanPayment.findFirst({
-      where: { loanId, status: "SCHEDULED" },
-      orderBy: { installmentNumber: "asc" },
-    });
+  const threeDaysFromNowEnd = new Date(threeDaysFromNow);
+  threeDaysFromNowEnd.setHours(23, 59, 59, 999);
+  threeDaysFromNow.setHours(0, 0, 0, 0);
 
-    if (!nextPayment) throw new Error("NO_PAYMENT_TO_DEFER");
+  const upcomingPayments = await prisma.loanPayment.findMany({
+    where: {
+      status: "SCHEDULED",
+      scheduledDate: { gte: threeDaysFromNow, lte: threeDaysFromNowEnd },
+    },
+    include: {
+      loan: {
+        include: { user: { select: { stackUserId: true, displayName: true } } },
+      },
+    },
+  });
 
-    await tx.loanPayment.update({
-      where: { id: nextPayment.id },
-      data: { status: "SKIPPED" },
-    });
+  for (const payment of upcomingPayments) {
+    const user = payment.loan.user;
+    await sendLoanReminderEmail(
+      user.stackUserId,
+      "Kreditrate fällig in 3 Tagen",
+      `<p>Hallo ${user.displayName ?? "Kunde"},</p>
+       <p>Ihre Kreditrate über ${(payment.amount / 100).toFixed(2)} EUR ist am ${payment.scheduledDate.toLocaleDateString("de-DE")} fällig.</p>
+       <p>Rate Nr. ${payment.installmentNumber}</p>`
+    );
+  }
 
-    const remainingPayments = await tx.loanPayment.findMany({
-      where: { loanId, status: "SCHEDULED" },
-      orderBy: { installmentNumber: "asc" },
-    });
-
-    const lastInstallment = remainingPayments.length > 0
-      ? remainingPayments[remainingPayments.length - 1].installmentNumber
-      : nextPayment.installmentNumber;
-
-    for (const payment of remainingPayments) {
-      const newDate = new Date(payment.scheduledDate);
-      newDate.setMonth(newDate.getMonth() + 1);
-      await tx.loanPayment.update({
-        where: { id: payment.id },
-        data: { scheduledDate: newDate },
-      });
-    }
-
-    await tx.loan.update({
-      where: { id: loanId },
-      data: { termMonths: loan.termMonths + 1 },
-    });
-
-    return { skippedPayment: nextPayment };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  return upcomingPayments.length;
 }
 
 export async function processDuePayments(userId?: string) {
+  try {
+    await sendPaymentReminders();
+  } catch {
+    // Don't block payment processing
+  }
+
   const where: Prisma.LoanPaymentWhereInput = {
     status: "SCHEDULED",
     scheduledDate: { lte: new Date() },

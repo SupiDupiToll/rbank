@@ -23,9 +23,17 @@ export async function getUserBalanceCents(
   userId: string,
   currency: TransactionCurrency = "EUR",
 ) {
+  if (currency === "EUR") {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balanceCents: true },
+    });
+    return user?.balanceCents ?? 0;
+  }
+
   const transactions = await prisma.transaction.findMany({
-    where: { userId },
-    select: { type: true, amount: true, currency: true }
+    where: { userId, currency },
+    select: { type: true, amount: true },
   });
 
   return calculateBalanceCents(transactions, currency);

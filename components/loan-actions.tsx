@@ -47,8 +47,6 @@ export function LoanActions({
       setMessage("Rate bezahlt!");
     } else if (action === "payoff") {
       setMessage("Kredit vollstaendig getilgt!");
-    } else if (action === "defer") {
-      setMessage("Rate ausgesetzt, Laufzeit verlaengert.");
     }
 
     router.refresh();
@@ -78,15 +76,6 @@ export function LoanActions({
           </Button>
         ) : null}
 
-        {canPay ? (
-          <Button
-            variant="outline"
-            onClick={() => void handleAction("defer")}
-            disabled={loading !== null}
-          >
-            {loading === "defer" ? "Wird ausgesetzt..." : "Rate aussetzen"}
-          </Button>
-        ) : null}
       </div>
 
       {message ? <p className="text-sm text-primary">{message}</p> : null}

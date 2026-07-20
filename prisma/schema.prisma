@@ -17,6 +17,7 @@ model User {
   paymentPinHash        String?           @map("payment_pin_hash")
   pinLockedUntil        DateTime?         @map("pin_locked_until")
   showDonationBoxesList Boolean           @default(false) @map("show_donation_boxes_list")
+  balanceCents          Int               @default(0) @map("balance_cents")
   donationBoxes         DonationBox[]
   festgeld              FestgeldAccount[]
   paymentSessions       PaymentSession[]  @relation("CheckoutPayer")
@@ -141,17 +142,18 @@ model PinAttempt {
 }
 
 model LoanProduct {
-  id            String   @id @default(cuid())
-  name          String
-  description   String
-  minAmount     Int      @map("min_amount")
-  maxAmount     Int      @map("max_amount")
-  minTermMonths Int      @map("min_term_months")
-  maxTermMonths Int      @map("max_term_months")
-  interestRate  Float    @map("interest_rate")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  loans         Loan[]
+  id             String   @id @default(cuid())
+  name           String
+  description    String
+  minAmount      Int      @map("min_amount")
+  maxAmount      Int      @map("max_amount")
+  minTermMonths  Int      @map("min_term_months")
+  maxTermMonths  Int      @map("max_term_months")
+  interestRate   Float    @map("interest_rate")
+  oneTimeFeeCents Int?    @map("one_time_fee_cents")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  loans          Loan[]
 
   @@index([isActive])
 }
@@ -167,6 +169,8 @@ model Loan {
   totalInterest          Int           @map("total_interest")
   totalRepayment         Int           @map("total_repayment")
   remainingAmount        Int           @map("remaining_amount")
+  oneTimeFeeCents        Int?          @map("one_time_fee_cents")
+  oneTimeFeePaid         Boolean       @default(false) @map("one_time_fee_paid")
   status                 LoanStatus    @default(PENDING)
   purpose                String?
   approvedAt             DateTime?     @map("approved_at")

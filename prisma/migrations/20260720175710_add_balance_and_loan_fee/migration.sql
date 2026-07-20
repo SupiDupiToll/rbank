@@ -1,12 +1,22 @@
--- Add new values to TransactionSource enum
-ALTER TYPE "TransactionSource" ADD VALUE 'LOAN_DISBURSEMENT';
-ALTER TYPE "TransactionSource" ADD VALUE 'LOAN_REPAYMENT';
-
 -- CreateEnum
 CREATE TYPE "LoanStatus" AS ENUM ('PENDING', 'APPROVED', 'ACTIVE', 'COMPLETED', 'REJECTED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('SCHEDULED', 'PAID', 'SKIPPED', 'LATE');
+
+-- AlterEnum
+-- This migration adds more than one value to an enum.
+-- With PostgreSQL versions 11 and earlier, this is not possible
+-- in a single migration. This can be worked around by creating
+-- multiple migrations, each migration adding only one value to
+-- the enum.
+
+
+ALTER TYPE "TransactionSource" ADD VALUE 'LOAN_DISBURSEMENT';
+ALTER TYPE "TransactionSource" ADD VALUE 'LOAN_REPAYMENT';
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "balance_cents" INTEGER NOT NULL DEFAULT 0;
 
 -- CreateTable
 CREATE TABLE "LoanProduct" (
@@ -18,6 +28,7 @@ CREATE TABLE "LoanProduct" (
     "min_term_months" INTEGER NOT NULL,
     "max_term_months" INTEGER NOT NULL,
     "interest_rate" DOUBLE PRECISION NOT NULL,
+    "one_time_fee_cents" INTEGER,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -36,6 +47,8 @@ CREATE TABLE "Loan" (
     "total_interest" INTEGER NOT NULL,
     "total_repayment" INTEGER NOT NULL,
     "remaining_amount" INTEGER NOT NULL,
+    "one_time_fee_cents" INTEGER,
+    "one_time_fee_paid" BOOLEAN NOT NULL DEFAULT false,
     "status" "LoanStatus" NOT NULL DEFAULT 'PENDING',
     "purpose" TEXT,
     "approved_at" TIMESTAMP(3),

@@ -62,6 +62,7 @@ export type AdminLoanProduct = {
   minTermMonths: number;
   maxTermMonths: number;
   interestRate: number;
+  oneTimeFeeCents: number | null;
   isActive: boolean;
 };
 

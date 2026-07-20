@@ -5,6 +5,7 @@ import {
   TransactionSource,
   TransactionType,
 } from "@prisma/client";
+import { syncAllUserBalances } from "@/lib/balance";
 
 const prisma = new PrismaClient();
 
@@ -129,6 +130,8 @@ async function main() {
       }
     ]
   });
+
+  await syncAllUserBalances();
 
   await prisma.festgeldAccount.createMany({
     data: [

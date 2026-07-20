@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { syncUserBalance } from "@/lib/balance";
 import {
   enforceCsrf,
   enforceRateLimit,
@@ -79,6 +80,8 @@ export async function POST(request: Request) {
         createdAt: true,
       },
     });
+
+    await syncUserBalance(accountHolder.id);
 
     return NextResponse.json({ transaction }, { status: 201 });
   });
