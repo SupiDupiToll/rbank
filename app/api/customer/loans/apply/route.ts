@@ -75,10 +75,20 @@ export async function POST(request: Request) {
         amount: body.amount,
         interestRate: product.interestRate,
         termMonths: body.termMonths,
-        monthlyPayment,
-        totalInterest,
-        totalRepayment,
+        monthlyPayment:
+          product.interestRate === 0 && product.oneTimeFeeCents && product.oneTimeFeeCents > 0
+            ? Math.round(body.amount / body.termMonths)
+            : monthlyPayment,
+        totalInterest:
+          product.interestRate === 0 && product.oneTimeFeeCents && product.oneTimeFeeCents > 0
+            ? 0
+            : totalInterest,
+        totalRepayment:
+          product.interestRate === 0 && product.oneTimeFeeCents && product.oneTimeFeeCents > 0
+            ? body.amount + product.oneTimeFeeCents
+            : totalRepayment,
         remainingAmount: body.amount,
+        oneTimeFeeCents: product.oneTimeFeeCents,
         status: "PENDING",
         purpose: body.purpose ?? null,
       },

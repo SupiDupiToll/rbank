@@ -382,7 +382,18 @@ export async function processDuePayments(userId?: string) {
 
   for (const payment of duePayments) {
     try {
-      const result = await makePayment(payment.loanId, payment.loan.userId);
+      await makePayment(payment.loanId, payment.loan.userId);
+      await prisma.transaction.create({
+        data: {
+          userId: payment.loan.userId,
+          type: "OUTGOING",
+          amount: 100,
+          currency: "EUR",
+          description: "Auto-Abbuchungsgebühr",
+          source: "ADMIN",
+          date: new Date(),
+        },
+      });
       results.push({ paymentId: payment.id, success: true });
     } catch (error) {
       results.push({
