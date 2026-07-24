@@ -177,6 +177,25 @@ function LoanIcon({ className }: NavIconProps) {
   );
 }
 
+function MerchantIcon({ className }: NavIconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M3 7.5h18M3 7.5v9a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 16.5v-9M3 7.5l1.5-3h15l1.5 3M9 12h6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 const baseNavigation = [
   { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
   {
@@ -203,6 +222,11 @@ const baseNavigation = [
     href: "/dashboard/festgeld" as Route,
     label: "Festgeld",
     icon: SavingsIcon,
+  },
+  {
+    href: "/dashboard/haendler" as Route,
+    label: "Händler",
+    icon: MerchantIcon,
   },
 ];
 

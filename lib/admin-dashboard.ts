@@ -87,6 +87,8 @@ export type AdminMerchant = {
   webhookUrl: string | null;
   isActive: boolean;
   createdAt: Date;
+  ownerCustomerId: string | null;
+  ownerName: string | null;
   sessionCount: number;
   totalVolumeCents: number;
   volumeTodayCents: number;
@@ -125,6 +127,12 @@ export async function getAdminDashboardData() {
     prisma.merchant.findMany({
       orderBy: [{ createdAt: "desc" }],
       include: {
+        user: {
+          select: {
+            customerId: true,
+            displayName: true,
+          },
+        },
         paymentSessions: {
           orderBy: [{ createdAt: "desc" }],
           include: {
@@ -260,6 +268,8 @@ export async function getAdminDashboardData() {
         webhookUrl: merchant.webhookUrl,
         isActive: merchant.isActive,
         createdAt: merchant.createdAt,
+        ownerCustomerId: merchant.user?.customerId ?? null,
+        ownerName: merchant.user?.displayName ?? null,
         sessionCount: merchant.paymentSessions.length,
         totalVolumeCents: completedSessions.reduce(
           (sum, session) => sum + session.amount,

@@ -159,6 +159,24 @@ function DonationBoxIcon() {
     </svg>
   );
 }
+
+function MerchantIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 7.5h18M3 7.5v9a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 16.5v-9M3 7.5l1.5-3h15l1.5 3M9 12h6"
+      />
+    </svg>
+  );
+}
 const baseQuickActions = [
   {
     href: "/dashboard/transfer" as Route,
@@ -177,6 +195,7 @@ const baseQuickActions = [
   },
   { href: "/dashboard/kredite" as Route, label: "Kredite", icon: LoanIcon },
   { href: "/dashboard/festgeld" as Route, label: "Festgeld", icon: PiggyIcon },
+  { href: "/dashboard/haendler" as Route, label: "Händler", icon: MerchantIcon },
   {
     href: "/dashboard/settings" as Route,
     label: "Einstellungen",

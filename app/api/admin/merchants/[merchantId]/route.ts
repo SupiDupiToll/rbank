@@ -44,8 +44,28 @@ export async function PATCH(request: Request, context: Params) {
         name: safeTextSchema(80),
         webhookUrl: z.string().nullish(),
         isActive: z.boolean(),
+        customerId: z.string().nullish(),
       }),
     );
+
+    let ownerUserId: string | null | undefined = undefined;
+    if (body.customerId !== undefined) {
+      if (body.customerId) {
+        const ownerUser = await prisma.user.findUnique({
+          where: { customerId: body.customerId },
+          select: { id: true },
+        });
+        if (!ownerUser) {
+          return NextResponse.json(
+            { error: "Kunde nicht gefunden." },
+            { status: 404 },
+          );
+        }
+        ownerUserId = ownerUser.id;
+      } else {
+        ownerUserId = null;
+      }
+    }
 
     const merchant = await prisma.merchant.update({
       where: { merchantId: parsedMerchantId },
@@ -54,6 +74,7 @@ export async function PATCH(request: Request, context: Params) {
         allowedRedirectUrls: [],
         webhookUrl: body.webhookUrl ?? null,
         isActive: body.isActive,
+        userId: ownerUserId,
       },
     });
 

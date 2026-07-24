@@ -160,6 +160,7 @@ export function AdminPanel({
   const [merchantName, setMerchantName] = useState("");
   const [merchantWebhookUrl, setMerchantWebhookUrl] = useState("");
   const [merchantActive, setMerchantActive] = useState(true);
+  const [merchantCustomerId, setMerchantCustomerId] = useState("");
   const [credentialsModal, setCredentialsModal] = useState<{
     merchantId: string;
     merchantName: string;
@@ -176,12 +177,14 @@ export function AdminPanel({
       setMerchantName("");
       setMerchantWebhookUrl("");
       setMerchantActive(true);
+      setMerchantCustomerId("");
       return;
     }
 
     setMerchantName(merchant.name);
     setMerchantWebhookUrl(merchant.webhookUrl ?? "");
     setMerchantActive(merchant.isActive);
+    setMerchantCustomerId(merchant.ownerCustomerId ?? "");
   }, []);
 
   const loadUsers = useCallback(async () => {
@@ -422,6 +425,7 @@ export function AdminPanel({
       body: JSON.stringify({
         name: merchantName,
         webhookUrl: merchantWebhookUrl || null,
+        customerId: merchantCustomerId || null,
       }),
     });
 
@@ -474,6 +478,7 @@ export function AdminPanel({
           name: merchantName,
           webhookUrl: merchantWebhookUrl || null,
           isActive: merchantActive,
+          customerId: merchantCustomerId || null,
         }),
       },
     );
@@ -1012,6 +1017,14 @@ export function AdminPanel({
                 onChange={(event) => setMerchantWebhookUrl(event.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Besitzer (Kundennummer, optional)</Label>
+              <Input
+                value={merchantCustomerId}
+                onChange={(event) => setMerchantCustomerId(event.target.value)}
+                placeholder="z.B. 12345678"
+              />
+            </div>
             <Button className="h-14 w-full" type="submit">
               Haendler erstellen
             </Button>
@@ -1062,6 +1075,11 @@ export function AdminPanel({
                   <p className="mt-1 text-xs text-slate-400">
                     {merchant.merchantId}
                   </p>
+                  {merchant.ownerName ? (
+                    <p className="mt-1 text-xs text-primary">
+                      Besitzer: {merchant.ownerName} (#{merchant.ownerCustomerId})
+                    </p>
+                  ) : null}
                   <p className="mt-3 text-sm text-slate-300">
                     Volumen {formatEuroFromCents(merchant.totalVolumeCents)}
                   </p>
@@ -1117,6 +1135,16 @@ export function AdminPanel({
                       onChange={(event) =>
                         setMerchantWebhookUrl(event.target.value)
                       }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Besitzer (Kundennummer)</Label>
+                    <Input
+                      value={merchantCustomerId}
+                      onChange={(event) =>
+                        setMerchantCustomerId(event.target.value)
+                      }
+                      placeholder="z.B. 12345678"
                     />
                   </div>
                 </div>

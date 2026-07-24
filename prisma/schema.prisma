@@ -25,6 +25,7 @@ model User {
   pinAttempts           PinAttempt[]
   transactions          Transaction[]
   loans                 Loan[]
+  merchants             Merchant[]
 }
 
 model DonationBox {
@@ -92,9 +93,12 @@ model Merchant {
   createdAt           DateTime         @default(now()) @map("created_at")
   webhookSecretEnc    String?          @map("webhook_secret_enc")
   webhookSecretHash   String?          @map("webhook_secret_hash")
+  userId              String?          @map("user_id")
+  user                User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   paymentSessions     PaymentSession[]
 
   @@index([isActive, createdAt])
+  @@index([userId])
 }
 
 model PaymentSession {

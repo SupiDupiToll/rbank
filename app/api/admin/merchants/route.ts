@@ -59,8 +59,24 @@ export async function POST(request: Request) {
       z.object({
         name: safeTextSchema(80),
         webhookUrl: z.string().nullish(),
+        customerId: z.string().nullish(),
       }),
     );
+
+    let ownerUserId: string | null = null;
+    if (body.customerId) {
+      const ownerUser = await prisma.user.findUnique({
+        where: { customerId: body.customerId },
+        select: { id: true },
+      });
+      if (!ownerUser) {
+        return NextResponse.json(
+          { error: "Kunde nicht gefunden." },
+          { status: 404 },
+        );
+      }
+      ownerUserId = ownerUser.id;
+    }
 
     const credentials = generateMerchantCredentials();
     const merchantSecretHash = await hashMerchantSecret(
@@ -80,6 +96,7 @@ export async function POST(request: Request) {
         webhookSecretEnc,
         allowedRedirectUrls: [],
         webhookUrl: body.webhookUrl ?? null,
+        userId: ownerUserId,
       },
     });
 

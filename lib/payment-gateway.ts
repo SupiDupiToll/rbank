@@ -11,7 +11,17 @@ import {
 type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
   include: {
     donationBox: true;
-    merchant: true;
+    merchant: {
+      include: {
+        user: {
+          select: {
+            id: true;
+            customerId: true;
+            displayName: true;
+          };
+        };
+      };
+    };
     recipientUser: {
       select: {
         id: true;
@@ -36,7 +46,17 @@ export async function getPaymentSessionByToken(token: string) {
     where: { token },
     include: {
       donationBox: true,
-      merchant: true,
+      merchant: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              customerId: true,
+              displayName: true,
+            },
+          },
+        },
+      },
       recipientUser: {
         select: {
           id: true,
@@ -70,6 +90,8 @@ export function serializePaymentSession(session: PaymentSessionRecord) {
     merchant: {
       name: session.merchant.name,
       merchantId: session.merchant.merchantId,
+      ownerCustomerId: session.merchant.user?.customerId ?? null,
+      ownerName: session.merchant.user?.displayName ?? null,
     },
     paidAt: session.paidAt?.toISOString() ?? null,
     expiresAt: session.expiresAt.toISOString(),
@@ -186,7 +208,17 @@ export async function completeCheckoutPayment(token: string, userId: string) {
         where: { token },
         include: {
           donationBox: true,
-          merchant: true,
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  customerId: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
           recipientUser: {
             select: {
               id: true,
@@ -268,6 +300,22 @@ export async function completeCheckoutPayment(token: string, userId: string) {
         });
       }
 
+      const merchantOwner = session.merchant.user;
+      if (!isDonation && merchantOwner) {
+        await tx.transaction.create({
+          data: {
+            userId: merchantOwner.id,
+            type: "INCOMING",
+            amount: session.amount,
+            currency: "EUR",
+            description: `Einnahme von ${payer.displayName ?? payer.customerId} · ${session.description}`,
+            source: "CHECKOUT",
+            date: paidAt,
+            paymentSessionId: session.id,
+          },
+        });
+      }
+
       const updatedSession = await tx.paymentSession.update({
         where: { id: session.id },
         data: {
@@ -278,7 +326,17 @@ export async function completeCheckoutPayment(token: string, userId: string) {
         },
         include: {
           donationBox: true,
-          merchant: true,
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  customerId: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
           recipientUser: {
             select: {
               id: true,
@@ -331,7 +389,17 @@ export async function refundCompletedPayment(token: string) {
       const session = await tx.paymentSession.findUnique({
         where: { token },
         include: {
-          merchant: true,
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  customerId: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
           user: {
             select: {
               id: true,
@@ -359,6 +427,22 @@ export async function refundCompletedPayment(token: string) {
         },
       });
 
+      const merchantOwner = session.merchant.user;
+      if (merchantOwner) {
+        await tx.transaction.create({
+          data: {
+            userId: merchantOwner.id,
+            type: "OUTGOING",
+            amount: session.amount,
+            currency: "EUR",
+            description: `Rueckerstattung an Kunde · ${session.description}`,
+            source: "REFUND",
+            date: refundDate,
+            paymentSessionId: session.id,
+          },
+        });
+      }
+
       return tx.paymentSession.update({
         where: { id: session.id },
         data: {
@@ -367,7 +451,17 @@ export async function refundCompletedPayment(token: string) {
           refundedAt: refundDate,
         },
         include: {
-          merchant: true,
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  customerId: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
           user: {
             select: {
               id: true,
