@@ -61,6 +61,19 @@ const checkoutCsp = [
   "worker-src 'self' blob:",
 ].join("; ");
 
+const embeddedCheckoutCsp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors https://*.sdtoll.de",
+  "img-src 'self' data:",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "worker-src 'self' blob:",
+].join("; ");
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: appCsp },
   ...baseSecurityHeaders,
@@ -93,6 +106,13 @@ const nextConfig: NextConfig = {
       {
         source: "/pay/:path*",
         headers: checkoutHeaders,
+      },
+      {
+        source: "/embed/pay/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: embeddedCheckoutCsp },
+          ...baseSecurityHeaders.filter((header) => header.key !== "X-Frame-Options"),
+        ],
       },
     ];
   },

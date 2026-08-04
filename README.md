@@ -27,6 +27,7 @@ Built with [Next.js](https://nextjs.org/) (App Router), [Prisma](https://prisma.
 ### Merchant Payment Gateway (rbank-pay)
 - Create payment sessions via API
 - Checkout flow with confirmation page
+- Embedded self-checkout flow for `*.sdtoll.de` subdomains
 - Webhook notifications (AES-256-GCM encrypted)
 - Refund support
 - QR-code-based payments
@@ -73,12 +74,15 @@ Built with [Next.js](https://nextjs.org/) (App Router), [Prisma](https://prisma.
    ```env
    DATABASE_URL="postgresql://..."
    STACK_SECRET_SERVER_KEY="ssk_..."
+   RBANK_EMBED_CHECKOUT_KEY="shared-secret-for-embedded-checkout"
    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="pck_..."
    NEXT_PUBLIC_STACK_PROJECT_ID="..."
    UPSTASH_REDIS_REST_URL="https://..."
    UPSTASH_REDIS_REST_TOKEN="..."
    STACK_ADMIN_EMAILS="admin@example.com"
    ```
+
+The embedded checkout is available at `/embed/pay/:token?key=...` and only allows framing from `https://*.sdtoll.de` via CSP.
 
 4. Run database migrations and seed:
 

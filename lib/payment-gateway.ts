@@ -134,6 +134,30 @@ export async function getCheckoutUserSummary(userId: string) {
   };
 }
 
+export async function getEmbeddedCheckoutUsers() {
+  const users = await prisma.user.findMany({
+    where: {
+      role: "CUSTOMER",
+      paymentPinHash: { not: null },
+    },
+    select: {
+      id: true,
+      customerId: true,
+      displayName: true,
+    },
+    orderBy: [
+      { displayName: "asc" },
+      { customerId: "asc" },
+    ],
+  });
+
+  return users.map((user) => ({
+    id: user.id,
+    customerId: user.customerId,
+    displayName: user.displayName ?? `Kunde ${user.customerId}`,
+  }));
+}
+
 export async function sendMerchantWebhook(sessionToken: string) {
   const session = await prisma.paymentSession.findUnique({
     where: { token: sessionToken },

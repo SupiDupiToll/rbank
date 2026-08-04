@@ -178,6 +178,25 @@ export async function getCheckoutCookieUserId(token: string) {
   return userId;
 }
 
+function hashEmbedCheckoutKey(value: string) {
+  return createHash("sha256").update(value.trim()).digest();
+}
+
+export function isValidEmbedCheckoutKey(candidate: string | null | undefined) {
+  if (!env.RBANK_EMBED_CHECKOUT_KEY || !candidate) {
+    return false;
+  }
+
+  const expected = hashEmbedCheckoutKey(env.RBANK_EMBED_CHECKOUT_KEY);
+  const received = hashEmbedCheckoutKey(candidate);
+
+  if (received.length !== expected.length) {
+    return false;
+  }
+
+  return timingSafeEqual(received, expected);
+}
+
 export function buildMerchantAuthError() {
   return new Response(
     JSON.stringify({ error: "Ungueltige Merchant-Anmeldedaten." }),
@@ -233,6 +252,10 @@ export function formatPaymentLabel(amount: number, merchantName: string) {
 
 export function getCheckoutPaymentUrl(token: string) {
   return `${appOrigin}/pay/${token}`;
+}
+
+export function getEmbeddedCheckoutPaymentUrl(token: string, embedKey: string) {
+  return `${appOrigin}/embed/pay/${token}?key=${encodeURIComponent(embedKey)}`;
 }
 
 export type PaymentSessionWithRelations = Prisma.PaymentSessionGetPayload<{

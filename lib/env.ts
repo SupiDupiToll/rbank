@@ -3,6 +3,7 @@ import { z } from "zod";
 const serverEnvSchema = z.object({
   APP_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
+  RBANK_EMBED_CHECKOUT_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STACK_PROJECT_ID: z.string().min(1),
   NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
   STACK_SECRET_SERVER_KEY: z.string().min(32),
@@ -14,6 +15,7 @@ const serverEnvSchema = z.object({
 const parsedEnv = serverEnvSchema.safeParse({
   APP_URL: process.env.APP_URL,
   DATABASE_URL: process.env.DATABASE_URL,
+  RBANK_EMBED_CHECKOUT_KEY: process.env.RBANK_EMBED_CHECKOUT_KEY,
   NEXT_PUBLIC_STACK_PROJECT_ID: process.env.NEXT_PUBLIC_STACK_PROJECT_ID,
   NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY:
     process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
