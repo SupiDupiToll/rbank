@@ -1,10 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { formatEuroFromCents } from "@/lib/money";
 
 type EmbeddedCheckoutSession = {
@@ -34,6 +30,8 @@ type Props = {
   embedKey: string;
 };
 
+const PIN_LENGTH = 4;
+
 export function EmbeddedCheckoutFlow({
   initialSession,
   availableUsers,
@@ -57,7 +55,6 @@ export function EmbeddedCheckoutFlow({
   const [transactionId, setTransactionId] = useState(
     initialSession.transactionId,
   );
-  const paymentPinMinLength = 4;
 
   const filteredUsers = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -105,7 +102,7 @@ export function EmbeddedCheckoutFlow({
       return;
     }
 
-    if (paymentPin.length < paymentPinMinLength) {
+    if (paymentPin.length < PIN_LENGTH) {
       setMessage("Bitte die PIN eingeben.");
       return;
     }
@@ -129,7 +126,7 @@ export function EmbeddedCheckoutFlow({
             }),
           },
         ),
-        new Promise((resolve) => window.setTimeout(resolve, 1500)),
+        new Promise((resolve) => window.setTimeout(resolve, 1200)),
       ]);
 
       const data = (await response.json()) as {
@@ -175,268 +172,333 @@ export function EmbeddedCheckoutFlow({
 
   if (successRedirectUrl) {
     return (
-      <CheckoutShell merchantName={initialSession.merchant.name} embedded>
+      <Shell>
         <SuccessState
           amount={initialSession.amount}
           merchantName={initialSession.merchant.name}
           redirectUrl={successRedirectUrl}
           transactionId={transactionId}
         />
-      </CheckoutShell>
+      </Shell>
     );
   }
 
   if (initialSession.status !== "PENDING") {
     return (
-      <CheckoutShell merchantName={initialSession.merchant.name} embedded>
+      <Shell>
         <StatusCard session={initialSession} />
-      </CheckoutShell>
+      </Shell>
     );
   }
 
   return (
-    <CheckoutShell merchantName={initialSession.merchant.name} embedded>
-      <Card className="overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900/40 p-0">
-        <div className="relative overflow-hidden border-b border-slate-800 px-6 py-8 sm:px-8">
-          <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-white/20" />
-          <div className="pointer-events-none absolute -bottom-14 -left-14 h-28 w-28 rounded-full bg-white/10" />
-          <div className="relative">
-            <p className="text-sm font-bold uppercase tracking-widest text-primary">
-              Self Checkout
-            </p>
-            <h1 className="mt-3 text-4xl font-display font-black leading-[1.1] tracking-tight text-white sm:text-5xl">
-              {initialSession.donationBoxName
-                ? `Spende an ${initialSession.donationBoxName}`
-                : `Bezahlung an ${initialSession.merchant.name}`}
-            </h1>
-            <p className="mt-3 text-base leading-relaxed text-slate-400">
-              Konto auswaehlen, PIN eingeben und die Zahlung direkt am Terminal
-              bestaetigen.
-            </p>
-            <StepIndicator step={step} />
-          </div>
-        </div>
-
-        <div className="space-y-8 px-6 py-6 sm:px-8 sm:py-8">
-          <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-            <p className="text-sm font-bold uppercase tracking-widest text-primary">
-              Betrag
-            </p>
-            <p className="mt-3 text-5xl font-display font-black tracking-tight text-white">
-              {formatEuroFromCents(initialSession.amount)}
-            </p>
-            {initialSession.donationBoxName ? (
-              <p className="mt-4 text-sm font-bold uppercase tracking-widest text-slate-400">
-                {initialSession.donationBoxName}
-              </p>
-            ) : null}
-            <p className="mt-4 text-base leading-relaxed text-slate-400">
-              {initialSession.description}
-            </p>
-          </div>
-
-          {step === "user" ? (
-            <div className="space-y-5">
-              <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-                <Label htmlFor="checkout-user-search">Nutzer suchen</Label>
-                <Input
-                  id="checkout-user-search"
-                  className="mt-3 bg-slate-950/70"
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Name oder Kundennummer"
-                  value={searchTerm}
-                />
-
-                <div className="mt-5 max-h-72 space-y-3 overflow-y-auto pr-1">
-                  {filteredUsers.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 px-4 py-5 text-sm text-slate-400">
-                      Keine passenden Nutzer gefunden.
-                    </p>
-                  ) : (
-                    filteredUsers.map((user) => {
-                      const isSelected = user.id === selectedUserId;
-
-                      return (
-                        <button
-                          key={user.id}
-                          className={`w-full rounded-xl border px-4 py-4 text-left transition ${
-                            isSelected
-                              ? "border-emerald-400/40 bg-emerald-400/10"
-                              : "border-slate-800 bg-slate-950/60 hover:border-slate-700 hover:bg-slate-900"
-                          }`}
-                          onClick={() => {
-                            setSelectedUserId(user.id);
-                            setSearchTerm("");
-                          }}
-                          type="button"
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-base font-semibold text-white">
-                                {user.displayName}
-                              </p>
-                              <p className="mt-1 text-sm text-slate-400">
-                                Kundennummer {user.customerId}
-                              </p>
-                            </div>
-                            <span
-                              className={`text-xs font-bold uppercase tracking-widest ${
-                                isSelected ? "text-emerald-300" : "text-slate-500"
-                              }`}
-                            >
-                              {isSelected ? "Ausgewaehlt" : "Waehlen"}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {selectedUser ? (
-                <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-6">
-                  <p className="text-sm font-bold uppercase tracking-widest text-emerald-300">
-                    Ausgewaehltes Konto
-                  </p>
-                  <p className="mt-3 text-2xl font-display font-black tracking-tight text-white">
-                    {selectedUser.displayName}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-400">
-                    Kundennummer {selectedUser.customerId}
-                  </p>
-                </div>
-              ) : null}
-
-              {message ? (
-                <p className="text-sm text-rose-300">{message}</p>
-              ) : null}
-
-              <Button
-                className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                disabled={!selectedUser}
-                onClick={() => setStep("pin")}
-              >
-                Weiter
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-                <p className="text-sm font-bold uppercase tracking-widest text-primary">
-                  Ausgewaehltes Konto
-                </p>
-                <p className="mt-3 text-2xl font-display font-black tracking-tight text-white">
-                  {selectedUser?.displayName}
-                </p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Kundennummer {selectedUser?.customerId}
-                </p>
-              </div>
-
-              <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-                <p className="text-sm font-bold uppercase tracking-widest text-primary">
-                  PIN bestaetigen
-                </p>
-                <div className="grid grid-cols-6 gap-3">
-                  {Array.from({ length: 4 }, (_, index) => (
-                    <div
-                      key={index}
-                      aria-hidden="true"
-                      className={`flex h-14 items-center justify-center rounded-2xl border text-2xl ${
-                        index < paymentPin.length
-                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                          : "border-slate-800 bg-slate-950/70 text-slate-500"
-                      }`}
-                    >
-                      {index < paymentPin.length ? "*" : ""}
-                    </div>
-                  ))}
-                </div>
-                <PinKeypad value={paymentPin} onChange={setPaymentPin} />
-                {remainingAttempts !== null ? (
-                  <p className="text-sm text-amber-300">
-                    Noch {remainingAttempts} Versuche
-                  </p>
-                ) : null}
-              </div>
-
-              {message ? (
-                <p className="text-sm text-rose-300">{message}</p>
-              ) : null}
-
-              <Button
-                className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-                disabled={
-                  isProcessing || paymentPin.length < paymentPinMinLength
-                }
-                onClick={() => void submitPayment()}
-              >
-                Jetzt bezahlen
-              </Button>
-              <button
-                className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isProcessing}
-                onClick={() => {
-                  setStep("user");
-                  setPaymentPin("");
-                  setMessage("");
-                  setRemainingAttempts(null);
-                }}
-                type="button"
-              >
-                Zurueck
-              </button>
-            </div>
-          )}
-
-          <button
-            className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isSubmitting}
-            onClick={() => void cancelPayment()}
-            type="button"
-          >
-            Abbrechen
-          </button>
-        </div>
-      </Card>
+    <Shell>
+      <Header
+        session={initialSession}
+        step={step}
+      />
 
       {isProcessing ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 px-6">
-          <div className="space-y-5 text-center">
-            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-300" />
-            <p className="text-lg font-semibold text-white">
+        <div className="flex flex-1 items-center justify-center py-10">
+          <div className="space-y-3 text-center">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-300" />
+            <p className="text-sm font-semibold text-white">
               Zahlung wird verarbeitet...
             </p>
           </div>
         </div>
-      ) : null}
-    </CheckoutShell>
+      ) : step === "user" ? (
+        <UserStep
+          filteredUsers={filteredUsers}
+          searchTerm={searchTerm}
+          selectedUserId={selectedUserId}
+          onSearchChange={setSearchTerm}
+          onSelect={(id) => {
+            setSelectedUserId(id);
+            setSearchTerm("");
+          }}
+          onNext={() => setStep("pin")}
+          onCancel={() => void cancelPayment()}
+          cancelDisabled={isSubmitting}
+        />
+      ) : (
+        <PinStep
+          user={selectedUser}
+          paymentPin={paymentPin}
+          remainingAttempts={remainingAttempts}
+          message={message}
+          processing={isProcessing}
+          onPinChange={setPaymentPin}
+          onSubmit={() => void submitPayment()}
+          onBack={() => {
+            setStep("user");
+            setPaymentPin("");
+            setMessage("");
+            setRemainingAttempts(null);
+          }}
+        />
+      )}
+    </Shell>
   );
 }
 
-function CheckoutShell({
-  children,
-  merchantName,
-  embedded = false,
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-5 text-slate-100">
+      {children}
+    </div>
+  );
+}
+
+function Header({
+  session,
+  step,
 }: {
-  children: React.ReactNode;
-  merchantName: string;
-  embedded?: boolean;
+  session: EmbeddedCheckoutSession;
+  step: "user" | "pin";
+}) {
+  const title = session.donationBoxName
+    ? `Spende an ${session.donationBoxName}`
+    : session.merchant.name;
+
+  return (
+    <div className="mb-4 text-center">
+      <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+        <StepDot active={step === "user"} done={step === "pin"} label="Nutzer" />
+        <span className={step === "pin" ? "h-px w-5 bg-emerald-400/50" : "h-px w-5 bg-slate-800"} />
+        <StepDot active={step === "pin"} done={false} label="PIN" />
+      </div>
+      <p className="mt-2 truncate text-sm font-bold text-white">{title}</p>
+      <p className="mt-0.5 text-2xl font-black tracking-tight text-emerald-300">
+        {formatEuroFromCents(session.amount)}
+      </p>
+    </div>
+  );
+}
+
+function StepDot({
+  active,
+  done,
+  label,
+}: {
+  active: boolean;
+  done: boolean;
+  label: string;
 }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.2),_transparent_32%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-8 text-slate-100 sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center">
-        <div className="w-full">
-          <div className="mb-4 text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-primary">
-              {embedded ? "RBank Self Checkout" : "RBank Checkout"}
-            </p>
-            <p className="mt-3 text-base text-slate-400">{merchantName}</p>
-          </div>
-          {children}
-        </div>
+    <span
+      className={`flex items-center gap-1.5 ${
+        active || done ? "text-white" : "text-slate-600"
+      }`}
+    >
+      <span
+        className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${
+          done
+            ? "bg-emerald-400 text-slate-950"
+            : active
+              ? "border border-emerald-400 text-emerald-300"
+              : "border border-slate-800 text-slate-600"
+        }`}
+      >
+        {done ? "✓" : active ? "•" : ""}
+      </span>
+      {label}
+    </span>
+  );
+}
+
+function UserStep({
+  filteredUsers,
+  searchTerm,
+  selectedUserId,
+  onSearchChange,
+  onSelect,
+  onNext,
+  onCancel,
+  cancelDisabled,
+}: {
+  filteredUsers: EmbeddedCheckoutUser[];
+  searchTerm: string;
+  selectedUserId: string | null;
+  onSearchChange: (value: string) => void;
+  onSelect: (id: string) => void;
+  onNext: () => void;
+  onCancel: () => void;
+  cancelDisabled: boolean;
+}) {
+  const selected = filteredUsers.find((u) => u.id === selectedUserId) ?? null;
+
+  return (
+    <div className="flex flex-1 min-h-0 flex-col">
+      <input
+        className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder="Nutzer suchen"
+        value={searchTerm}
+      />
+
+      <div className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5">
+        {filteredUsers.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-slate-800 px-3 py-4 text-center text-xs text-slate-500">
+            Keine Nutzer gefunden.
+          </p>
+        ) : (
+          filteredUsers.map((user) => {
+            const isSelected = user.id === selectedUserId;
+
+            return (
+              <button
+                key={user.id}
+                className={`w-full rounded-lg border px-3 py-2 text-left transition ${
+                  isSelected
+                    ? "border-emerald-400/50 bg-emerald-400/10"
+                    : "border-slate-800 bg-slate-950/60 hover:border-slate-700"
+                }`}
+                onClick={() => onSelect(user.id)}
+                type="button"
+              >
+                <p className="truncate text-sm font-semibold text-white">
+                  {user.displayName}
+                </p>
+                <p className="truncate text-[11px] text-slate-500">
+                  #{user.customerId}
+                </p>
+              </button>
+            );
+          })
+        )}
       </div>
+
+      <button
+        className={`mt-3 w-full rounded-lg py-2.5 text-sm font-bold transition ${
+          selected
+            ? "bg-emerald-400 text-slate-950 hover:brightness-110"
+            : "cursor-not-allowed bg-slate-800/60 text-slate-500"
+        }`}
+        disabled={!selected}
+        onClick={onNext}
+        type="button"
+      >
+        {selected ? "Weiter" : "Nutzer waehlen"}
+      </button>
+      <button
+        className="mt-2 w-full text-center text-xs font-semibold text-slate-500 transition hover:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={cancelDisabled}
+        onClick={onCancel}
+        type="button"
+      >
+        Abbrechen
+      </button>
+    </div>
+  );
+}
+
+function PinStep({
+  user,
+  paymentPin,
+  remainingAttempts,
+  message,
+  processing,
+  onPinChange,
+  onSubmit,
+  onBack,
+}: {
+  user: EmbeddedCheckoutUser | null;
+  paymentPin: string;
+  remainingAttempts: number | null;
+  message: string;
+  processing: boolean;
+  onPinChange: (value: string) => void;
+  onSubmit: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex flex-1 min-h-0 flex-col">
+      {user ? (
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2">
+          <p className="truncate text-sm font-semibold text-white">
+            {user.displayName}
+          </p>
+          <p className="truncate text-[11px] text-slate-500">
+            #{user.customerId}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-3 flex justify-center gap-2">
+        {Array.from({ length: PIN_LENGTH }, (_, index) => (
+          <div
+            key={index}
+            aria-hidden="true"
+            className={`flex h-10 w-8 items-center justify-center rounded-md border text-base font-bold ${
+              index < paymentPin.length
+                ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
+                : "border-slate-800 bg-slate-950/70 text-transparent"
+            }`}
+          >
+            *
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 grid flex-1 grid-cols-3 gap-1.5">
+        {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "←"].map(
+          (key, index) =>
+            key ? (
+              <button
+                key={`${key}-${index}`}
+                className="flex h-12 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-base font-bold text-white transition hover:border-emerald-400/40 hover:bg-slate-800"
+                onClick={() => {
+                  if (key === "←") {
+                    onPinChange(paymentPin.slice(0, -1));
+                    return;
+                  }
+
+                  if (paymentPin.length >= 6) {
+                    return;
+                  }
+
+                  onPinChange(`${paymentPin}${key}`);
+                }}
+                type="button"
+              >
+                {key === "←" ? "⌫" : key}
+              </button>
+            ) : (
+              <div key={`empty-${index}`} />
+            ),
+        )}
+      </div>
+
+      {remainingAttempts !== null ? (
+        <p className="mt-2 text-center text-xs text-amber-300">
+          Noch {remainingAttempts} Versuche
+        </p>
+      ) : null}
+      {message ? (
+        <p className="mt-2 text-center text-xs text-rose-300">{message}</p>
+      ) : null}
+
+      <button
+        className={`mt-3 w-full rounded-lg py-2.5 text-sm font-bold transition ${
+          !processing && paymentPin.length >= PIN_LENGTH
+            ? "bg-emerald-400 text-slate-950 hover:brightness-110"
+            : "cursor-not-allowed bg-slate-800/60 text-slate-500"
+        }`}
+        disabled={processing || paymentPin.length < PIN_LENGTH}
+        onClick={onSubmit}
+        type="button"
+      >
+        Jetzt bezahlen
+      </button>
+      <button
+        className="mt-2 w-full text-center text-xs font-semibold text-slate-500 transition hover:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={processing}
+        onClick={onBack}
+        type="button"
+      >
+        Zurueck
+      </button>
     </div>
   );
 }
@@ -453,18 +515,18 @@ function StatusCard({ session }: { session: EmbeddedCheckoutSession }) {
     "Zahlung nicht verfuegbar";
 
   return (
-    <Card className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-8 text-center">
+    <div className="flex flex-col items-center text-center">
       <p className="text-sm font-bold uppercase tracking-widest text-primary">
         Status
       </p>
-      <h1 className="mt-5 text-4xl font-display font-black tracking-tight text-white">
+      <h1 className="mt-3 text-2xl font-black tracking-tight text-white">
         {title}
       </h1>
-      <p className="mt-4 text-lg leading-relaxed text-slate-400">
+      <p className="mt-2 text-sm text-slate-400">
         {formatEuroFromCents(session.amount)} · {session.description}
       </p>
       <a
-        className="mt-8 inline-flex h-14 items-center justify-center rounded-full border-2 border-slate-800 px-8 text-lg font-bold text-slate-100 transition-colors hover:bg-slate-800"
+        className="mt-6 rounded-full border-2 border-slate-800 px-6 py-2.5 text-sm font-bold text-slate-100 transition-colors hover:bg-slate-800"
         href={
           session.status === "COMPLETED"
             ? session.redirectUrl
@@ -473,7 +535,7 @@ function StatusCard({ session }: { session: EmbeddedCheckoutSession }) {
       >
         Zurueck zum Shop
       </a>
-    </Card>
+    </div>
   );
 }
 
@@ -489,115 +551,27 @@ function SuccessState({
   transactionId: string | null;
 }) {
   return (
-    <Card className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-8 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-4xl text-primary">
+    <div className="flex flex-col items-center text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl text-primary">
         ✓
       </div>
-      <h1 className="mt-6 text-4xl font-display font-black tracking-tight text-white">
+      <h1 className="mt-4 text-2xl font-black tracking-tight text-white">
         Zahlung erfolgreich!
       </h1>
-      <p className="mt-4 text-lg leading-relaxed text-slate-400">
+      <p className="mt-2 text-sm text-slate-400">
         {formatEuroFromCents(amount)} wurden an {merchantName} ueberwiesen.
       </p>
       {transactionId ? (
-        <p className="mt-4 text-xs uppercase tracking-[0.28em] text-slate-500">
+        <p className="mt-2 text-[10px] uppercase tracking-[0.28em] text-slate-500">
           Transaktion {transactionId}
         </p>
       ) : null}
       <a
-        className="mt-8 inline-flex h-14 items-center justify-center rounded-full bg-primary px-8 text-lg font-bold text-background-dark"
+        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-background-dark"
         href={redirectUrl}
       >
         Jetzt zum Shop zurueck
       </a>
-    </Card>
-  );
-}
-
-function StepIndicator({ step }: { step: "user" | "pin" }) {
-  const steps = [
-    { key: "user", label: "Nutzer", icon: "1" },
-    { key: "pin", label: "PIN", icon: "2" },
-  ] as const;
-
-  return (
-    <div className="mt-6 flex items-center gap-3">
-      {steps.map((item, index) => {
-        const isActive = item.key === step;
-        const isDone = item.key === "user" && step === "pin";
-
-        return (
-          <div key={item.key} className="flex flex-1 items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors ${
-                  isDone
-                    ? "border-emerald-400 bg-emerald-400 text-slate-950"
-                    : isActive
-                      ? "border-emerald-400 text-emerald-300"
-                      : "border-slate-800 text-slate-500"
-                }`}
-              >
-                {isDone ? "✓" : item.icon}
-              </div>
-              <span
-                className={`text-sm font-bold uppercase tracking-widest ${
-                  isActive || isDone ? "text-white" : "text-slate-500"
-                }`}
-              >
-                {item.label}
-              </span>
-            </div>
-            {index < steps.length - 1 ? (
-              <div
-                className={`h-px flex-1 ${
-                  isDone ? "bg-emerald-400/50" : "bg-slate-800"
-                }`}
-              />
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function PinKeypad({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (nextValue: string) => void;
-}) {
-  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "←"];
-
-  return (
-    <div className="grid grid-cols-3 gap-3">
-      {keys.map((key, index) =>
-        key ? (
-          <button
-            key={`${key}-${index}`}
-            className="flex h-14 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-lg font-bold text-white transition hover:border-emerald-400/30 hover:bg-slate-800"
-            onClick={() => {
-              if (key === "←") {
-                onChange(value.slice(0, -1));
-                return;
-              }
-
-              if (value.length >= 6) {
-                return;
-              }
-
-              onChange(`${value}${key}`);
-            }}
-            type="button"
-          >
-            {key}
-          </button>
-        ) : (
-          <div key={`empty-${index}`} />
-        ),
-      )}
     </div>
   );
 }
