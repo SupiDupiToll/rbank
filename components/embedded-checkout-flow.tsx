@@ -48,7 +48,6 @@ export function EmbeddedCheckoutFlow({
     null,
   );
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(
     null,
   );
@@ -153,23 +152,6 @@ export function EmbeddedCheckoutFlow({
     }
   }
 
-  async function cancelPayment() {
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(
-        `/api/pay/checkout/${initialSession.token}/cancel`,
-        {
-          method: "POST",
-        },
-      );
-      const data = (await response.json()) as { redirectUrl?: string };
-      window.location.href = data.redirectUrl ?? initialSession.cancelUrl;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   if (successRedirectUrl) {
     return (
       <Shell>
@@ -218,8 +200,6 @@ export function EmbeddedCheckoutFlow({
             setSearchTerm("");
           }}
           onNext={() => setStep("pin")}
-          onCancel={() => void cancelPayment()}
-          cancelDisabled={isSubmitting}
         />
       ) : (
         <PinStep
@@ -314,8 +294,6 @@ function UserStep({
   onSearchChange,
   onSelect,
   onNext,
-  onCancel,
-  cancelDisabled,
 }: {
   filteredUsers: EmbeddedCheckoutUser[];
   searchTerm: string;
@@ -323,8 +301,6 @@ function UserStep({
   onSearchChange: (value: string) => void;
   onSelect: (id: string) => void;
   onNext: () => void;
-  onCancel: () => void;
-  cancelDisabled: boolean;
 }) {
   const selected = filteredUsers.find((u) => u.id === selectedUserId) ?? null;
 
@@ -380,14 +356,6 @@ function UserStep({
         type="button"
       >
         {selected ? "Weiter" : "Nutzer waehlen"}
-      </button>
-      <button
-        className="mt-2 w-full text-center text-xs font-semibold text-slate-500 transition hover:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={cancelDisabled}
-        onClick={onCancel}
-        type="button"
-      >
-        Abbrechen
       </button>
     </div>
   );
