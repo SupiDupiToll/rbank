@@ -39,6 +39,7 @@ export function EmbeddedCheckoutFlow({
   availableUsers,
   embedKey,
 }: Props) {
+  const [step, setStep] = useState<"user" | "pin">("user");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     availableUsers[0]?.id ?? null,
   );
@@ -209,9 +210,10 @@ export function EmbeddedCheckoutFlow({
                 : `Bezahlung an ${initialSession.merchant.name}`}
             </h1>
             <p className="mt-3 text-base leading-relaxed text-slate-400">
-              Konto auswahlen, PIN eingeben und die Zahlung direkt am Terminal
+              Konto auswaehlen, PIN eingeben und die Zahlung direkt am Terminal
               bestaetigen.
             </p>
+            <StepIndicator step={step} />
           </div>
         </div>
 
@@ -233,122 +235,169 @@ export function EmbeddedCheckoutFlow({
             </p>
           </div>
 
-          <div className="space-y-5">
-            <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-              <Label htmlFor="checkout-user-search">Nutzer suchen</Label>
-              <Input
-                id="checkout-user-search"
-                className="mt-3 bg-slate-950/70"
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Name oder Kundennummer"
-                value={searchTerm}
-              />
+          {step === "user" ? (
+            <div className="space-y-5">
+              <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+                <Label htmlFor="checkout-user-search">Nutzer suchen</Label>
+                <Input
+                  id="checkout-user-search"
+                  className="mt-3 bg-slate-950/70"
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Name oder Kundennummer"
+                  value={searchTerm}
+                />
 
-              <div className="mt-5 max-h-72 space-y-3 overflow-y-auto pr-1">
-                {filteredUsers.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 px-4 py-5 text-sm text-slate-400">
-                    Keine passenden Nutzer gefunden.
-                  </p>
-                ) : (
-                  filteredUsers.map((user) => {
-                    const isSelected = user.id === selectedUserId;
+                <div className="mt-5 max-h-72 space-y-3 overflow-y-auto pr-1">
+                  {filteredUsers.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-slate-800 bg-slate-950/60 px-4 py-5 text-sm text-slate-400">
+                      Keine passenden Nutzer gefunden.
+                    </p>
+                  ) : (
+                    filteredUsers.map((user) => {
+                      const isSelected = user.id === selectedUserId;
 
-                    return (
-                      <button
-                        key={user.id}
-                        className={`w-full rounded-xl border px-4 py-4 text-left transition ${
-                          isSelected
-                            ? "border-emerald-400/40 bg-emerald-400/10"
-                            : "border-slate-800 bg-slate-950/60 hover:border-slate-700 hover:bg-slate-900"
-                        }`}
-                        onClick={() => setSelectedUserId(user.id)}
-                        type="button"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div>
-                            <p className="text-base font-semibold text-white">
-                              {user.displayName}
-                            </p>
-                            <p className="mt-1 text-sm text-slate-400">
-                              Kundennummer {user.customerId}
-                            </p>
+                      return (
+                        <button
+                          key={user.id}
+                          className={`w-full rounded-xl border px-4 py-4 text-left transition ${
+                            isSelected
+                              ? "border-emerald-400/40 bg-emerald-400/10"
+                              : "border-slate-800 bg-slate-950/60 hover:border-slate-700 hover:bg-slate-900"
+                          }`}
+                          onClick={() => {
+                            setSelectedUserId(user.id);
+                            setSearchTerm("");
+                          }}
+                          type="button"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-base font-semibold text-white">
+                                {user.displayName}
+                              </p>
+                              <p className="mt-1 text-sm text-slate-400">
+                                Kundennummer {user.customerId}
+                              </p>
+                            </div>
+                            <span
+                              className={`text-xs font-bold uppercase tracking-widest ${
+                                isSelected ? "text-emerald-300" : "text-slate-500"
+                              }`}
+                            >
+                              {isSelected ? "Ausgewaehlt" : "Waehlen"}
+                            </span>
                           </div>
-                          <span
-                            className={`text-xs font-bold uppercase tracking-widest ${
-                              isSelected ? "text-emerald-300" : "text-slate-500"
-                            }`}
-                          >
-                            {isSelected ? "Ausgewaehlt" : "Waehlen"}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
 
-            {selectedUser ? (
+              {selectedUser ? (
+                <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-6">
+                  <p className="text-sm font-bold uppercase tracking-widest text-emerald-300">
+                    Ausgewaehltes Konto
+                  </p>
+                  <p className="mt-3 text-2xl font-display font-black tracking-tight text-white">
+                    {selectedUser.displayName}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Kundennummer {selectedUser.customerId}
+                  </p>
+                </div>
+              ) : null}
+
+              {message ? (
+                <p className="text-sm text-rose-300">{message}</p>
+              ) : null}
+
+              <Button
+                className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                disabled={!selectedUser}
+                onClick={() => setStep("pin")}
+              >
+                Weiter
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-5">
               <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
                 <p className="text-sm font-bold uppercase tracking-widest text-primary">
                   Ausgewaehltes Konto
                 </p>
                 <p className="mt-3 text-2xl font-display font-black tracking-tight text-white">
-                  {selectedUser.displayName}
+                  {selectedUser?.displayName}
                 </p>
                 <p className="mt-2 text-sm text-slate-400">
-                  Kundennummer {selectedUser.customerId}
+                  Kundennummer {selectedUser?.customerId}
                 </p>
               </div>
-            ) : null}
 
-            <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-              <p className="text-sm font-bold uppercase tracking-widest text-primary">
-                PIN bestaetigen
-              </p>
-              <div className="grid grid-cols-6 gap-3">
-                {Array.from({ length: 4 }, (_, index) => (
-                  <div
-                    key={index}
-                    aria-hidden="true"
-                    className={`flex h-14 items-center justify-center rounded-2xl border text-2xl ${
-                      index < paymentPin.length
-                        ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                        : "border-slate-800 bg-slate-950/70 text-slate-500"
-                    }`}
-                  >
-                    {index < paymentPin.length ? "*" : ""}
-                  </div>
-                ))}
-              </div>
-              <PinKeypad value={paymentPin} onChange={setPaymentPin} />
-              {remainingAttempts !== null ? (
-                <p className="text-sm text-amber-300">
-                  Noch {remainingAttempts} Versuche
+              <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-primary">
+                  PIN bestaetigen
                 </p>
+                <div className="grid grid-cols-6 gap-3">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <div
+                      key={index}
+                      aria-hidden="true"
+                      className={`flex h-14 items-center justify-center rounded-2xl border text-2xl ${
+                        index < paymentPin.length
+                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                          : "border-slate-800 bg-slate-950/70 text-slate-500"
+                      }`}
+                    >
+                      {index < paymentPin.length ? "*" : ""}
+                    </div>
+                  ))}
+                </div>
+                <PinKeypad value={paymentPin} onChange={setPaymentPin} />
+                {remainingAttempts !== null ? (
+                  <p className="text-sm text-amber-300">
+                    Noch {remainingAttempts} Versuche
+                  </p>
+                ) : null}
+              </div>
+
+              {message ? (
+                <p className="text-sm text-rose-300">{message}</p>
               ) : null}
+
+              <Button
+                className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
+                disabled={
+                  isProcessing || paymentPin.length < paymentPinMinLength
+                }
+                onClick={() => void submitPayment()}
+              >
+                Jetzt bezahlen
+              </Button>
+              <button
+                className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isProcessing}
+                onClick={() => {
+                  setStep("user");
+                  setPaymentPin("");
+                  setMessage("");
+                  setRemainingAttempts(null);
+                }}
+                type="button"
+              >
+                Zurueck
+              </button>
             </div>
+          )}
 
-            {message ? <p className="text-sm text-rose-300">{message}</p> : null}
-
-            <Button
-              className="h-14 w-full rounded-2xl bg-emerald-400 text-slate-950 hover:bg-emerald-300"
-              disabled={
-                isProcessing || !selectedUser || paymentPin.length < paymentPinMinLength
-              }
-              onClick={() => void submitPayment()}
-            >
-              Jetzt bezahlen
-            </Button>
-            <button
-              className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isSubmitting}
-              onClick={() => void cancelPayment()}
-              type="button"
-            >
-              Abbrechen
-            </button>
-          </div>
+          <button
+            className="w-full text-sm font-semibold text-slate-400 transition hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isSubmitting}
+            onClick={() => void cancelPayment()}
+            type="button"
+          >
+            Abbrechen
+          </button>
         </div>
       </Card>
 
@@ -462,6 +511,54 @@ function SuccessState({
         Jetzt zum Shop zurueck
       </a>
     </Card>
+  );
+}
+
+function StepIndicator({ step }: { step: "user" | "pin" }) {
+  const steps = [
+    { key: "user", label: "Nutzer", icon: "1" },
+    { key: "pin", label: "PIN", icon: "2" },
+  ] as const;
+
+  return (
+    <div className="mt-6 flex items-center gap-3">
+      {steps.map((item, index) => {
+        const isActive = item.key === step;
+        const isDone = item.key === "user" && step === "pin";
+
+        return (
+          <div key={item.key} className="flex flex-1 items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors ${
+                  isDone
+                    ? "border-emerald-400 bg-emerald-400 text-slate-950"
+                    : isActive
+                      ? "border-emerald-400 text-emerald-300"
+                      : "border-slate-800 text-slate-500"
+                }`}
+              >
+                {isDone ? "✓" : item.icon}
+              </div>
+              <span
+                className={`text-sm font-bold uppercase tracking-widest ${
+                  isActive || isDone ? "text-white" : "text-slate-500"
+                }`}
+              >
+                {item.label}
+              </span>
+            </div>
+            {index < steps.length - 1 ? (
+              <div
+                className={`h-px flex-1 ${
+                  isDone ? "bg-emerald-400/50" : "bg-slate-800"
+                }`}
+              />
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
