@@ -112,4 +112,4 @@ The embedded checkout is available at `/embed/pay/:token?key=...` and only allow
 
 ## License
 
-[MIT](LICENSE)
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en)
