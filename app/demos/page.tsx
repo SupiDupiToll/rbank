@@ -6,6 +6,16 @@ export const metadata = {
     "Interaktive Demo-Vorschau aller RBank-Ansichten mit Dummy-Daten – ohne echte Buchungen.",
 };
 
-export default function DemosPage() {
-  return <DemoShell />;
+type DemosPageProps = {
+  searchParams: Promise<{ view?: string; embed?: string }>;
+};
+
+export default async function DemosPage({ searchParams }: DemosPageProps) {
+  const params = await searchParams;
+  return (
+    <DemoShell
+      initialView={params.view}
+      embed={params.embed === "1"}
+    />
+  );
 }

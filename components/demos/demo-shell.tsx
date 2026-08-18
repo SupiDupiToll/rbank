@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   DemoAdminView,
@@ -143,8 +144,23 @@ const viewComponents: Record<DemoId, React.ComponentType> = {
   admin: DemoAdminView,
 };
 
-export function DemoShell() {
-  const [activeId, setActiveId] = useState<DemoId>("dashboard");
+const flattenedItems = groups.flatMap((group) => group.items);
+
+function normalizeView(view: string | undefined): DemoId {
+  if (view && flattenedItems.some((item) => item.id === view)) {
+    return view as DemoId;
+  }
+  return "dashboard";
+}
+
+type DemoShellProps = {
+  initialView?: string;
+  embed?: boolean;
+};
+
+export function DemoShell({ initialView, embed = false }: DemoShellProps) {
+  const router = useRouter();
+  const [activeId, setActiveId] = useState<DemoId>(() => normalizeView(initialView));
   const ActiveView = viewComponents[activeId];
   const meta = viewMeta[activeId];
   const flattened = useMemo(
@@ -153,21 +169,46 @@ export function DemoShell() {
   );
   const activeIndex = flattened.findIndex((item) => item.id === activeId);
 
+  function selectView(id: DemoId) {
+    setActiveId(id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const params = new URLSearchParams();
+    params.set("view", id);
+    if (embed) {
+      params.set("embed", "1");
+    }
+    router.replace(`/demos?${params.toString()}`, { scroll: false });
+  }
+
   function goNext() {
     const next = flattened[(activeIndex + 1) % flattened.length];
-    setActiveId(next.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    selectView(next.id);
   }
 
   function goPrev() {
     const next = flattened[(activeIndex - 1 + flattened.length) % flattened.length];
-    setActiveId(next.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    selectView(next.id);
+  }
+
+  if (embed) {
+    return (
+      <div className="min-h-screen bg-background-dark text-slate-100">
+        <div className="relative">
+          <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+            <ActiveView />
+          </div>
+          <span className="pointer-events-none fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background-dark/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            RBank Demo
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background-dark text-slate-100">
-        <DemoTopBar activeId={activeId} onSelect={setActiveId} />
+        <DemoTopBar activeId={activeId} onSelect={selectView} />
 
         <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
           <header className="mx-auto mb-8 flex max-w-5xl flex-wrap items-end justify-between gap-6">
@@ -245,7 +286,7 @@ export function DemoShell() {
           </div>
 
           <div className="mx-auto mt-10 flex max-w-5xl items-center justify-between gap-4 border-t border-slate-800/60 pt-8">
-            <PrevNextButton direction="prev" activeId={activeId} onSelect={setActiveId} />
+            <PrevNextButton direction="prev" activeId={activeId} onSelect={selectView} />
             <div className="text-center">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
                 Ansicht durchblättern
@@ -254,7 +295,7 @@ export function DemoShell() {
                 {activeIndex + 1} / {flattened.length} · {meta.title}
               </p>
             </div>
-            <PrevNextButton direction="next" activeId={activeId} onSelect={setActiveId} />
+            <PrevNextButton direction="next" activeId={activeId} onSelect={selectView} />
           </div>
         </main>
     </div>
@@ -391,5 +432,3 @@ function DemoTopBar({
     </div>
   );
 }
-
-const flattenedItems = groups.flatMap((group) => group.items);
