@@ -168,18 +168,20 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
 
   return (
     <div className="space-y-8 pb-8">
-      <header>
-        <p className="font-label-sm text-label-sm text-primary">
-          Prepaid Mastercard
-        </p>
-        <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
-          Karte
-        </h2>
-        <p className="mt-2 text-sm text-on-surface-variant">
-          Beantrage deine RBank-Karte, lade dein Kartenguthaben auf und verwalte
-          sie hier.
-        </p>
-      </header>
+      {cardActive && (
+        <header>
+          <p className="font-label-sm text-label-sm text-primary">
+            Prepaid Mastercard
+          </p>
+          <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
+            Karte
+          </h2>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            Beantrage deine RBank-Karte, lade dein Kartenguthaben auf und
+            verwalte sie hier.
+          </p>
+        </header>
+      )}
 
       {/* Mastercard + top up (only when card is active) */}
       {cardActive && (
