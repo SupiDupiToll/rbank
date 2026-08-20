@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
@@ -51,6 +51,46 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
     ? formatEuroFromCents(amountCents)
     : formatEuroFromCents(0);
   const cardActive = card?.status === "ACTIVE";
+
+  useEffect(() => {
+    if (cardActive) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkActivation = async () => {
+      try {
+        const response = await fetch("/api/cards");
+        if (!response.ok) {
+          return;
+        }
+        const data = (await response.json()) as {
+          card?: CardTabCard | null;
+        };
+        if (cancelled || data.card?.status !== "ACTIVE") {
+          return;
+        }
+        window.clearInterval(interval);
+        window.setTimeout(() => {
+          if (!cancelled) {
+            window.location.reload();
+          }
+        }, 3000);
+      } catch {
+        // ignore
+      }
+    };
+
+    const interval = window.setInterval(() => {
+      void checkActivation();
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [cardActive]);
 
   function goToPinStep() {
     if (!isAmountValid) {
