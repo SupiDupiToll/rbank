@@ -173,13 +173,16 @@ export function CustomerTransferForm({
   if (isSuccessful) {
     return (
       <div className="space-y-5">
-        <div className="rounded-3xl border border-green-500/20 bg-green-500/5 p-6">
-          <p className="text-sm font-semibold text-green-300">
+        <div className="glass-card flex flex-col items-center gap-3 rounded-xl border-secondary/30 p-8 text-center">
+          <span className="material-symbols-outlined text-4xl text-secondary">
+            check_circle
+          </span>
+          <p className="font-semibold text-on-surface">
             Überweisung erfolgreich ausgeführt.
           </p>
         </div>
         <Button
-          className="w-full rounded-xl"
+          className="w-full"
           onClick={() => {
             setIsSuccessful(false);
             setMessage("");
@@ -197,13 +200,13 @@ export function CustomerTransferForm({
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
+            <p className="font-label-sm text-label-sm text-primary">
               Schritt 2
             </p>
-            <h3 className="mt-2 text-2xl font-display text-slate-100">
+            <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
               PIN eingeben
             </h3>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-on-surface-variant">
               Bestätige die Überweisung mit deiner 4-stelligen PIN.
             </p>
           </div>
@@ -220,33 +223,49 @@ export function CustomerTransferForm({
           </Button>
         </div>
 
-        <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
-          <p className="text-sm text-slate-300">Betrag</p>
-          <p className="mt-2 text-3xl font-display text-primary">
+        <div className="glass-card rounded-2xl p-5">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
+            Betrag
+          </p>
+          <p className="font-balance-display text-balance-display mt-2 text-primary">
             {isAmountValid
               ? formattedTransferAmount
               : currency === "AIR"
                 ? "0 AIR"
                 : "0,00 €"}
           </p>
-          <p className="mt-4 text-sm text-slate-400">Währung</p>
-          <p className="mt-1 font-semibold text-slate-100">{currency}</p>
-          <p className="mt-4 text-sm text-slate-400">Empfänger</p>
-          <p className="mt-1 font-semibold text-slate-100">
-            {resolvedRecipient || recipientCustomerId}
-          </p>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">
+                Währung
+              </p>
+              <p className="mt-1 font-semibold text-on-surface">{currency}</p>
+            </div>
+            <div>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">
+                Empfänger
+              </p>
+              <p className="mt-1 font-semibold text-on-surface">
+                {resolvedRecipient || recipientCustomerId}
+              </p>
+            </div>
+          </div>
           {description.trim() ? (
-            <>
-              <p className="mt-3 text-sm text-slate-400">Verwendungszweck</p>
-              <p className="mt-1 font-semibold text-slate-100">
+            <div className="mt-4">
+              <p className="font-label-sm text-label-sm text-on-surface-variant">
+                Verwendungszweck
+              </p>
+              <p className="mt-1 font-semibold text-on-surface">
                 {description.trim()}
               </p>
-            </>
+            </div>
           ) : null}
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-200">Deine PIN</p>
+          <p className="font-label-sm text-label-sm text-on-surface">
+            Deine PIN
+          </p>
           <div className="grid grid-cols-4 gap-3">
             {Array.from({ length: PIN_LENGTH }, (_, index) => (
               <div
@@ -255,11 +274,11 @@ export function CustomerTransferForm({
                 className={cn(
                   "flex h-16 items-center justify-center rounded-2xl border text-3xl",
                   index < pin.length
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-slate-800 bg-slate-900/70 text-slate-500",
+                    ? "border-primary/40 bg-primary-container/20 text-primary"
+                    : "glass-card text-on-surface-variant",
                 )}
               >
-                {index < pin.length ? "*" : ""}
+                {index < pin.length ? "*" : "•"}
               </div>
             ))}
           </div>
@@ -279,7 +298,7 @@ export function CustomerTransferForm({
             </Button>
           ))}
           <Button
-            className="h-16 rounded-2xl text-lg"
+            className="h-16 rounded-2xl text-sm"
             disabled={isSubmitting}
             onClick={handleBackspace}
             type="button"
@@ -306,10 +325,10 @@ export function CustomerTransferForm({
           </Button>
         </div>
 
-        {message ? <p className="text-sm text-red-300">{message}</p> : null}
+        {message ? <p className="text-sm text-error">{message}</p> : null}
 
         <Button
-          className="w-full rounded-xl"
+          className="w-full"
           disabled={isSubmitting || pin.length !== PIN_LENGTH}
           onClick={handleSubmit}
           type="button"
@@ -330,31 +349,36 @@ export function CustomerTransferForm({
         goToPinStep();
       }}
     >
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-200">
-        Aktueller Kontostand:{" "}
-        <span className="font-bold text-primary">
-          {formattedAvailableBalance}
+      <div className="glass-card flex items-center gap-3 rounded-2xl p-4">
+        <span className="material-symbols-outlined text-primary">
+          account_balance_wallet
         </span>
+        <p className="text-sm text-on-surface">
+          Aktueller Kontostand:{" "}
+          <span className="font-bold text-primary">
+            {formattedAvailableBalance}
+          </span>
+        </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-200">Währung</label>
+        <label className="text-sm font-semibold text-on-surface">Währung</label>
         <select
-          className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-2xl border border-white/10 bg-surface-container-high px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary"
           onChange={(event) => setCurrency(event.target.value as TransferCurrency)}
           value={currency}
         >
           <option value="EUR">EUR</option>
           <option value="AIR">AIR</option>
         </select>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-on-surface-variant">
           AIR ist eine interne Prämienwährung und kann nicht in Echtgeld
           umgetauscht werden.
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-200">
+        <label className="text-sm font-semibold text-on-surface">
           Empfänger-Kundennummer
         </label>
         <Input
@@ -366,17 +390,27 @@ export function CustomerTransferForm({
           placeholder="47291836"
           value={recipientCustomerId}
         />
-        <p className="min-h-5 text-xs text-slate-400">
-          {isResolvingRecipient
-            ? "Empfänger wird geprüft..."
-            : resolvedRecipient
-              ? `Empfänger: ${resolvedRecipient}`
-              : "8-stellige Kundennummer eingeben"}
+        <p className="flex min-h-5 items-center gap-1 text-xs text-on-surface-variant">
+          {isResolvingRecipient ? (
+            <>
+              <span className="h-3 w-3 animate-spin rounded-full border border-on-surface-variant border-t-primary" />
+              Empfänger wird geprüft...
+            </>
+          ) : resolvedRecipient ? (
+            <>
+              <span className="material-symbols-outlined text-sm text-secondary">
+                check_circle
+              </span>
+              Empfänger: {resolvedRecipient}
+            </>
+          ) : (
+            "8-stellige Kundennummer eingeben"
+          )}
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-200">
+        <label className="text-sm font-semibold text-on-surface">
           Betrag in {currency}
         </label>
         <Input
@@ -388,7 +422,7 @@ export function CustomerTransferForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-200">
+        <label className="text-sm font-semibold text-on-surface">
           Verwendungszweck
         </label>
         <Input
@@ -399,10 +433,10 @@ export function CustomerTransferForm({
         />
       </div>
 
-      {message ? <p className="text-sm text-primary">{message}</p> : null}
+      {message ? <p className="text-sm text-error">{message}</p> : null}
 
       <Button
-        className="w-full rounded-xl"
+        className="w-full"
         disabled={isSubmitting || isResolvingRecipient || !resolvedRecipient}
         type="submit"
       >

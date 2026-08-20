@@ -133,7 +133,7 @@ function DonationBoxRow({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
+    <div className="glass-card rounded-2xl p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {isEditing ? (
@@ -145,7 +145,7 @@ function DonationBoxRow({
               />
               <div className="flex gap-2">
                 <Button
-                  className="h-9 rounded-full px-4"
+                  className="h-9 px-4"
                   disabled={isSaving}
                   onClick={() => void handleRename()}
                   type="button"
@@ -153,7 +153,7 @@ function DonationBoxRow({
                   {isSaving ? "Speichert..." : "Speichern"}
                 </Button>
                 <Button
-                  className="h-9 rounded-full px-4"
+                  className="h-9 px-4"
                   disabled={isSaving}
                   onClick={() => {
                     setDraftName(item.name);
@@ -168,12 +168,12 @@ function DonationBoxRow({
               </div>
             </div>
           ) : (
-            <p className="truncate font-semibold text-slate-100">{item.name}</p>
+            <p className="truncate font-semibold text-on-surface">{item.name}</p>
           )}
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-on-surface-variant">
             von {item.ownerName} · #{item.ownerCustomerId}
           </p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-on-surface-variant">
             Erstellt am {formatGermanDate(item.createdAt)}
           </p>
           <a
@@ -187,7 +187,7 @@ function DonationBoxRow({
         </div>
         <div className="flex shrink-0 gap-2">
           <Button
-            className="h-10 rounded-full px-4"
+            className="h-10 px-4"
             onClick={() => void handleAction()}
             type="button"
             variant="outline"
@@ -196,7 +196,7 @@ function DonationBoxRow({
           </Button>
           {onRename ? (
             <Button
-              className="h-10 rounded-full px-4"
+              className="h-10 px-4"
               disabled={isEditing || isSaving || isDeleting}
               onClick={() => {
                 setDraftName(item.name);
@@ -211,7 +211,7 @@ function DonationBoxRow({
           ) : null}
           {onDelete ? (
             <Button
-              className="h-10 rounded-full border-red-500/30 px-4 text-red-300 hover:bg-red-500/10"
+              className="h-10 border-error/30 px-4 text-error hover:bg-error-container/20"
               disabled={isDeleting || isSaving}
               onClick={() => void handleDelete()}
               type="button"
@@ -222,7 +222,7 @@ function DonationBoxRow({
           ) : null}
         </div>
       </div>
-      {message ? <p className="mt-3 text-sm text-slate-300">{message}</p> : null}
+      {message ? <p className="mt-3 text-sm text-on-surface">{message}</p> : null}
     </div>
   );
 }
@@ -297,13 +297,11 @@ export function DonationBoxesDashboard({
   return (
     <div className="space-y-8 pb-8">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-          Community
-        </p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">
+        <p className="font-label-sm text-label-sm text-primary">Community</p>
+        <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
           Spendenboxen
         </h2>
-        <p className="mt-3 max-w-2xl text-sm text-slate-400">
+        <p className="mt-3 max-w-2xl text-sm text-on-surface-variant">
           Erstelle eigene Spendenboxen mit persoenlichem Link und sieh dir alle
           bisher erstellten Boxen im Netzwerk an.
         </p>
@@ -311,10 +309,10 @@ export function DonationBoxesDashboard({
 
       <Card className="space-y-5">
         <div>
-          <p className="text-sm font-semibold text-slate-100">
+          <p className="text-sm font-semibold text-on-surface">
             Neue Spendenbox erstellen
           </p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-on-surface-variant">
             Name eingeben, Link erzeugen und direkt teilen.
           </p>
         </div>
@@ -326,7 +324,7 @@ export function DonationBoxesDashboard({
             value={name}
           />
           <Button
-            className="h-14 rounded-2xl px-6"
+            className="h-14 px-6"
             disabled={isSubmitting}
             onClick={() => void handleCreate()}
             type="button"
@@ -334,21 +332,24 @@ export function DonationBoxesDashboard({
             {isSubmitting ? "Erstellt..." : "Spendenbox erstellen"}
           </Button>
         </div>
-        {message ? <p className="text-sm text-slate-300">{message}</p> : null}
+        {message ? <p className="text-sm text-on-surface">{message}</p> : null}
       </Card>
 
       <section className="space-y-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
             Deine Boxen
           </p>
-          <h3 className="mt-2 text-2xl font-display text-slate-100">
+          <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
             Eigene Spendenlinks
           </h3>
         </div>
         {ownBoxes.length === 0 ? (
-          <Card className="border border-dashed border-slate-700 bg-slate-950/40">
-            <p className="text-sm text-slate-400">
+          <Card className="border border-dashed border-outline-variant bg-transparent">
+            <span className="material-symbols-outlined text-3xl text-on-surface-variant">
+              card_giftcard
+            </span>
+            <p className="mt-3 text-sm text-on-surface-variant">
               Noch keine Spendenbox erstellt.
             </p>
           </Card>
@@ -366,16 +367,16 @@ export function DonationBoxesDashboard({
 
       <section className="space-y-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
             Netzwerk
           </p>
-          <h3 className="mt-2 text-2xl font-display text-slate-100">
+          <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
             Alle Spendenboxen
           </h3>
         </div>
         {allBoxes.length === 0 ? (
-          <Card className="border border-dashed border-slate-700 bg-slate-950/40">
-            <p className="text-sm text-slate-400">Es gibt noch keine Eintraege.</p>
+          <Card className="border border-dashed border-outline-variant bg-transparent">
+            <p className="text-sm text-on-surface-variant">Es gibt noch keine Eintraege.</p>
           </Card>
         ) : (
           allBoxes.map((item) => (

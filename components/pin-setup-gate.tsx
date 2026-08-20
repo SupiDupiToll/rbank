@@ -67,17 +67,19 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
       </div>
 
       {!hasPin ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/85 px-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-background-dark p-6 shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">PIN erforderlich</p>
-            <h2 className="mt-3 text-3xl font-display text-slate-100">Zugang absichern</h2>
-            <p className="mt-3 text-sm text-slate-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-md">
+          <div className="glass-card w-full max-w-md rounded-xl p-6 shadow-2xl">
+            <p className="font-label-sm text-label-sm text-primary">PIN erforderlich</p>
+            <h2 className="font-headline-md text-headline-md mt-3 text-on-surface">
+              Zugang absichern
+            </h2>
+            <p className="mt-3 text-sm text-on-surface-variant">
               Bevor Sie fortfahren, müssen Sie einmalig eine Checkout-PIN mit 4 bis 6 Ziffern einrichten.
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">PIN</label>
+                <label className="font-label-sm text-label-sm text-on-surface">PIN</label>
                 <Input
                   autoComplete="off"
                   inputMode="numeric"
@@ -89,7 +91,7 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">PIN bestätigen</label>
+                <label className="font-label-sm text-label-sm text-on-surface">PIN bestätigen</label>
                 <Input
                   autoComplete="off"
                   inputMode="numeric"
@@ -100,9 +102,9 @@ export function PinSetupGate({ hasPin, children }: PinSetupGateProps) {
                 />
               </div>
 
-              {message ? <p className="text-sm text-red-300">{message}</p> : null}
+              {message ? <p className="text-sm text-error">{message}</p> : null}
 
-              <Button className="w-full rounded-xl" disabled={isSubmitting} type="submit">
+              <Button className="w-full" disabled={isSubmitting} type="submit">
                 {isSubmitting ? "PIN wird gespeichert..." : "PIN einrichten"}
               </Button>
             </form>

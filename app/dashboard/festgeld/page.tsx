@@ -34,22 +34,25 @@ export default async function FestgeldPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Summary Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent px-6 pb-8 pt-8 sm:px-8 sm:pt-10">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-amber-500/10 blur-2xl sm:h-56 sm:w-56" />
-        <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-amber-400/80">
+      <div className="glass-card mesh-gradient relative overflow-hidden rounded-xl p-6">
+        <p className="font-label-sm text-label-sm text-tertiary">
           Festgeld gesamt
         </p>
-        <p className="relative mt-3 text-5xl font-display tracking-tight text-slate-100 sm:text-6xl">
+        <p className="font-balance-display text-balance-display mt-3 tracking-tight text-on-surface">
           {formatEuroFromCents(totalAmount)}
         </p>
-        <div className="relative mt-6 flex gap-6 text-sm">
+        <div className="mt-6 flex gap-8">
           <div>
-            <p className="text-slate-400">Aktive Konten</p>
-            <p className="mt-1 font-semibold text-slate-100">{activeCount}</p>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Aktive Konten
+            </p>
+            <p className="mt-1 font-semibold text-on-surface">{activeCount}</p>
           </div>
           <div>
-            <p className="text-slate-400">Gesamt</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Gesamt
+            </p>
+            <p className="mt-1 font-semibold text-on-surface">
               {festgeldAccounts.length}
             </p>
           </div>
@@ -58,12 +61,17 @@ export default async function FestgeldPage() {
 
       {/* Accounts List */}
       <div>
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
           Konten
         </p>
         {festgeldAccounts.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-10 text-center">
-            <p className="text-sm text-slate-400">Keine Festgeldkonten.</p>
+          <div className="glass-card rounded-2xl p-10 text-center">
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant">
+              savings
+            </span>
+            <p className="mt-3 text-sm text-on-surface-variant">
+              Keine Festgeldkonten.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -81,19 +89,19 @@ export default async function FestgeldPage() {
                   href={`/dashboard/festgeld/${account.id}` as Route}
                   className="block"
                 >
-                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-5 transition-colors hover:border-amber-500/30 hover:bg-slate-900/70">
+                  <div className="glass-card flex items-center justify-between gap-4 rounded-2xl p-5 transition-colors hover:bg-surface-container">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate font-semibold text-slate-100">
+                        <p className="truncate font-semibold text-on-surface">
                           {account.label}
                         </p>
                         <span
                           className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                             account.status === "UNLOCKED"
-                              ? "bg-primary/10 text-primary"
+                              ? "bg-primary-container/20 text-primary"
                               : account.status === "PAID_OUT"
-                                ? "bg-slate-800 text-slate-400"
-                                : "bg-amber-500/10 text-amber-400"
+                                ? "bg-surface-container-highest text-on-surface-variant"
+                                : "bg-tertiary-container/30 text-tertiary"
                           }`}
                         >
                           {account.status === "UNLOCKED"
@@ -103,18 +111,18 @@ export default async function FestgeldPage() {
                               : "Aktiv"}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-on-surface-variant">
                         {formatGermanDate(account.startDate)} –{" "}
                         {formatGermanDate(account.endDate)} ·{" "}
                         {account.interestRate.toFixed(2)}%
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="font-bold text-slate-100">
+                      <p className="font-bold text-on-surface">
                         {formatEuroFromCents(account.amount)}
                       </p>
                       {interestCents > 0 && (
-                        <p className="mt-1 text-xs text-amber-400">
+                        <p className="mt-1 text-xs text-tertiary">
                           +{formatEuroFromCents(interestCents)} Zins
                         </p>
                       )}

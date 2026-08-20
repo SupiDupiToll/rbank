@@ -35,23 +35,31 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
 
   return (
     <div className="space-y-6">
-      <Link className="inline-flex text-sm font-semibold text-primary" href={"/dashboard/festgeld" as Route}>
+      <Link
+        className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+        href={"/dashboard/festgeld" as Route}
+      >
+        <span className="material-symbols-outlined text-base">arrow_back</span>
         Zurück zu Festgeld
       </Link>
 
       <Card className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Festgeld-Detail</p>
-            <h2 className="mt-2 text-3xl font-display text-slate-100">{account.label}</h2>
+            <p className="font-label-sm text-label-sm text-primary">
+              Festgeld-Detail
+            </p>
+            <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
+              {account.label}
+            </h2>
           </div>
           <span
             className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] ${
               account.status === "UNLOCKED"
-                ? "bg-primary/10 text-primary"
+                ? "bg-primary-container/20 text-primary"
                 : account.status === "PAID_OUT"
-                  ? "bg-slate-800 text-slate-300"
-                  : "bg-amber-500/10 text-amber-300"
+                  ? "bg-surface-container-highest text-on-surface-variant"
+                  : "bg-tertiary-container/30 text-tertiary"
             }`}
           >
             {account.status === "UNLOCKED" ? "Unlocked" : account.status === "PAID_OUT" ? "Ausgezahlt" : "Aktiv"}
@@ -59,33 +67,33 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-slate-800 bg-slate-900/60">
-            <p className="text-sm text-slate-400">Anlagebetrag</p>
-            <p className="mt-2 text-2xl font-display text-slate-100">{formatEuroFromCents(account.amount)}</p>
+          <Card>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">Anlagebetrag</p>
+            <p className="font-balance-display text-balance-display mt-2 text-on-surface">{formatEuroFromCents(account.amount)}</p>
           </Card>
-          <Card className="border-slate-800 bg-slate-900/60">
-            <p className="text-sm text-slate-400">Zinsgutschrift</p>
-            <p className="mt-2 text-2xl font-display text-slate-100">{formatEuroFromCents(interestAmount)}</p>
+          <Card>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">Zinsgutschrift</p>
+            <p className="font-balance-display text-balance-display mt-2 text-tertiary">{formatEuroFromCents(interestAmount)}</p>
           </Card>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-            <p className="text-sm text-slate-400">Laufzeit</p>
-            <p className="mt-2 text-lg font-semibold text-slate-100">
+          <div className="glass-card rounded-2xl p-5">
+            <p className="font-label-sm text-label-sm text-on-surface-variant">Laufzeit</p>
+            <p className="mt-2 text-lg font-semibold text-on-surface">
               {formatGermanDate(account.startDate)} bis {formatGermanDate(account.endDate)}
             </p>
-            <p className="mt-2 text-sm text-slate-400">Zinssatz {account.interestRate.toFixed(2)}%</p>
+            <p className="mt-2 text-sm text-on-surface-variant">Zinssatz {account.interestRate.toFixed(2)}%</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <div className="glass-card rounded-2xl p-5">
             <FestgeldCountdown endDate={account.endDate.toISOString()} />
           </div>
         </div>
 
         {account.status === "UNLOCKED" ? (
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <p className="text-sm text-slate-200">
+          <div className="glass-card rounded-2xl border-tertiary/30 p-5">
+            <p className="text-sm text-on-surface">
               Dieses Festgeld ist abgelaufen und entsperrt. Die Zinsen wurden bereits automatisch gutgeschrieben. Du kannst
               jetzt entweder das Festgeld verlängern oder den kompletten Anlagebetrag ins Guthaben auszahlen lassen.
             </p>
@@ -96,7 +104,7 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
         ) : null}
 
         {account.status === "PAID_OUT" ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+          <div className="glass-card rounded-2xl p-5 text-sm text-on-surface-variant">
             Dieses Festgeld wurde bereits ausgezahlt.
           </div>
         ) : null}

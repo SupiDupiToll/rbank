@@ -30,7 +30,7 @@ export default async function DonationBoxPage({
   }
 
   return (
-    <main className="min-h-screen bg-background-dark text-slate-100">
+    <main className="min-h-screen text-on-surface">
       <PublicDonationBox
         isAuthenticated={Boolean(currentUser)}
         name={donationBox.name}

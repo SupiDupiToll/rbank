@@ -31,9 +31,9 @@ export function FestgeldCountdown({ endDate }: { endDate: string }) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-slate-400">Countdown</p>
-      <p className="mt-1 font-bold text-slate-100">{remaining.value}</p>
-      <p className={`mt-2 text-xs font-bold uppercase tracking-wider ${remaining.expired ? "text-red-400" : "text-primary"}`}>
+      <p className="font-label-sm text-label-sm text-on-surface-variant">Countdown</p>
+      <p className="mt-1 font-mono font-semibold text-on-surface">{remaining.value}</p>
+      <p className={`font-label-sm text-label-sm mt-2 ${remaining.expired ? "text-error" : "text-primary"}`}>
         {remaining.expired ? "Abgelaufen" : "Läuft"}
       </p>
     </div>

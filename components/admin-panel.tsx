@@ -51,28 +51,28 @@ function getTransactionSourceMeta(source: AdminTransaction["source"]) {
   if (source === "CHECKOUT") {
     return {
       label: "CHECKOUT",
-      className: "bg-emerald-500/10 text-emerald-300",
+      className: "bg-primary-container/20 text-primary",
     };
   }
 
   if (source === "DONATION") {
     return {
       label: "DONATION",
-      className: "bg-sky-500/10 text-sky-200",
+      className: "bg-secondary-container/20 text-secondary",
     };
   }
 
   if (source === "REFUND") {
     return {
       label: "REFUND",
-      className: "bg-sky-500/10 text-sky-300",
+      className: "bg-secondary-container/20 text-secondary",
     };
   }
 
   if (source === "OVERDRAFT_INTEREST") {
     return {
       label: "DISPOZINS",
-      className: "bg-amber-500/10 text-amber-300",
+      className: "bg-tertiary-container/30 text-tertiary",
     };
   }
 
@@ -92,7 +92,7 @@ function getTransactionSourceMeta(source: AdminTransaction["source"]) {
 
   return {
     label: source,
-    className: "bg-slate-800 text-slate-300",
+    className: "bg-surface-container text-on-surface-variant",
   };
 }
 
@@ -571,22 +571,24 @@ export function AdminPanel({
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-10 lg:px-12">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="mb-3 block text-sm font-bold uppercase tracking-widest text-primary">
+          <span className="font-label-sm text-label-sm mb-3 block text-primary">
             Admin
           </span>
-          <h1 className="font-display text-4xl font-black">Verwaltung</h1>
+          <h1 className="font-display-lg-mobile text-display-lg-mobile">
+            Verwaltung
+          </h1>
         </div>
       </header>
 
-      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 p-1">
+      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-surface-container/80 p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             className={`rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${
               activeTab === tab.id
-                ? "bg-primary text-background-dark"
-                : "text-slate-400 hover:text-slate-100"
+                ? "bg-primary-container text-white"
+                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -634,9 +636,9 @@ export function AdminPanel({
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="lg:col-span-5">
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-display font-bold">Kunden</h2>
+            <h2 className="text-2xl  font-bold">Kunden</h2>
             <input
-              className="w-full max-w-48 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full max-w-48 rounded-lg bg-surface-container px-3 py-2 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary"
               placeholder="Suchen..."
               value={customerSearch}
               onChange={(e) => setCustomerSearch(e.target.value)}
@@ -662,21 +664,21 @@ export function AdminPanel({
                 }).map((user) => (
                   <tr
                     key={user.customerId}
-                    className={`cursor-pointer transition-colors ${selectedCustomerId === user.customerId ? "bg-primary/10" : "hover:bg-slate-800/40"}`}
+                    className={`cursor-pointer transition-colors ${selectedCustomerId === user.customerId ? "bg-primary/10" : "hover:bg-surface-container/40"}`}
                     onClick={() => setSelectedCustomerId(user.customerId)}
                   >
                     <Td>
-                      <div className="font-bold text-slate-100">
+                      <div className="font-bold text-on-surface">
                         {user.displayName ?? "Kunde"}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         #{user.customerId} · {user.stackUserId}
                       </div>
                       <button
                         className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                           user.isBlocked
-                            ? "bg-red-500/15 text-red-300 hover:bg-red-500/25"
-                            : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                            ? "bg-error-container/40 text-error hover:bg-error-container/60"
+                            : "bg-surface-container text-on-surface-variant hover:bg-surface-container-highest"
                         }`}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -691,15 +693,15 @@ export function AdminPanel({
                       <div className="flex items-center gap-2">
                         <span>{formatEuroFromCents(user.balanceCents)}</span>
                         {user.balanceCents === user.computedBalanceCents ? (
-                          <span className="text-emerald-400" title="Balance stimmt überein">✓</span>
+                          <span className="text-primary" title="Balance stimmt überein">✓</span>
                         ) : (
-                          <span className="text-red-400" title="Balance weicht ab!">⚠</span>
+                          <span className="text-error" title="Balance weicht ab!">⚠</span>
                         )}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         berechnet: {formatEuroFromCents(user.computedBalanceCents)}
                       </div>
-                      <div className="text-xs text-sky-300">
+                      <div className="text-xs text-secondary">
                         {formatAirFromUnits(user.airBalance)}
                       </div>
                     </Td>
@@ -711,7 +713,7 @@ export function AdminPanel({
         </Card>
 
         <Card className="space-y-4 lg:col-span-7">
-          <h2 className="text-2xl font-display font-bold">Buchung</h2>
+          <h2 className="text-2xl  font-bold">Buchung</h2>
           <form
             className="grid gap-4 md:grid-cols-2"
             onSubmit={submitTransaction}
@@ -719,7 +721,7 @@ export function AdminPanel({
             <div className="space-y-2">
               <Label>Typ</Label>
               <select
-                className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg bg-surface-container p-4 text-on-surface outline-none focus:ring-2 focus:ring-primary"
                 value={txType}
                 onChange={(event) =>
                   setTxType(event.target.value as "INCOMING" | "OUTGOING")
@@ -732,7 +734,7 @@ export function AdminPanel({
             <div className="space-y-2">
               <Label>Währung</Label>
               <select
-                className="w-full rounded-lg bg-slate-800 p-4 text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg bg-surface-container p-4 text-on-surface outline-none focus:ring-2 focus:ring-primary"
                 value={txCurrency}
                 onChange={(event) =>
                   setTxCurrency(event.target.value as "EUR" | "AIR")
@@ -783,7 +785,7 @@ export function AdminPanel({
 
       {activeTab === "customers" ? (
       <Card>
-        <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
+        <h2 className="mb-4 text-2xl  font-bold">Verlauf</h2>
         <div className="overflow-x-auto">
           <Table>
             <thead>
@@ -802,7 +804,7 @@ export function AdminPanel({
                       <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${getTransactionSourceMeta(transaction.source).className}`}>
                         {getTransactionSourceMeta(transaction.source).label}
                       </span>
-                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                      <span className="rounded-full bg-surface-container px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                         {transaction.currency}
                       </span>
                       <span>{transaction.description}</span>
@@ -812,7 +814,7 @@ export function AdminPanel({
                     className={
                       transaction.type === "INCOMING"
                         ? "font-bold text-primary"
-                        : "font-bold text-red-400"
+                        : "font-bold text-error"
                     }
                   >
                     {transaction.type === "INCOMING" ? "+ " : "- "}
@@ -830,8 +832,8 @@ export function AdminPanel({
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-display font-bold">Festgeld</h2>
-            <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">
+            <h2 className="text-2xl  font-bold">Festgeld</h2>
+            <span className="rounded-full bg-tertiary-container/30 px-3 py-1 text-xs font-bold text-tertiary">
               {activeFestgeldVolume > 0 ? `${festgeldAccounts.filter((a) => a.status === "ACTIVE").length} aktiv` : "Keine"}
             </span>
           </div>
@@ -891,7 +893,7 @@ export function AdminPanel({
 
       {activeTab === "festgeld" ? (
       <Card>
-        <h2 className="mb-4 text-2xl font-display font-bold">Festgeldkonten</h2>
+        <h2 className="mb-4 text-2xl  font-bold">Festgeldkonten</h2>
         <div className="overflow-x-auto">
           <Table>
             <thead>
@@ -911,7 +913,7 @@ export function AdminPanel({
                     <div className="font-bold">
                       {account.user.displayName ?? "Kunde"}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-on-surface-variant">
                       #{account.user.customerId} · {account.user.stackUserId}
                     </div>
                   </Td>
@@ -929,8 +931,8 @@ export function AdminPanel({
                           account.status === "UNLOCKED"
                             ? "bg-primary/10 text-primary"
                             : account.status === "PAID_OUT"
-                              ? "bg-slate-800 text-slate-300"
-                              : "bg-amber-500/10 text-amber-300"
+                              ? "bg-surface-container text-on-surface-variant"
+                              : "bg-tertiary-container/30 text-tertiary"
                         }`}
                       >
                         {account.status === "UNLOCKED"
@@ -941,7 +943,7 @@ export function AdminPanel({
                       </span>
                       {account.status === "UNLOCKED" ? (
                         <button
-                          className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-background-dark"
+                          className="rounded-lg bg-primary-container px-3 py-1 text-xs font-bold text-white"
                           onClick={() => void payoutFestgeld(account.id)}
                           type="button"
                         >
@@ -971,21 +973,21 @@ export function AdminPanel({
       {activeTab === "aircoin" ? (
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-4">
-          <h2 className="text-2xl font-display font-bold">AirCoin</h2>
+          <h2 className="text-2xl  font-bold">AirCoin</h2>
           <div className="grid gap-4">
             <MetricCard
               label="Im Umlauf"
               value={formatAirFromUnits(airInCirculation)}
             />
           </div>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-on-surface-variant">
             AIR ist intern, bankweit buchbar und nicht in Echtgeld
             konvertierbar.
           </p>
         </Card>
 
         <Card className="lg:col-span-8">
-          <h2 className="mb-4 text-2xl font-display font-bold">
+          <h2 className="mb-4 text-2xl  font-bold">
             AIR-Transaktionen
           </h2>
           <div className="overflow-x-auto">
@@ -1003,16 +1005,16 @@ export function AdminPanel({
                   <tr key={transaction.id}>
                     <Td>{formatGermanDate(transaction.date)}</Td>
                     <Td>
-                      <div className="font-semibold text-slate-100">
+                      <div className="font-semibold text-on-surface">
                         {transaction.customerName ?? "Kunde"}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         #{transaction.customerId}
                       </div>
                     </Td>
                     <Td>
                       <div className="flex items-center gap-3">
-                        <span className="rounded-full bg-sky-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-200">
+                        <span className="rounded-full bg-secondary-container/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-secondary">
                           {transaction.source}
                         </span>
                         <span>{transaction.description}</span>
@@ -1022,7 +1024,7 @@ export function AdminPanel({
                       className={
                         transaction.type === "INCOMING"
                           ? "font-bold text-primary"
-                          : "font-bold text-red-400"
+                          : "font-bold text-error"
                       }
                     >
                       {transaction.type === "INCOMING" ? "+ " : "- "}
@@ -1032,7 +1034,7 @@ export function AdminPanel({
                 ))}
                 {airTransactions.length === 0 ? (
                   <tr>
-                    <Td className="text-slate-400" colSpan={4}>
+                    <Td className="text-on-surface-variant" colSpan={4}>
                       Noch keine AIR-Transaktionen vorhanden.
                     </Td>
                   </tr>
@@ -1048,7 +1050,7 @@ export function AdminPanel({
       {activeTab === "merchants" ? (
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">
-          <h2 className="text-2xl font-display font-bold">Händler anlegen</h2>
+          <h2 className="text-2xl  font-bold">Händler anlegen</h2>
           <form className="space-y-4" onSubmit={createMerchant}>
             <div className="space-y-2">
               <Label>Name</Label>
@@ -1081,9 +1083,9 @@ export function AdminPanel({
 
         <Card className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-display font-bold">Händler</h2>
+            <h2 className="text-2xl  font-bold">Händler</h2>
             <input
-              className="w-full max-w-48 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary"
+              className="w-full max-w-48 rounded-lg bg-surface-container px-3 py-2 text-sm text-on-surface outline-none focus:ring-2 focus:ring-primary"
               placeholder="Suchen..."
               value={merchantSearch}
               onChange={(e) => setMerchantSearch(e.target.value)}
@@ -1114,13 +1116,13 @@ export function AdminPanel({
                   className={`w-full rounded-2xl border p-4 text-left transition ${
                     selectedMerchantId === merchant.merchantId
                       ? "border-primary bg-primary/10"
-                      : "border-slate-800 bg-slate-900/40 hover:border-slate-700"
+                      : "border-white/10 bg-surface-container-high/40 hover:border-white/10"
                   }`}
                   onClick={() => setSelectedMerchantId(merchant.merchantId)}
                   type="button"
                 >
-                  <p className="font-bold text-slate-100">{merchant.name}</p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="font-bold text-on-surface">{merchant.name}</p>
+                  <p className="mt-1 text-xs text-on-surface-variant">
                     {merchant.merchantId}
                   </p>
                   {merchant.ownerName ? (
@@ -1128,7 +1130,7 @@ export function AdminPanel({
                       Besitzer: {merchant.ownerName} (#{merchant.ownerCustomerId})
                     </p>
                   ) : null}
-                  <p className="mt-3 text-sm text-slate-300">
+                  <p className="mt-3 text-sm text-on-surface-variant">
                     Volumen {formatEuroFromCents(merchant.totalVolumeCents)}
                   </p>
                 </button>
@@ -1169,7 +1171,7 @@ export function AdminPanel({
                   <div className="space-y-2">
                     <Label>Merchant ID</Label>
                     <input
-                      className="w-full rounded-lg bg-slate-800/50 p-4 font-mono text-sm text-slate-400 outline-none"
+                      className="w-full rounded-lg bg-surface-container/50 p-4 font-mono text-sm text-on-surface-variant outline-none"
                       readOnly
                       value={selectedMerchant.merchantId}
                     />
@@ -1196,7 +1198,7 @@ export function AdminPanel({
                     />
                   </div>
                 </div>
-                <label className="flex items-center gap-3 text-sm text-slate-200">
+                <label className="flex items-center gap-3 text-sm text-on-surface">
                   <input
                     checked={merchantActive}
                     onChange={(event) =>
@@ -1230,10 +1232,10 @@ export function AdminPanel({
                         <tr key={session.token}>
                           <Td>{session.status}</Td>
                           <Td>
-                            <div className="font-semibold text-slate-100">
+                            <div className="font-semibold text-on-surface">
                               {session.description}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-on-surface-variant">
                               {formatGermanDate(session.createdAt)}
                             </div>
                           </Td>
@@ -1244,7 +1246,7 @@ export function AdminPanel({
                           <Td>
                             {session.status === "COMPLETED" ? (
                               <button
-                                className="rounded-lg bg-sky-500/15 px-3 py-1 text-xs font-bold text-sky-300"
+                                className="rounded-lg bg-secondary-container/25 px-3 py-1 text-xs font-bold text-secondary"
                                 onClick={() =>
                                   void refundPayment(session.token)
                                 }
@@ -1253,7 +1255,7 @@ export function AdminPanel({
                                 Refund
                               </button>
                             ) : (
-                              <span className="text-xs text-slate-500">—</span>
+                              <span className="text-xs text-on-surface-variant/70">—</span>
                             )}
                           </Td>
                         </tr>
@@ -1263,7 +1265,7 @@ export function AdminPanel({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-on-surface-variant">
                 Noch keine Haendler vorhanden.
               </p>
             )}
@@ -1275,8 +1277,8 @@ export function AdminPanel({
 
       {activeTab === "shop" ? (
       <Card className="space-y-4">
-        <h2 className="text-2xl font-display font-bold">Shop-Integration</h2>
-        <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-200">
+        <h2 className="text-2xl  font-bold">Shop-Integration</h2>
+        <pre className="overflow-x-auto rounded-2xl bg-surface-container-lowest p-4 text-xs text-on-surface">
           {`<button onclick="payWithRBank()">Mit RBank bezahlen</button>
 
 <script>
@@ -1346,23 +1348,23 @@ export async function GET(req) {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
+    <div className="glass-card rounded-xl p-4">
+      <p className="font-label-sm text-label-sm text-on-surface-variant/70">
         {label}
       </p>
-      <p className="mt-3 text-2xl font-black text-white">{value}</p>
+      <p className="font-balance-display text-balance-display mt-3 text-on-surface">{value}</p>
     </div>
   );
 }
 
 function KpiCard({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-950/80 p-5 transition-colors hover:border-slate-700">
-      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
+    <div className="glass-card mesh-gradient rounded-xl p-5 transition-colors">
+      <p className="font-label-sm text-label-sm text-on-surface-variant/70">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-black text-white">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{sub}</p>
+      <p className="font-headline-md text-headline-md mt-2 text-on-surface">{value}</p>
+      <p className="mt-1 text-xs text-on-surface-variant/70">{sub}</p>
     </div>
   );
 }

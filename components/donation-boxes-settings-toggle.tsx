@@ -56,13 +56,13 @@ export function DonationBoxesSettingsToggle({ initialEnabled }: Props) {
     <Card className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
+          <p className="font-label-sm text-label-sm text-primary">
             Stack Auth +
           </p>
-          <h3 className="mt-2 text-xl font-display text-slate-100">
+          <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
             Spendenboxen Liste
           </h3>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-on-surface-variant">
             Aktiviert einen neuen Dashboard-Tab mit allen bisher erstellten
             Spendenboxen.
           </p>
@@ -71,33 +71,33 @@ export function DonationBoxesSettingsToggle({ initialEnabled }: Props) {
           aria-pressed={enabled}
           className={`relative inline-flex h-8 w-14 shrink-0 rounded-full border transition ${
             enabled
-              ? "border-primary/60 bg-primary/20"
-              : "border-slate-700 bg-slate-900"
+              ? "border-primary-container/60 bg-primary-container/25"
+              : "border-outline-variant bg-surface-container-high"
           }`}
           onClick={() => void handleToggle()}
           type="button"
         >
           <span
             className={`absolute top-1 h-6 w-6 rounded-full transition ${
-              enabled ? "left-7 bg-primary" : "left-1 bg-slate-500"
+              enabled ? "left-7 bg-primary" : "left-1 bg-on-surface-variant"
             }`}
           />
         </button>
       </div>
 
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-3">
+      <div className="glass-card flex items-center justify-between gap-4 rounded-2xl px-4 py-3">
         <div>
-          <p className="text-sm font-semibold text-slate-100">
+          <p className="text-sm font-semibold text-on-surface">
             Status: {enabled ? "Aktiv" : "Inaktiv"}
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-on-surface-variant">
             {enabled
               ? "Der Reiter ist im Dashboard sichtbar."
               : "Der Reiter bleibt verborgen, bis du ihn aktivierst."}
           </p>
         </div>
         <Button
-          className="h-10 rounded-full px-4"
+          className="h-10 px-4"
           disabled={isSaving}
           onClick={() => void handleToggle()}
           type="button"
@@ -107,7 +107,7 @@ export function DonationBoxesSettingsToggle({ initialEnabled }: Props) {
         </Button>
       </div>
 
-      {message ? <p className="text-sm text-slate-300">{message}</p> : null}
+      {message ? <p className="text-sm text-on-surface">{message}</p> : null}
     </Card>
   );
 }

@@ -14,220 +14,20 @@ type CustomerShellProps = {
   children: React.ReactNode;
 };
 
-type NavIconProps = {
-  className?: string;
+type NavItem = {
+  href: Route;
+  label: string;
+  icon: string;
 };
 
-function HomeIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M3.75 10.5 12 4l8.25 6.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5v-5.25h-4.5v5.25h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function TransferIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4.5 7.5h12.75m0 0-3-3m3 3-3 3M19.5 16.5H6.75m0 0 3 3m-3-3 3-3"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function ReceivePaymentIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4.5 8.25V6A1.5 1.5 0 0 1 6 4.5h2.25M15.75 4.5H18A1.5 1.5 0 0 1 19.5 6v2.25M19.5 15.75V18A1.5 1.5 0 0 1 18 19.5h-2.25M8.25 19.5H6A1.5 1.5 0 0 1 4.5 18v-2.25M8.25 8.25h7.5v7.5h-7.5z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function TransactionsIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M7.5 6.75h9m-9 5.25h9m-9 5.25h5.25M5.25 4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function SavingsIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M12 6.75a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Zm0 0V4.5m0 9.75v5.25m4.5-11.25 1.5-1.5m-12 12 1.5-1.5m9 1.5-1.5-1.5m-7.5-7.5L6 8.25"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function DonationBoxIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M6 7.5h12M6 12h12m-12 4.5h7.5M4.5 4.5h15A1.5 1.5 0 0 1 21 6v12a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6a1.5 1.5 0 0 1 1.5-1.5Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M9.75 9.75h.008v.008H9.75zm4.5 0h.008v.008h-.008z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.2"
-      />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="m9.6 3.9-.24 1.91a6.84 6.84 0 0 0-1.47.61L6.3 5.46a1.5 1.5 0 0 0-1.86.22L3.68 6.44a1.5 1.5 0 0 0-.22 1.86l.96 1.6c-.28.47-.49.97-.61 1.47L1.9 11.6A1.5 1.5 0 0 0 .75 13.08v1.08A1.5 1.5 0 0 0 1.9 15.64l1.91.24c.12.5.33 1 .61 1.47l-.96 1.6a1.5 1.5 0 0 0 .22 1.86l.76.76a1.5 1.5 0 0 0 1.86.22l1.6-.96c.47.28.97.49 1.47.61l.24 1.91A1.5 1.5 0 0 0 11.08 24h1.08a1.5 1.5 0 0 0 1.48-1.15l.24-1.91c.5-.12 1-.33 1.47-.61l1.6.96a1.5 1.5 0 0 0 1.86-.22l.76-.76a1.5 1.5 0 0 0 .22-1.86l-.96-1.6c.28-.47.49-.97.61-1.47l1.91-.24A1.5 1.5 0 0 0 24 14.16v-1.08a1.5 1.5 0 0 0-1.15-1.48l-1.91-.24a6.84 6.84 0 0 0-.61-1.47l.96-1.6a1.5 1.5 0 0 0-.22-1.86l-.76-.76a1.5 1.5 0 0 0-1.86-.22l-1.6.96a6.84 6.84 0 0 0-1.47-.61L14.16 3.9A1.5 1.5 0 0 0 12.68 2.75H11.6A1.5 1.5 0 0 0 9.6 3.9ZM12.14 9a4.62 4.62 0 1 1 0 9.24 4.62 4.62 0 0 1 0-9.24Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.3"
-      />
-    </svg>
-  );
-}
-
-function LoanIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M5.25 12h13.5m-13.5 4.5h13.5M5.25 7.5h13.5M12 21.75v-9m-6.75 3h13.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H5.25A1.5 1.5 0 0 0 3.75 6v8.25a1.5 1.5 0 0 0 1.5 1.5Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function MerchantIcon({ className }: NavIconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M3 7.5h18M3 7.5v9a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 16.5v-9M3 7.5l1.5-3h15l1.5 3M9 12h6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-const baseNavigation = [
-  { href: "/dashboard" as Route, label: "Übersicht", icon: HomeIcon },
-  {
-    href: "/dashboard/transfer" as Route,
-    label: "Überweisung",
-    icon: TransferIcon,
-  },
-  {
-    href: "/dashboard/receive-payment" as Route,
-    label: "Zahlung",
-    icon: ReceivePaymentIcon,
-  },
-  {
-    href: "/dashboard/transactions" as Route,
-    label: "Transaktionen",
-    icon: TransactionsIcon,
-  },
-  {
-    href: "/dashboard/kredite" as Route,
-    label: "Kredite",
-    icon: LoanIcon,
-  },
-  {
-    href: "/dashboard/festgeld" as Route,
-    label: "Festgeld",
-    icon: SavingsIcon,
-  },
-  {
-    href: "/dashboard/haendler" as Route,
-    label: "Händler",
-    icon: MerchantIcon,
-  },
+const baseNavigation: NavItem[] = [
+  { href: "/dashboard", label: "Übersicht", icon: "home" },
+  { href: "/dashboard/transfer", label: "Überweisung", icon: "swap_horiz" },
+  { href: "/dashboard/receive-payment", label: "Zahlung", icon: "qr_code_scanner" },
+  { href: "/dashboard/transactions", label: "Transaktionen", icon: "receipt_long" },
+  { href: "/dashboard/kredite", label: "Kredite", icon: "request_quote" },
+  { href: "/dashboard/festgeld", label: "Festgeld", icon: "savings" },
+  { href: "/dashboard/haendler", label: "Händler", icon: "storefront" },
 ];
 
 export function CustomerShell({
@@ -237,114 +37,152 @@ export function CustomerShell({
   children,
 }: CustomerShellProps) {
   const pathname = usePathname();
-  const navigation = [
+  const navigation: NavItem[] = [
     ...baseNavigation,
     ...(showDonationBoxesList
       ? [
           {
             href: "/dashboard/spendenboxen" as Route,
             label: "Spendenboxen",
-            icon: DonationBoxIcon,
+            icon: "volunteer_activism",
           },
         ]
       : []),
-    {
-      href: "/dashboard/settings" as Route,
-      label: "Einstellungen",
-      icon: SettingsIcon,
-    },
+    { href: "/dashboard/settings" as Route, label: "Einstellungen", icon: "settings" },
   ];
-  const currentPage =
-    navigation.find((item) => item.href === pathname)?.label ?? "Dashboard";
+
+  function isActive(href: Route): boolean {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
-    <div className="min-h-screen bg-background-dark text-slate-100">
+    <div className="min-h-screen bg-background pb-24 text-on-background md:pb-0">
       <NavigationLoadingBar />
-      <div className="lg:hidden">
-        <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-background-dark/90 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-md items-center justify-between px-4 pb-4 pt-5">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-primary">
-                RBANK
-              </p>
-              <h1 className="mt-2 text-2xl font-display text-slate-100">
-                {currentPage}
-              </h1>
+
+      {/* Desktop Top AppBar */}
+      <header className="fixed top-0 z-50 hidden w-full border-b border-white/10 bg-surface/80 backdrop-blur-xl md:block">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-6 px-8 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-gradient-to-br from-primary-container to-secondary-container">
+              <span className="material-symbols-outlined text-lg text-white">
+                account_balance
+              </span>
             </div>
-          </div>
-        </header>
-      </div>
-
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-0 pb-24 pt-0 lg:flex-row lg:px-8 lg:py-6">
-        <aside className="hidden w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 lg:sticky lg:top-6 lg:block lg:h-fit lg:w-72">
-          <div className="mb-6">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              RBANK
-            </p>
-            <h1 className="mt-3 text-2xl font-display text-slate-100">
-              {displayName ?? "Kundenkonto"}
+            <h1 className="font-headline-md text-headline-md tracking-tighter text-primary">
+              RBank
             </h1>
-            <p className="mt-2 text-sm text-slate-400">
-              Kundennummer {customerId}
-            </p>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="hide-scrollbar flex items-center gap-1 overflow-x-auto">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
-
+              const active = isActive(item.href);
               return (
                 <Link
                   key={item.href}
-                  className={cn(
-                    "block rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
-                    isActive
-                      ? "bg-primary text-background-dark"
-                      : "bg-slate-900 text-slate-200 hover:bg-slate-800",
-                  )}
                   href={item.href}
+                  className={cn(
+                    "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                    active
+                      ? "bg-primary-container/15 text-primary"
+                      : "text-on-surface-variant hover:text-primary/80",
+                  )}
                 >
-                  {item.label}
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={{
+                      fontVariationSettings: `'FILL' ${active ? 1 : 0}`,
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-6 space-y-3 border-t border-slate-800 pt-6">
-            <LogoutButton className="block w-full rounded-xl bg-slate-900 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800" />
+          <div className="flex items-center gap-2">
+            <button
+              className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-all hover:opacity-80 active:scale-95"
+              aria-label="Suchen"
+            >
+              <span className="material-symbols-outlined text-lg">search</span>
+            </button>
+            <LogoutButton className="glass-card flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-on-surface-variant transition-all hover:opacity-80 active:scale-95" />
           </div>
-        </aside>
-
-        <div className="min-w-0 flex-1 px-4 pt-4 lg:px-0 lg:pt-0">
-          <div className="mx-auto max-w-md lg:max-w-none">{children}</div>
         </div>
-      </div>
+      </header>
 
+      {/* Mobile Top Header */}
+      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-background/90 pt-7 backdrop-blur-lg md:hidden">
+        <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-gradient-to-br from-primary-container to-secondary-container">
+              <span className="material-symbols-outlined text-lg text-white">
+                account_balance
+              </span>
+            </div>
+            <div>
+              <h1 className="font-headline-md text-headline-md leading-none tracking-tighter text-primary">
+                RBank
+              </h1>
+              <p className="mt-1 font-label-sm text-label-sm text-on-surface-variant">
+                {displayName ?? `Kunde ${customerId}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-transform active:scale-95"
+              aria-label="Suchen"
+            >
+              <span className="material-symbols-outlined text-lg">search</span>
+            </button>
+            <LogoutButton className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-transform active:scale-95" />
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[1440px] px-5 pb-10 pt-28 md:px-8 md:pt-28">
+        <div className="mx-auto max-w-md lg:max-w-none">{children}</div>
+      </main>
+
+      {/* BottomNavBar (Mobile) */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-background-dark/95 px-2 pt-2 backdrop-blur-xl lg:hidden"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-lg border-t border-white/10 bg-surface/80 shadow-[0_-10px_30px_rgba(127,61,255,0.1)] backdrop-blur-xl md:hidden"
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)",
+        }}
       >
-        <div
-          className="mx-auto grid max-w-md gap-1"
-          style={{ gridTemplateColumns: `repeat(${navigation.length}, minmax(0, 1fr))` }}
-        >
+        <div className="hide-scrollbar mx-auto flex w-full max-w-md items-stretch justify-around gap-1 overflow-x-auto px-2 pt-2">
           {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
+            const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-semibold transition-colors",
-                  isActive
-                    ? "bg-primary text-background-dark"
-                    : "text-slate-400 hover:bg-slate-900 hover:text-slate-100",
-                )}
                 href={item.href}
+                className={cn(
+                  "relative flex shrink-0 flex-col items-center justify-center gap-1 rounded-2xl px-3 pb-2 pt-2 transition-all active:scale-90",
+                  active ? "text-primary" : "text-on-surface-variant hover:text-primary/80",
+                )}
               >
-                <Icon className="h-5 w-5" />
-                <span className="truncate">{item.label}</span>
+                <span
+                  className="material-symbols-outlined text-[22px]"
+                  style={{
+                    fontVariationSettings: `'FILL' ${active ? 1 : 0}`,
+                  }}
+                >
+                  {item.icon}
+                </span>
+                <span className="truncate font-label-sm text-label-sm">
+                  {item.label}
+                </span>
+                {active ? (
+                  <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#7f3dff]" />
+                ) : null}
               </Link>
             );
           })}

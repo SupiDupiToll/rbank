@@ -192,13 +192,13 @@ export function DemoShell({ initialView, embed = false }: DemoShellProps) {
 
   if (embed) {
     return (
-      <div className="min-h-screen bg-background-dark text-slate-100">
+<div className="min-h-screen bg-surface text-on-surface">
         <div className="relative">
           <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
             <ActiveView />
           </div>
-          <span className="pointer-events-none fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background-dark/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="pointer-events-none fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-container" />
             RBank Demo
           </span>
         </div>
@@ -207,75 +207,62 @@ export function DemoShell({ initialView, embed = false }: DemoShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background-dark text-slate-100">
+    <div className="min-h-screen bg-surface text-on-surface">
         <DemoTopBar activeId={activeId} onSelect={selectView} />
 
         <main className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
           <header className="mx-auto mb-8 flex max-w-5xl flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="text-sm font-bold uppercase tracking-widest text-primary">
-                RBank · Demo
-              </p>
-              <h1 className="mt-3 font-display text-4xl font-black tracking-tight text-slate-100 sm:text-5xl">
+              <div className="glass-card mesh-gradient inline-flex items-center gap-2 rounded-full px-4 py-1.5">
+                <span className="material-symbols-outlined text-sm text-primary">visibility</span>
+                <span className="font-label-sm text-label-sm text-primary">RBank · Demo</span>
+              </div>
+              <h1 className="font-display-lg-mobile text-display-lg-mobile mt-4 text-on-surface sm:text-5xl">
                 {meta.title}
               </h1>
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-400">
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-on-surface-variant">
                 {meta.subtitle}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+                <span className="glass-card inline-flex items-center gap-2 rounded-full px-3 py-1">
                   <span className="h-2 w-2 rounded-full bg-primary" />
-                  Demo-Ansicht
+                  <span className="font-label-sm text-label-sm text-on-surface">Demo-Ansicht</span>
                 </span>
-                <span className="inline-flex items-center rounded-full border border-slate-800 bg-slate-900 px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Nur Vorschau
+                <span className="inline-flex items-center rounded-full border border-white/10 bg-surface-container px-3 py-1">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">
+                    Nur Vorschau
+                  </span>
                 </span>
               </div>
             </div>
 
             <div className="flex w-full items-center justify-between gap-4 lg:w-auto lg:flex-col lg:items-end">
-              <p className="hidden text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500 lg:block">
+              <p className="hidden text-[11px] font-bold uppercase tracking-[0.28em] text-on-surface-variant/70 lg:block">
                 Ansichten durchblättern
               </p>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={goPrev}
-                  className="group inline-flex h-14 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 hover:shadow-primary/30 active:scale-[0.97]"
+                  className="group glass-card inline-flex h-14 items-center gap-2 rounded-full px-5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-container active:scale-[0.97]"
                   aria-label="Vorherige Ansicht"
                 >
-                  <svg
-                    className="h-5 w-5 transition-transform group-hover:-translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
+                  <span className="material-symbols-outlined text-lg transition-transform group-hover:-translate-x-0.5">arrow_back</span>
                   <span className="hidden sm:inline">Zurück</span>
                 </button>
-                <span className="inline-flex h-14 min-w-[4.5rem] items-center justify-center rounded-full border-2 border-slate-800 bg-slate-900 px-3 text-sm font-black text-primary">
+                <span className="glass-card inline-flex h-14 min-w-[4.5rem] items-center justify-center rounded-full px-3 font-label-sm text-label-sm text-primary">
                   {activeIndex + 1}
-                  <span className="mx-1 font-semibold text-slate-500">/</span>
-                  <span className="font-semibold text-slate-400">{flattened.length}</span>
+                  <span className="mx-1 text-on-surface-variant/70">/</span>
+                  <span className="text-on-surface-variant">{flattened.length}</span>
                 </span>
                 <button
                   type="button"
                   onClick={goNext}
-                  className="group inline-flex h-14 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 hover:shadow-primary/30 active:scale-[0.97]"
+                  className="group glass-card inline-flex h-14 items-center gap-2 rounded-full px-5 text-sm font-semibold text-on-surface transition-all hover:bg-surface-container active:scale-[0.97]"
                   aria-label="Nächste Ansicht"
                 >
                   <span className="hidden sm:inline">Weiter</span>
-                  <svg
-                    className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-0.5">arrow_forward</span>
                 </button>
               </div>
             </div>
@@ -285,13 +272,13 @@ export function DemoShell({ initialView, embed = false }: DemoShellProps) {
             <ActiveView />
           </div>
 
-          <div className="mx-auto mt-10 flex max-w-5xl items-center justify-between gap-4 border-t border-slate-800/60 pt-8">
+          <div className="mx-auto mt-10 flex max-w-5xl items-center justify-between gap-4 border-t border-white/10 pt-8">
             <PrevNextButton direction="prev" activeId={activeId} onSelect={selectView} />
             <div className="text-center">
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
+              <p className="font-label-sm text-label-sm text-on-surface-variant/70">
                 Ansicht durchblättern
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-300">
+              <p className="mt-1 text-sm font-semibold text-on-surface">
                 {activeIndex + 1} / {flattened.length} · {meta.title}
               </p>
             </div>
@@ -326,31 +313,25 @@ function PrevNextButton({
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
       className={cn(
-        "group inline-flex max-w-[45%] items-center gap-3 rounded-full border-2 border-slate-800 bg-slate-900/60 px-4 py-3 text-left transition-all hover:border-primary/40 hover:bg-slate-900",
+        "group glass-card inline-flex max-w-[45%] items-center gap-3 rounded-full px-4 py-3 text-left transition-all hover:border-primary/40 hover:bg-surface-container",
       )}
       aria-label={isPrev ? "Vorherige Ansicht" : "Nächste Ansicht"}
     >
       <span
         className={cn(
-          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-background-dark shadow-lg shadow-primary/20 transition-transform",
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform",
           isPrev
-            ? "group-hover:-translate-x-0.5"
-            : "group-hover:translate-x-0.5",
+            ? "bg-primary-container text-white shadow-lg shadow-primary-container/40 group-hover:-translate-x-0.5"
+            : "bg-primary-container text-white shadow-lg shadow-primary-container/40 group-hover:translate-x-0.5",
         )}
       >
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d={isPrev ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}
-          />
-        </svg>
+        <span className="material-symbols-outlined text-lg">arrow_back</span>
       </span>
       <span className="min-w-0">
-        <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500">
+        <span className="font-label-sm text-label-sm block text-on-surface-variant/70">
           {isPrev ? "Zurück" : "Weiter"}
         </span>
-        <span className="block truncate text-sm font-bold text-slate-100">
+        <span className="block truncate text-sm font-bold text-on-surface">
           {target.label}
         </span>
       </span>
@@ -366,24 +347,23 @@ function DemoTopBar({
   onSelect: (id: DemoId) => void;
 }) {
   return (
-    <div className="sticky top-0 z-40 border-b border-slate-800/80 bg-background-dark/90 backdrop-blur-xl">
+<div className="sticky top-0 z-40 border-b border-white/10 bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6 py-4">
           <div className="flex shrink-0 items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-lg font-black text-background-dark">
-              R
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container shadow-lg shadow-primary-container/40">
+              <span className="material-symbols-outlined text-lg text-white">account_balance</span>
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-primary">
-                RBANK
-              </p>
-              <p className="text-sm font-bold text-slate-100">Demo</p>
+              <p className="font-label-sm text-label-sm text-primary">RBANK</p>
+              <p className="text-sm font-bold text-on-surface">Demo</p>
             </div>
           </div>
 
           <nav className="hidden items-center gap-2 overflow-x-auto lg:flex">
             {groups.map((group) => (
               <div key={group.label} className="flex items-center gap-2">
+                <span className="font-label-sm text-label-sm px-1 text-on-surface-variant/60">{group.label}</span>
                 {group.items.map((item) => (
                   <button
                     key={item.id}
@@ -395,8 +375,8 @@ function DemoTopBar({
                     className={cn(
                       "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                       activeId === item.id
-                        ? "bg-primary text-background-dark"
-                        : "text-slate-400 hover:bg-slate-900 hover:text-slate-100",
+                        ? "bg-primary-container text-white"
+                        : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
                     )}
                   >
                     {item.label}
@@ -406,8 +386,8 @@ function DemoTopBar({
             ))}
           </nav>
 
-          <span className="ml-auto hidden rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary lg:inline-block">
-            Preview
+          <span className="glass-card ml-auto hidden rounded-full px-3 py-1 lg:inline-block">
+            <span className="font-label-sm text-label-sm text-primary">Preview</span>
           </span>
         </div>
 
@@ -420,8 +400,8 @@ function DemoTopBar({
               className={cn(
                 "whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                 activeId === item.id
-                  ? "bg-primary text-background-dark"
-                  : "bg-slate-900 text-slate-400 hover:text-slate-100",
+                  ? "bg-primary-container text-white"
+                  : "bg-surface-container text-on-surface-variant hover:text-on-surface",
               )}
             >
               {item.label}

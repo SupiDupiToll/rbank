@@ -48,7 +48,7 @@ export default async function PaymentPage({
 
   return (
     <PinSetupGate hasPin={Boolean(user.paymentPinHash)}>
-      <div className="min-h-screen bg-background-dark px-4 py-8 text-slate-100">
+      <div className="min-h-screen px-4 py-8 text-on-surface">
         <div className="mx-auto max-w-5xl">
           <PaymentRequestFlow
             payerUserId={payer.id}

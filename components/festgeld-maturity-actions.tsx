@@ -42,13 +42,12 @@ export function FestgeldMaturityActions({ accountId }: FestgeldMaturityActionsPr
 
   return (
     <div className="space-y-3">
-      {message ? <p className="text-sm text-red-400">{message}</p> : null}
+      {message ? <p className="text-sm text-error">{message}</p> : null}
       <div className="grid gap-3 md:grid-cols-2">
-        <Button className="w-full rounded-xl" disabled={isLoading} onClick={() => void runAction("renew")} type="button">
+        <Button disabled={isLoading} onClick={() => void runAction("renew")} type="button">
           {pendingAction === "renew" ? "Verlängert..." : "Festgeld verlängern"}
         </Button>
         <Button
-          className="w-full rounded-xl"
           disabled={isLoading}
           onClick={() => void runAction("payout")}
           type="button"

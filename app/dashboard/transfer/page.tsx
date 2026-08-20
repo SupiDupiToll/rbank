@@ -23,21 +23,24 @@ export default async function TransferPage() {
   return (
     <div className="space-y-8 pb-8">
       {/* Balance Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/30 via-primary/15 to-transparent px-6 pb-8 pt-8 sm:px-8 sm:pt-10">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-2xl sm:h-56 sm:w-56" />
-        <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
+      <div className="glass-card mesh-gradient relative overflow-hidden rounded-xl p-6">
+        <p className="font-label-sm text-label-sm mb-5 text-on-surface-variant">
           Verfügbare Konten
         </p>
-        <div className="relative mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <div>
-            <p className="text-sm text-slate-400">Girokonto</p>
-            <p className="mt-2 text-4xl font-display tracking-tight text-slate-100">
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Girokonto
+            </p>
+            <p className="font-balance-display text-balance-display mt-2 tracking-tight text-on-surface">
               {formatEuroFromCents(eurBalanceCents)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-slate-400">AirCoin Konto</p>
-            <p className="mt-2 text-4xl font-display tracking-tight text-slate-100">
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              AirCoin Konto
+            </p>
+            <p className="font-balance-display text-balance-display mt-2 tracking-tight text-secondary">
               {formatAirFromUnits(airBalance)}
             </p>
           </div>
@@ -46,7 +49,7 @@ export default async function TransferPage() {
 
       {/* Transfer Form */}
       <div>
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
           Überweisung senden
         </p>
         <CustomerTransferForm

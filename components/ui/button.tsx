@@ -13,10 +13,10 @@ export function Button({ className, asChild, variant = "primary", ...props }: Bu
   return (
     <Component
       className={cn(
-        "inline-flex items-center justify-center rounded-full h-12 px-6 text-sm font-bold transition-all disabled:opacity-50 disabled:pointer-events-none",
+        "inline-flex items-center justify-center gap-2 rounded-full h-12 px-6 text-sm font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none",
         variant === "primary" &&
-          "bg-primary text-background-dark hover:brightness-110 active:scale-[0.98] glow-accent",
-        variant === "outline" && "border-2 border-slate-800 text-slate-100 hover:bg-slate-800/80",
+          "bg-primary-container text-white hover:opacity-90 active:scale-[0.98] glow-effect",
+        variant === "outline" && "glass-card text-on-surface hover:bg-surface-container",
         className
       )}
       {...props}

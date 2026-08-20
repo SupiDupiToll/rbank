@@ -9,10 +9,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-          Konto
-        </p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">
+        <p className="font-label-sm text-label-sm text-primary">Konto</p>
+        <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
           Einstellungen
         </h2>
       </header>

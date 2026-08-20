@@ -183,8 +183,8 @@ export function EmbeddedCheckoutFlow({
       {isProcessing ? (
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="space-y-3 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-300" />
-            <p className="text-sm font-semibold text-white">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-surface-container-highest border-t-primary" />
+            <p className="text-sm font-semibold text-on-surface">
               Zahlung wird verarbeitet...
             </p>
           </div>
@@ -224,7 +224,7 @@ export function EmbeddedCheckoutFlow({
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-5 text-slate-100">
+    <div className="flex h-full min-h-0 flex-col px-4 py-5 text-on-surface">
       {children}
     </div>
   );
@@ -245,11 +245,11 @@ function Header({
     <div className="mb-4 text-center">
       <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
         <StepDot active={step === "user"} done={step === "pin"} label="Nutzer" />
-        <span className={step === "pin" ? "h-px w-5 bg-emerald-400/50" : "h-px w-5 bg-slate-800"} />
+        <span className={step === "pin" ? "h-px w-5 bg-primary/50" : "h-px w-5 bg-white/15"} />
         <StepDot active={step === "pin"} done={false} label="PIN" />
       </div>
-      <p className="mt-2 truncate text-sm font-bold text-white">{title}</p>
-      <p className="mt-0.5 text-2xl font-black tracking-tight text-emerald-300">
+      <p className="mt-2 truncate text-sm font-bold text-on-surface">{title}</p>
+      <p className="font-balance-display text-balance-display mt-0.5 font-black tracking-tight text-primary">
         {formatEuroFromCents(session.amount)}
       </p>
     </div>
@@ -268,19 +268,25 @@ function StepDot({
   return (
     <span
       className={`flex items-center gap-1.5 ${
-        active || done ? "text-white" : "text-slate-600"
+        active || done ? "text-on-surface" : "text-on-surface-variant/60"
       }`}
     >
       <span
         className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${
           done
-            ? "bg-emerald-400 text-slate-950"
+            ? "bg-primary-container text-white"
             : active
-              ? "border border-emerald-400 text-emerald-300"
-              : "border border-slate-800 text-slate-600"
+              ? "border border-primary text-primary"
+              : "border border-white/15 text-on-surface-variant/60"
         }`}
       >
-        {done ? "✓" : active ? "•" : ""}
+        {done ? (
+          <span className="material-symbols-outlined text-[11px]">check</span>
+        ) : active ? (
+          "•"
+        ) : (
+          ""
+        )}
       </span>
       {label}
     </span>
@@ -307,7 +313,7 @@ function UserStep({
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       <input
-        className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
+        className="w-full rounded-xl border border-white/10 bg-surface-container-high px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary/50 focus:outline-none"
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Nutzer suchen"
         value={searchTerm}
@@ -315,7 +321,7 @@ function UserStep({
 
       <div className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5">
         {filteredUsers.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-800 px-3 py-4 text-center text-xs text-slate-500">
+          <p className="rounded-xl border border-dashed border-white/15 px-3 py-4 text-center text-xs text-on-surface-variant/70">
             Keine Nutzer gefunden.
           </p>
         ) : (
@@ -325,18 +331,18 @@ function UserStep({
             return (
               <button
                 key={user.id}
-                className={`w-full rounded-lg border px-3 py-2 text-left transition ${
+                className={`glass-card w-full rounded-xl px-3 py-2 text-left transition ${
                   isSelected
-                    ? "border-emerald-400/50 bg-emerald-400/10"
-                    : "border-slate-800 bg-slate-950/60 hover:border-slate-700"
+                    ? "border-primary-container/60 bg-primary-container/15"
+                    : "hover:bg-surface-container"
                 }`}
                 onClick={() => onSelect(user.id)}
                 type="button"
               >
-                <p className="truncate text-sm font-semibold text-white">
+                <p className="truncate text-sm font-semibold text-on-surface">
                   {user.displayName}
                 </p>
-                <p className="truncate text-[11px] text-slate-500">
+                <p className="truncate text-[11px] text-on-surface-variant">
                   #{user.customerId}
                 </p>
               </button>
@@ -346,10 +352,10 @@ function UserStep({
       </div>
 
       <button
-        className={`mt-3 w-full rounded-lg py-2.5 text-sm font-bold transition ${
+        className={`mt-3 w-full rounded-full py-2.5 text-sm font-bold transition ${
           selected
-            ? "bg-emerald-400 text-slate-950 hover:brightness-110"
-            : "cursor-not-allowed bg-slate-800/60 text-slate-500"
+            ? "bg-primary-container glow-effect text-white hover:opacity-90"
+            : "cursor-not-allowed bg-surface-container-high/60 text-on-surface-variant/60"
         }`}
         disabled={!selected}
         onClick={onNext}
@@ -383,11 +389,11 @@ function PinStep({
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       {user ? (
-        <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2">
-          <p className="truncate text-sm font-semibold text-white">
+        <div className="glass-card rounded-xl px-3 py-2">
+          <p className="truncate text-sm font-semibold text-on-surface">
             {user.displayName}
           </p>
-          <p className="truncate text-[11px] text-slate-500">
+          <p className="truncate text-[11px] text-on-surface-variant">
             #{user.customerId}
           </p>
         </div>
@@ -400,8 +406,8 @@ function PinStep({
             aria-hidden="true"
             className={`flex h-10 w-8 items-center justify-center rounded-md border text-base font-bold ${
               index < paymentPin.length
-                ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
-                : "border-slate-800 bg-slate-950/70 text-transparent"
+                ? "border-primary/50 bg-primary-container/20 text-primary"
+                : "border-white/15 bg-surface-container-high/70 text-transparent"
             }`}
           >
             *
@@ -415,7 +421,7 @@ function PinStep({
             key ? (
               <button
                 key={`${key}-${index}`}
-                className="flex h-12 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-base font-bold text-white transition hover:border-emerald-400/40 hover:bg-slate-800"
+                className="glass-card flex h-12 items-center justify-center rounded-xl text-base font-bold text-on-surface transition hover:border-primary/40 hover:bg-surface-container"
                 onClick={() => {
                   if (key === "←") {
                     onPinChange(paymentPin.slice(0, -1));
@@ -430,7 +436,11 @@ function PinStep({
                 }}
                 type="button"
               >
-                {key === "←" ? "⌫" : key}
+                {key === "←" ? (
+                  <span className="material-symbols-outlined text-base">backspace</span>
+                ) : (
+                  key
+                )}
               </button>
             ) : (
               <div key={`empty-${index}`} />
@@ -439,19 +449,19 @@ function PinStep({
       </div>
 
       {remainingAttempts !== null ? (
-        <p className="mt-2 text-center text-xs text-amber-300">
+        <p className="mt-2 text-center text-xs text-error">
           Noch {remainingAttempts} Versuche
         </p>
       ) : null}
       {message ? (
-        <p className="mt-2 text-center text-xs text-rose-300">{message}</p>
+        <p className="mt-2 text-center text-xs text-error">{message}</p>
       ) : null}
 
       <button
-        className={`mt-3 w-full rounded-lg py-2.5 text-sm font-bold transition ${
+        className={`mt-3 w-full rounded-full py-2.5 text-sm font-bold transition ${
           !processing && paymentPin.length >= PIN_LENGTH
-            ? "bg-emerald-400 text-slate-950 hover:brightness-110"
-            : "cursor-not-allowed bg-slate-800/60 text-slate-500"
+            ? "bg-primary-container glow-effect text-white hover:opacity-90"
+            : "cursor-not-allowed bg-surface-container-high/60 text-on-surface-variant/60"
         }`}
         disabled={processing || paymentPin.length < PIN_LENGTH}
         onClick={onSubmit}
@@ -460,7 +470,7 @@ function PinStep({
         Jetzt bezahlen
       </button>
       <button
-        className="mt-2 w-full text-center text-xs font-semibold text-slate-500 transition hover:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-2 w-full text-center text-xs font-semibold text-on-surface-variant transition hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
         disabled={processing}
         onClick={onBack}
         type="button"
@@ -484,17 +494,15 @@ function StatusCard({ session }: { session: EmbeddedCheckoutSession }) {
 
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="text-sm font-bold uppercase tracking-widest text-primary">
-        Status
-      </p>
-      <h1 className="mt-3 text-2xl font-black tracking-tight text-white">
+      <p className="font-label-sm text-label-sm text-primary">Status</p>
+      <h1 className="mt-3 text-2xl font-black tracking-tight text-on-surface">
         {title}
       </h1>
-      <p className="mt-2 text-sm text-slate-400">
+      <p className="mt-2 text-sm text-on-surface-variant">
         {formatEuroFromCents(session.amount)} · {session.description}
       </p>
       <a
-        className="mt-6 rounded-full border-2 border-slate-800 px-6 py-2.5 text-sm font-bold text-slate-100 transition-colors hover:bg-slate-800"
+        className="mt-6 rounded-full border-2 border-white/15 px-6 py-2.5 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container"
         href={
           session.status === "COMPLETED"
             ? session.redirectUrl
@@ -520,22 +528,24 @@ function SuccessState({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl text-primary">
-        ✓
+      <div className="glass-card mesh-gradient flex h-14 w-14 items-center justify-center">
+        <span className="material-symbols-outlined text-2xl text-primary">
+          check_circle
+        </span>
       </div>
-      <h1 className="mt-4 text-2xl font-black tracking-tight text-white">
+      <h1 className="mt-4 text-2xl font-black tracking-tight text-on-surface">
         Zahlung erfolgreich!
       </h1>
-      <p className="mt-2 text-sm text-slate-400">
+      <p className="mt-2 text-sm text-on-surface-variant">
         {formatEuroFromCents(amount)} wurden an {merchantName} ueberwiesen.
       </p>
       {transactionId ? (
-        <p className="mt-2 text-[10px] uppercase tracking-[0.28em] text-slate-500">
+        <p className="font-label-sm text-label-sm mt-2 text-on-surface-variant/70">
           Transaktion {transactionId}
         </p>
       ) : null}
       <a
-        className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-background-dark"
+        className="bg-primary-container glow-effect mt-6 rounded-full px-6 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"
         href={redirectUrl}
       >
         Jetzt zum Shop zurueck

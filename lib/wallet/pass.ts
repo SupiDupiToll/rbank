@@ -70,7 +70,11 @@ export function buildPassJson(
 
   const generic: Record<string, unknown> = {
     primaryFields: [
-      buildField("holder", "Karteninhaber", passData.displayName || "Family Bank Kunde"),
+      buildField(
+        "holder",
+        "Karteninhaber",
+        passData.displayName || "RBank Kunde",
+      ),
     ],
     secondaryFields: [
       buildField("eur", "Girokonto", eurBalance),
@@ -81,8 +85,12 @@ export function buildPassJson(
       buildField("status", "Status", statusLabel),
     ],
     backFields: [
-      buildField("org", "Family Bank", "Family Card · Digitale Bankkarte"),
-      buildField("benutzer", "Benutzer", passData.displayName || "Family Bank Kunde"),
+      buildField("org", "RBank", "Family Card · Digitale Bankkarte"),
+      buildField(
+        "benutzer",
+        "Benutzer",
+        passData.displayName || " RBank Kunde",
+      ),
       buildField("girokonto", "Girokonto", eurBalance),
       buildField("aircoin", "AirCoin", airBalance),
       buildField("karte", "Karte", cardNumber),

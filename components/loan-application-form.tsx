@@ -92,7 +92,9 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-12">
       <Card className="space-y-4 lg:col-span-5">
-        <h3 className="text-xl font-display font-bold">Produkte</h3>
+        <h3 className="font-headline-md text-headline-md font-bold text-on-surface">
+          Produkte
+        </h3>
         <div className="space-y-3">
           {products.map((product) => (
             <button
@@ -100,17 +102,17 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
               type="button"
               className={`w-full rounded-2xl border p-4 text-left transition ${
                 selectedProductId === product.id
-                  ? "border-primary bg-primary/10"
-                  : "border-slate-800 bg-slate-900/40 hover:border-slate-700"
+                  ? "border-primary-container/60 bg-primary-container/15"
+                  : "glass-card hover:bg-surface-container"
               }`}
               onClick={() => {
                 setSelectedProductId(product.id);
                 setAmount("");
               }}
             >
-              <p className="font-bold text-slate-100">{product.name}</p>
-              <p className="mt-1 text-xs text-slate-400">{product.description}</p>
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300">
+              <p className="font-bold text-on-surface">{product.name}</p>
+              <p className="mt-1 text-xs text-on-surface-variant">{product.description}</p>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant">
                 <span>
                   {formatEuroFromCents(product.minAmount)} –{" "}
                   {formatEuroFromCents(product.maxAmount)}
@@ -128,12 +130,12 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
       </Card>
 
       <Card className="space-y-4 lg:col-span-7">
-        <h3 className="text-xl font-display font-bold">Antrag</h3>
+        <h3 className="font-headline-md text-headline-md font-bold text-on-surface">Antrag</h3>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {selectedProduct ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm">
-              <p className="font-bold text-slate-100">{selectedProduct.name}</p>
-              <p className="mt-1 text-slate-400">{selectedProduct.description}</p>
+            <div className="glass-card rounded-2xl p-4 text-sm">
+              <p className="font-bold text-on-surface">{selectedProduct.name}</p>
+              <p className="mt-1 text-on-surface-variant">{selectedProduct.description}</p>
               <p className="mt-2 text-primary">
                 Zinssatz: {selectedProduct.interestRate.toFixed(2)}% p.a.
               </p>
@@ -162,7 +164,7 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
                 placeholder="z.B. 5000"
               />
               {selectedProduct ? (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-on-surface-variant">
                   Min. {formatEuroFromCents(selectedProduct.minAmount)} · Max.{" "}
                   {formatEuroFromCents(selectedProduct.maxAmount)}
                 </p>
@@ -179,7 +181,7 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
                 onChange={(e) => setTermMonths(e.target.value)}
               />
               {selectedProduct ? (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-on-surface-variant">
                   {selectedProduct.minTermMonths}–{selectedProduct.maxTermMonths} Monate
                 </p>
               ) : null}
@@ -196,14 +198,14 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
           </div>
 
           {monthlyPayment !== null && monthlyPayment > 0 ? (
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
+            <div className="glass-card mesh-gradient rounded-2xl p-5">
+              <p className="font-label-sm text-label-sm text-primary">
                 Voraussichtliche monatliche Rate
               </p>
-              <p className="mt-2 text-3xl font-display text-slate-100">
+              <p className="font-balance-display text-balance-display mt-2 text-on-surface">
                 {formatEuroFromCents(monthlyPayment)}
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Bei {selectedProduct?.interestRate.toFixed(2)}% Zinsen p.a. über{" "}
                 {termMonths} Monate
               </p>

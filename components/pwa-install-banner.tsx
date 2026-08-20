@@ -109,17 +109,17 @@ export function PWAInstallBanner() {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 p-4 md:hidden">
+    <div className="glass-card fixed inset-x-0 bottom-0 z-50 rounded-none border-t border-white/10 p-4 md:hidden">
       <div className="mx-auto flex max-w-lg flex-col gap-3">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-800">
-            <span className="text-xl font-bold text-primary">RB</span>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container">
+            <span className="material-symbols-outlined text-white">account_balance</span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-100">
+            <p className="text-sm font-semibold text-on-surface">
               RBank als App installieren
             </p>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-xs text-on-surface-variant">
               {isIOS
                 ? "Tippe auf Teilen \u2192 \u201eZum Home-Bildschirm\u201c"
                 : hasNativePrompt
@@ -131,17 +131,17 @@ export function PWAInstallBanner() {
             {hasNativePrompt ? (
               <button
                 onClick={handleInstall}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80"
+                className="bg-primary-container glow-effect rounded-full px-4 py-2 text-sm font-bold text-white transition-colors hover:opacity-90"
               >
                 Installieren
               </button>
             ) : null}
             <button
               onClick={handleDismiss}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
               aria-label="Schließen"
             >
-              ✕
+              <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
         </div>

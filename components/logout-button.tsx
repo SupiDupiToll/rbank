@@ -28,8 +28,13 @@ export function LogoutButton({ className }: LogoutButtonProps) {
       disabled={isLoading}
       onClick={() => void handleLogout()}
       type="button"
+      aria-label="Ausloggen"
     >
-      {isLoading ? "Wird abgemeldet..." : "Ausloggen"}
+      {isLoading ? (
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-on-surface-variant border-t-primary" />
+      ) : (
+        <span className="material-symbols-outlined text-lg">logout</span>
+      )}
     </button>
   );
 }

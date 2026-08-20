@@ -14,11 +14,7 @@ import { iconPng, logoPng } from "@/lib/wallet/images";
 import { sendPassPushUpdate } from "@/lib/wallet/apns";
 import { requireCardSecret, walletConfig } from "@/lib/wallet/config";
 
-export type WalletPassStatusSummary =
-  | "ACTIVE"
-  | "LOCKED"
-  | "REVOKED"
-  | "NONE";
+export type WalletPassStatusSummary = "ACTIVE" | "LOCKED" | "REVOKED" | "NONE";
 
 function hashAuthToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -47,8 +43,14 @@ export async function getWalletPassStatusForUser(
   userId: string,
 ): Promise<WalletPassStatusSummary> {
   const [pass, user] = await Promise.all([
-    prisma.walletPass.findUnique({ where: { userId }, select: { status: true } }),
-    prisma.user.findUnique({ where: { id: userId }, select: { isBlocked: true } }),
+    prisma.walletPass.findUnique({
+      where: { userId },
+      select: { status: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { isBlocked: true },
+    }),
   ]);
 
   if (!pass) {
@@ -114,7 +116,7 @@ async function collectPassData(userId: string): Promise<WalletPassData> {
   return {
     userId,
     customerId: user.customerId,
-    displayName: user.displayName ?? "Family Bank Kunde",
+    displayName: user.displayName ?? " RBank Kunde",
     eurBalanceCents,
     airBalanceUnits: airBalance,
     state: pass ? resolvePassState(pass.status, user.isBlocked) : "ACTIVE",
@@ -181,7 +183,11 @@ export async function buildWalletPassForUser(userId: string) {
   }
 
   const data = await collectPassData(userId);
-  const passJson = buildPassJson(data, pass.serialNumber, deriveAuthToken(userId));
+  const passJson = buildPassJson(
+    data,
+    pass.serialNumber,
+    deriveAuthToken(userId),
+  );
 
   const images = [
     { name: "icon.png", data: await iconPng() },
@@ -235,8 +241,9 @@ export async function refreshWalletPassForUser(userId: string, force = false) {
   const results = await Promise.allSettled(
     pushTokens.map((token) => sendPassPushUpdate(token)),
   );
-  return results.filter((result) => result.status === "fulfilled" && result.value)
-    .length;
+  return results.filter(
+    (result) => result.status === "fulfilled" && result.value,
+  ).length;
 }
 
 export async function revokeWalletPassForUser(userId: string) {
@@ -266,7 +273,9 @@ export async function revokeWalletPassForUser(userId: string) {
     ),
   ];
 
-  await Promise.allSettled(pushTokens.map((token) => sendPassPushUpdate(token)));
+  await Promise.allSettled(
+    pushTokens.map((token) => sendPassPushUpdate(token)),
+  );
 
   return updated;
 }

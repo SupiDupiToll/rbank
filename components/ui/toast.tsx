@@ -34,9 +34,9 @@ export function ToastContainer() {
   if (items.length === 0) return null;
 
   const colors = {
-    success: "border-primary/30 bg-primary/10 text-primary",
-    error: "border-red-500/30 bg-red-500/10 text-red-300",
-    info: "border-slate-600/30 bg-slate-800/90 text-slate-100",
+    success: "border-primary-container/40 bg-primary-container/20 text-primary",
+    error: "border-error/40 bg-error/10 text-red-300",
+    info: "border-white/10 bg-surface-container-high/90 text-on-surface",
   };
 
   return (

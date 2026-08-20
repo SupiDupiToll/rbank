@@ -240,7 +240,7 @@ export function AdminLoans({
     <div className="space-y-8">
       <div className="grid gap-8 lg:grid-cols-12">
         <Card className="space-y-4 lg:col-span-5">
-          <h2 className="text-2xl font-display font-bold">
+          <h2 className="text-2xl  font-bold">
             Kreditprodukt anlegen
           </h2>
           <form className="space-y-4" onSubmit={createProduct}>
@@ -329,7 +329,7 @@ export function AdminLoans({
         </Card>
 
         <Card className="lg:col-span-7">
-          <h2 className="mb-4 text-2xl font-display font-bold">
+          <h2 className="mb-4 text-2xl  font-bold">
             Kreditprodukte
           </h2>
           <div className="overflow-x-auto">
@@ -410,7 +410,7 @@ export function AdminLoans({
                               id={`active-${product.id}`}
                               checked={editIsActive}
                               onChange={(e) => setEditIsActive(e.target.checked)}
-                              className="h-4 w-4 rounded border-slate-600 bg-slate-800"
+                              className="h-4 w-4 rounded border-white/10 bg-surface-container"
                             />
                             <Label htmlFor={`active-${product.id}`} className="text-xs">
                               Aktiv
@@ -445,10 +445,10 @@ export function AdminLoans({
                   ) : (
                     <tr key={product.id}>
                       <Td>
-                        <div className="font-bold text-slate-100">
+                        <div className="font-bold text-on-surface">
                           {product.name}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-on-surface-variant">
                           {product.description}
                         </div>
                       </Td>
@@ -470,7 +470,7 @@ export function AdminLoans({
                           className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
                             product.isActive
                               ? "bg-primary/10 text-primary"
-                              : "bg-slate-800 text-slate-400"
+                              : "bg-surface-container text-on-surface-variant"
                           }`}
                           onClick={() =>
                             void toggleProductActive(product.id, product.isActive)
@@ -489,7 +489,7 @@ export function AdminLoans({
                             Bearbeiten
                           </Button>
                           <button
-                            className="rounded-lg bg-red-500/15 px-3 py-1 text-xs font-bold text-red-300"
+                            className="rounded-lg bg-error-container/40 px-3 py-1 text-xs font-bold text-error"
                             onClick={() => void deleteProduct(product.id)}
                             type="button"
                           >
@@ -508,7 +508,7 @@ export function AdminLoans({
 
       {pendingLoans.length > 0 ? (
         <Card>
-          <h2 className="mb-4 text-2xl font-display font-bold">
+          <h2 className="mb-4 text-2xl  font-bold">
             Kreditanfragen ({pendingLoans.length})
           </h2>
           <div className="overflow-x-auto">
@@ -529,10 +529,10 @@ export function AdminLoans({
                 {pendingLoans.map((loan) => (
                   <tr key={loan.id}>
                     <Td>
-                      <div className="font-bold text-slate-100">
+                      <div className="font-bold text-on-surface">
                         {loan.user.displayName ?? "Kunde"}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         #{loan.user.customerId}
                       </div>
                     </Td>
@@ -547,21 +547,21 @@ export function AdminLoans({
                     <Td>
                       <div className="flex gap-2">
                         <button
-                          className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-background-dark"
+                          className="rounded-lg bg-primary-container px-3 py-1 text-xs font-bold text-white"
                           onClick={() => void approveLoan(loan.id)}
                           type="button"
                         >
                           Genehmigen
                         </button>
                         <button
-                          className="rounded-lg bg-red-500/15 px-3 py-1 text-xs font-bold text-red-300"
+                          className="rounded-lg bg-error-container/40 px-3 py-1 text-xs font-bold text-error"
                           onClick={() => void rejectLoan(loan.id)}
                           type="button"
                         >
                           Ablehnen
                         </button>
                         <button
-                          className="rounded-lg bg-slate-600/30 px-3 py-1 text-xs font-bold text-slate-300"
+                          className="rounded-lg bg-surface-container/30 px-3 py-1 text-xs font-bold text-on-surface-variant"
                           onClick={() => void deleteLoan(loan.id)}
                           type="button"
                         >
@@ -578,11 +578,11 @@ export function AdminLoans({
       ) : null}
 
       <Card>
-        <h2 className="mb-4 text-2xl font-display font-bold">
+        <h2 className="mb-4 text-2xl  font-bold">
           Aktive Kredite ({activeLoans.length})
         </h2>
         {activeLoans.length === 0 ? (
-          <p className="text-sm text-slate-400">Keine aktiven Kredite.</p>
+          <p className="text-sm text-on-surface-variant">Keine aktiven Kredite.</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -601,31 +601,31 @@ export function AdminLoans({
                 {activeLoans.map((loan) => (
                   <tr key={loan.id}>
                     <Td>
-                      <div className="font-bold text-slate-100">
+                      <div className="font-bold text-on-surface">
                         {loan.user.displayName ?? "Kunde"}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         #{loan.user.customerId}
                       </div>
                     </Td>
                     <Td>{loan.loanProduct?.name ?? "—"}</Td>
                     <Td>{formatEuroFromCents(loan.amount)}</Td>
-                    <Td className="font-bold text-amber-400">
+                    <Td className="font-bold text-tertiary">
                       {formatEuroFromCents(loan.remainingAmount)}
                     </Td>
                     <Td>{loan.interestRate.toFixed(2)}%</Td>
                     <Td>{formatEuroFromCents(loan.monthlyPayment)}</Td>
                     <Td>
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-700">
+                        <div className="h-2 w-20 overflow-hidden rounded-full bg-surface-container-highest">
                           <div
-                            className="h-full rounded-full bg-primary"
+                            className="h-full rounded-full bg-primary-container"
                             style={{
                               width: `${Math.min(100, ((loan.amount - loan.remainingAmount) / loan.amount) * 100)}%`,
                             }}
                           />
                         </div>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-on-surface-variant">
                           {Math.round(
                             ((loan.amount - loan.remainingAmount) / loan.amount) *
                               100,
@@ -644,7 +644,7 @@ export function AdminLoans({
 
       {completedLoans.length > 0 ? (
         <Card>
-          <h2 className="mb-4 text-2xl font-display font-bold">
+          <h2 className="mb-4 text-2xl  font-bold">
             Abgeschlossene Kredite
           </h2>
           <div className="overflow-x-auto">
@@ -662,10 +662,10 @@ export function AdminLoans({
                 {completedLoans.map((loan) => (
                   <tr key={loan.id}>
                     <Td>
-                      <div className="font-bold text-slate-100">
+                      <div className="font-bold text-on-surface">
                         {loan.user.displayName ?? "Kunde"}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-on-surface-variant">
                         #{loan.user.customerId}
                       </div>
                     </Td>

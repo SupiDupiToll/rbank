@@ -1,23 +1,24 @@
 import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
-import { Manrope, Playfair_Display } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/stack/server";
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
-  variable: "--font-manrope",
+  variable: "--font-inter",
+  display: "swap",
 });
 
-const playfairDisplay = Playfair_Display({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["700", "900"],
-  variable: "--font-playfair-display",
+  weight: ["400", "500", "600"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#0f1115",
+  themeColor: "#131313",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -54,13 +55,26 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+          rel="stylesheet"
+        />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
         <meta name="apple-mobile-web-app-title" content="RBank" />
-        <meta name="theme-color" content="#0f1115" />
+        <meta name="theme-color" content="#131313" />
         <meta name="mobile-web-app-capable" content="yes" />
         {/* iPhone splash screens */}
         {/* iPhone SE (2nd/3rd gen) – 375x667 @2x */}
@@ -106,11 +120,11 @@ export default function RootLayout({
           href="/splash/14promax-portrait.png"
         />
       </head>
-      <body className={`${manrope.variable} ${playfairDisplay.variable}`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
         <StackProvider app={stackServerApp}>
           <StackTheme>
-            <div className="pointer-events-none absolute right-0 top-0 hidden h-64 w-64 -mr-32 -mt-32 rounded-full bg-primary/10 blur-3xl lg:block" />
-            <div className="pointer-events-none absolute bottom-0 left-0 hidden h-48 w-48 -mb-24 -ml-24 rounded-full bg-white/5 blur-3xl lg:block" />
+            <div className="pointer-events-none fixed -right-40 -top-40 hidden h-96 w-96 rounded-full bg-primary-container/10 blur-3xl lg:block" />
+            <div className="pointer-events-none fixed -bottom-40 -left-40 hidden h-80 w-80 rounded-full bg-secondary-container/10 blur-3xl lg:block" />
             <main className="relative z-10 min-h-screen">{children}</main>
           </StackTheme>
         </StackProvider>

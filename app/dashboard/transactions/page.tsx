@@ -20,6 +20,38 @@ const sourceLabels = {
   LOAN_REPAYMENT: "Rate",
 } as const;
 
+function sourceIcon(source: string): string {
+  switch (source) {
+    case "TRANSFER":
+      return "swap_horiz";
+    case "CHECKOUT":
+      return "shopping_bag";
+    case "DONATION":
+      return "volunteer_activism";
+    case "REFUND":
+      return "assignment_return";
+    case "LOAN_DISBURSEMENT":
+      return "savings";
+    case "LOAN_REPAYMENT":
+      return "payments";
+    case "OVERDRAFT_INTEREST":
+      return "percent";
+    default:
+      return "receipt_long";
+  }
+}
+
+const sourceTint: Record<string, string> = {
+  TRANSFER: "text-primary",
+  DONATION: "text-tertiary",
+  CHECKOUT: "text-secondary",
+  REFUND: "text-secondary",
+  LOAN_DISBURSEMENT: "text-secondary",
+  LOAN_REPAYMENT: "text-primary",
+  OVERDRAFT_INTEREST: "text-error",
+  ADMIN: "text-on-surface-variant",
+};
+
 export default async function TransactionsPage({
   searchParams,
 }: TransactionsPageProps) {
@@ -71,27 +103,27 @@ export default async function TransactionsPage({
     <div className="space-y-8 pb-8">
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl bg-primary/10 px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
+        <div className="glass-card mesh-gradient rounded-2xl p-5">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
             Eingänge
           </p>
-          <p className="mt-2 text-3xl font-display text-primary">
+          <p className="font-balance-display text-balance-display mt-3 text-secondary">
             +{formatEuroFromCents(incoming)}
           </p>
         </div>
-        <div className="rounded-2xl bg-red-500/10 px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-400/80">
+        <div className="glass-card rounded-2xl p-5">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
             Ausgänge
           </p>
-          <p className="mt-2 text-3xl font-display text-red-400">
+          <p className="font-balance-display text-balance-display mt-3 text-error">
             -{formatEuroFromCents(outgoing)}
           </p>
         </div>
-        <div className="rounded-2xl bg-sky-500/10 px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200/80">
+        <div className="glass-card rounded-2xl p-5">
+          <p className="font-label-sm text-label-sm text-on-surface-variant">
             AirCoin
           </p>
-          <p className="mt-2 text-3xl font-display text-sky-200">
+          <p className="font-balance-display text-balance-display mt-3 text-primary">
             {formatAirFromUnits(airNet)}
           </p>
         </div>
@@ -99,52 +131,62 @@ export default async function TransactionsPage({
 
       {/* Search */}
       <form method="get" className="w-full">
-        <Input defaultValue={query} name="q" placeholder="Suchen…" />
+        <div className="relative">
+          <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
+            search
+          </span>
+          <Input
+            className="pl-12"
+            defaultValue={query}
+            name="q"
+            placeholder="Suchen…"
+          />
+        </div>
       </form>
 
       {/* Transactions List */}
       <div className="space-y-3">
         {transactions.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-10 text-center">
-            <p className="text-sm text-slate-400">Keine Transaktionen.</p>
+          <div className="glass-card rounded-2xl p-10 text-center">
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant">
+              receipt_long
+            </span>
+            <p className="mt-3 text-sm text-on-surface-variant">
+              Keine Transaktionen.
+            </p>
           </div>
         ) : (
           transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4"
+              className="glass-card flex items-center justify-between gap-4 rounded-2xl p-4"
             >
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-semibold text-slate-100">
-                    {transaction.description}
-                  </p>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                      transaction.source === "TRANSFER"
-                        ? "bg-primary/10 text-primary"
-                        : transaction.source === "DONATION"
-                          ? "bg-emerald-500/10 text-emerald-300"
-                          : transaction.source === "CHECKOUT"
-                            ? "bg-sky-500/10 text-sky-200"
-                            : "bg-slate-800 text-slate-400"
-                    }`}
-                  >
-                    {sourceLabels[transaction.source]}
-                  </span>
-                  <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                    {transaction.currency}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="glass-card flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                    <span
+                      className={`material-symbols-outlined text-lg ${
+                        sourceTint[transaction.source] ?? "text-on-surface-variant"
+                      }`}
+                    >
+                      {sourceIcon(transaction.source)}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-on-surface">
+                      {transaction.description}
+                    </p>
+                    <p className="font-label-sm text-label-sm mt-0.5 text-on-surface-variant">
+                      {formatGermanDate(transaction.date)} ·{" "}
+                      {sourceLabels[transaction.source] ?? "Bank"} ·{" "}
+                      {transaction.currency}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-1 text-sm text-slate-500">
-                  {formatGermanDate(transaction.date)}
-                </p>
               </div>
               <p
-                className={`shrink-0 font-bold ${
-                  transaction.type === "INCOMING"
-                    ? "text-primary"
-                    : "text-red-400"
+                className={`font-body-md text-body-md shrink-0 font-bold ${
+                  transaction.type === "INCOMING" ? "text-secondary" : "text-error"
                 }`}
               >
                 {transaction.type === "INCOMING" ? "+" : "-"}

@@ -21,10 +21,17 @@ export function LoginRedirect({ redirectTo }: LoginRedirectProps) {
   }, [redirectTo]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 text-center text-slate-200">
+    <div className="flex min-h-screen items-center justify-center px-4 text-center text-on-surface-variant">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">RBANK</p>
-        <h1 className="mt-3 text-3xl font-display text-slate-100">Weiterleitung zur Anmeldung</h1>
+        <div className="glass-card mesh-gradient mx-auto mb-6 flex h-20 w-20 items-center justify-center">
+          <span className="material-symbols-outlined text-4xl text-primary">
+            account_balance
+          </span>
+        </div>
+        <p className="font-label-sm text-label-sm text-primary">RBANK</p>
+        <h1 className="font-headline-md text-headline-md mt-3 text-on-surface">
+          Weiterleitung zur Anmeldung
+        </h1>
       </div>
     </div>
   );

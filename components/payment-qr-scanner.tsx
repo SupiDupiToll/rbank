@@ -108,14 +108,14 @@ export function PaymentQrScanner() {
   return (
     <div className="space-y-8">
       {/* Scanner Area */}
-      <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-900/40">
+      <div className="glass-card overflow-hidden rounded-2xl">
         <div id="qr-reader" className="aspect-[4/5] md:aspect-[16/9]" />
       </div>
 
       {/* Controls */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Button
-          className="h-14 rounded-xl text-sm"
+          className="h-14 text-sm"
           disabled={isStarting || isScanning}
           onClick={startScanner}
           type="button"
@@ -127,7 +127,7 @@ export function PaymentQrScanner() {
               : "Kamera freigeben"}
         </Button>
         <Button
-          className="h-14 rounded-xl text-sm"
+          className="h-14 text-sm"
           disabled={!isScanning}
           onClick={stopScanner}
           type="button"
@@ -138,33 +138,31 @@ export function PaymentQrScanner() {
       </div>
 
       {/* Status */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4">
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
-          Status
-        </p>
-        <p className="mt-2 text-sm text-slate-300">{message}</p>
+      <div className="glass-card rounded-2xl p-5">
+        <p className="font-label-sm text-label-sm text-primary">Status</p>
+        <p className="mt-2 text-sm text-on-surface">{message}</p>
       </div>
 
       {/* Steps */}
-      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 px-5 py-5">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+      <div className="glass-card rounded-2xl p-5">
+        <p className="font-label-sm text-label-sm mb-3 text-on-surface-variant">
           So geht&apos;s
         </p>
-        <ol className="space-y-2 text-sm text-slate-400">
+        <ol className="space-y-2 text-sm text-on-surface-variant">
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+            <span className="glass-card flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-on-surface">
               1
             </span>
             Kamera freigeben
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+            <span className="glass-card flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-on-surface">
               2
             </span>
             QR-Code des Kunden vor die Kamera halten
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-slate-300">
+            <span className="glass-card flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-on-surface">
               3
             </span>
             Automatische Weiterleitung zum Zahlungslin

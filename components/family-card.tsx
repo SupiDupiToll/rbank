@@ -189,72 +189,67 @@ export function FamilyCard({
 
   return (
     <div className="space-y-6" id="family-card">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a0e16] via-[#0d1424] to-[#101a30] p-6 shadow-2xl ring-1 ring-slate-700/40 sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
-
-        <div className="relative flex items-start justify-between">
+      <div className="virtual-card-bg relative rounded-2xl p-6 shadow-[0_20px_40px_rgba(127,61,255,0.25)] transition-transform duration-300 sm:p-8">
+        <div className="relative z-10 flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-300">
-              Family Bank
-            </p>
-            <p className="mt-1 text-lg font-display text-slate-100">
+            <p className="font-label-sm text-label-sm text-white/70">RBank</p>
+            <p className="mt-1 font-headline-md text-headline-md text-white">
               Family Card
             </p>
           </div>
-          <span className="flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1.5 text-xs font-semibold">
+          <span className="flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 font-label-sm text-label-sm text-white backdrop-blur-md">
             <span
-              className={cn("h-2 w-2 rounded-full", meta.dot, {
+              className={cn("h-2 w-2 rounded-full", "bg-white", {
                 "animate-pulse": status === "LOCKED",
               })}
             />
-            <span className={meta.className}>{meta.label}</span>
+            {meta.label}
           </span>
         </div>
 
-        <div className="relative mt-8 grid gap-6 sm:grid-cols-2">
+        <div className="relative z-10 mt-10 grid gap-6 sm:grid-cols-2">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400">
+            <p className="font-label-sm text-label-sm text-white/70">
               Girokonto
             </p>
-            <p className="mt-2 text-3xl font-display text-slate-100">
+            <p className="font-balance-display text-balance-display mt-2 text-white">
               {formatEuroFromCents(balanceCents)}
             </p>
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-sky-300">
-              AirCoin
-            </p>
-            <p className="mt-2 text-3xl font-display text-sky-200">
+            <p className="font-label-sm text-label-sm text-white/70">AirCoin</p>
+            <p className="font-balance-display text-balance-display mt-2 text-white">
               {formatAirFromUnits(airBalance)}
             </p>
           </div>
         </div>
 
-        <div className="relative mt-8 flex items-center justify-between">
-          <p className="font-mono text-base tracking-[0.2em] text-slate-300">
+        <div className="relative z-10 mt-10 flex items-center justify-between">
+          <p className="font-mono text-base tracking-[0.2em] text-white">
             {cardLastFour ? `•••• ${cardLastFour}` : "•••• ••••"}
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">
-            Apple Wallet
-          </p>
+          <span className="material-symbols-outlined text-2xl text-white/70">
+            contactless
+          </span>
         </div>
       </div>
 
       <div className="space-y-3">
         {status === "NONE" ? (
           <Button
-            className="w-full rounded-xl"
+            className="w-full"
             disabled={busy !== null}
             onClick={handleCreate}
             type="button"
           >
-            {busy === "create" ? "Pass wird erstellt…" : "Zu Apple Wallet hinzufügen"}
+            {busy === "create"
+              ? "Pass wird erstellt…"
+              : "Zu Apple Wallet hinzufügen"}
           </Button>
         ) : (
           <>
             <Button
-              className="w-full rounded-xl"
+              className="w-full"
               disabled={busy !== null || status === "REVOKED"}
               onClick={handleCreate}
               type="button"
@@ -265,7 +260,6 @@ export function FamilyCard({
             </Button>
             <div className="grid grid-cols-2 gap-3">
               <Button
-                className="rounded-xl"
                 disabled={busy !== null}
                 onClick={handleUpdate}
                 type="button"
@@ -274,7 +268,7 @@ export function FamilyCard({
                 {busy === "update" ? "Aktualisiere…" : "Karte aktualisieren"}
               </Button>
               <Button
-                className="rounded-xl border-red-500/30 text-red-300 hover:bg-red-500/10"
+                className="border-error/30 text-error hover:bg-error-container/20"
                 disabled={busy !== null || status === "REVOKED"}
                 onClick={handleRevoke}
                 type="button"
@@ -287,10 +281,10 @@ export function FamilyCard({
         )}
 
         {message ? (
-          <p className="text-center text-sm text-slate-300">{message}</p>
+          <p className="text-center text-sm text-on-surface">{message}</p>
         ) : null}
 
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-on-surface-variant">
           Die angezeigten Salden dienen nur der Anzeige. Massgeblich ist stets
           der Kontostand im Online-Banking.
         </p>

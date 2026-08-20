@@ -11,200 +11,59 @@ import {
   getWalletPassStatusForUser,
 } from "@/lib/wallet/service";
 
-function HomeIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="m3.75 10.5 8.25-6.5 8.25 6.5v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5v-5.25h-4.5v5.25h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z"
-      />
-    </svg>
-  );
+const sourceLabels: Record<string, string> = {
+  ADMIN: "Bank",
+  TRANSFER: "P2P",
+  CHECKOUT: "Shopping",
+  DONATION: "Spende",
+  REFUND: "Erstattung",
+  OVERDRAFT_INTEREST: "Dispozins",
+  LOAN_DISBURSEMENT: "Kredit",
+  LOAN_REPAYMENT: "Rate",
+};
+
+function sourceIcon(source: string): string {
+  switch (source) {
+    case "TRANSFER":
+      return "swap_horiz";
+    case "CHECKOUT":
+      return "shopping_bag";
+    case "DONATION":
+      return "volunteer_activism";
+    case "REFUND":
+      return "assignment_return";
+    case "LOAN_DISBURSEMENT":
+      return "savings";
+    case "LOAN_REPAYMENT":
+      return "payments";
+    case "OVERDRAFT_INTEREST":
+      return "percent";
+    default:
+      return "receipt_long";
+  }
 }
 
-function TransferIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.5 7.5h12.75m0 0-3-3m3 3-3 3M19.5 16.5H6.75m0 0 3 3m-3-3 3-3"
-      />
-    </svg>
-  );
-}
-
-function QRIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-      />
-    </svg>
-  );
-}
-
-function ListIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M7.5 6.75h9m-9 5.25h9m-9 5.25h5.25M5.25 4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z"
-      />
-    </svg>
-  );
-}
-
-function LoanIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5.25 12h13.5m-13.5 4.5h13.5M5.25 7.5h13.5M12 21.75v-9m-6.75 3h13.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H5.25A1.5 1.5 0 0 0 3.75 6v8.25a1.5 1.5 0 0 0 1.5 1.5Z"
-      />
-    </svg>
-  );
-}
-
-function PiggyIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
-      />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-      />
-    </svg>
-  );
-}
-
-function DonationBoxIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.5 4.5h15A1.5 1.5 0 0 1 21 6v12a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6a1.5 1.5 0 0 1 1.5-1.5Zm3 3h9m-9 4.5h9m-9 4.5h5.25"
-      />
-    </svg>
-  );
-}
-
-function MerchantIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3 7.5h18M3 7.5v9a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 16.5v-9M3 7.5l1.5-3h15l1.5 3M9 12h6"
-      />
-    </svg>
-  );
-}
-const baseQuickActions = [
+const heroActions = [
   {
     href: "/dashboard/transfer" as Route,
     label: "Überweisen",
-    icon: TransferIcon,
+    icon: "send",
+    primary: true,
   },
   {
     href: "/dashboard/receive-payment" as Route,
     label: "Empfangen",
-    icon: QRIcon,
+    icon: "qr_code_scanner",
   },
   {
     href: "/dashboard/transactions" as Route,
     label: "Verlauf",
-    icon: ListIcon,
+    icon: "receipt_long",
   },
-  { href: "/dashboard/kredite" as Route, label: "Kredite", icon: LoanIcon },
-  { href: "/dashboard/festgeld" as Route, label: "Festgeld", icon: PiggyIcon },
-  { href: "/dashboard/haendler" as Route, label: "Händler", icon: MerchantIcon },
   {
-    href: "/dashboard/settings" as Route,
-    label: "Einstellungen",
-    icon: SettingsIcon,
+    href: "/dashboard/festgeld" as Route,
+    label: "Festgeld",
+    icon: "savings",
   },
 ];
 
@@ -217,20 +76,34 @@ export default async function DashboardPage() {
 
   await settleCustomerAccounting(user.id);
 
-  const [transactions, savings, loans] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { userId: user.id },
-      select: { type: true, amount: true, currency: true },
-    }),
-    prisma.festgeldAccount.aggregate({
-      where: { userId: user.id },
-      _sum: { amount: true },
-    }),
-    prisma.loan.aggregate({
-      where: { userId: user.id, status: "ACTIVE" },
-      _sum: { remainingAmount: true },
-    }),
-  ]);
+  const [transactions, savings, loans, recentTransactions] =
+    await Promise.all([
+      prisma.transaction.findMany({
+        where: { userId: user.id },
+        select: { type: true, amount: true, currency: true },
+      }),
+      prisma.festgeldAccount.aggregate({
+        where: { userId: user.id },
+        _sum: { amount: true },
+      }),
+      prisma.loan.aggregate({
+        where: { userId: user.id, status: "ACTIVE" },
+        _sum: { remainingAmount: true },
+      }),
+      prisma.transaction.findMany({
+        where: { userId: user.id },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        take: 5,
+        select: {
+          description: true,
+          type: true,
+          amount: true,
+          currency: true,
+          source: true,
+          date: true,
+        },
+      }),
+    ]);
 
   const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
   const savingsTotal = savings._sum.amount ?? 0;
@@ -241,99 +114,205 @@ export default async function DashboardPage() {
     getWalletPassStatusForUser(user.id),
     getWalletPassRecord(user.id),
   ]);
-  const mainActions = baseQuickActions.filter((a) => a.label !== "Einstellungen");
-  const settingsAction = baseQuickActions.find((a) => a.label === "Einstellungen");
-  const quickActions = [
-    ...mainActions,
+
+  const moreActions = [
+    {
+      href: "/dashboard/kredite" as Route,
+      label: "Kredite",
+      icon: "request_quote",
+    },
+    {
+      href: "/dashboard/haendler" as Route,
+      label: "Händler",
+      icon: "storefront",
+    },
     ...(user.showDonationBoxesList
       ? [
           {
             href: "/dashboard/spendenboxen" as Route,
             label: "Spendenboxen",
-            icon: DonationBoxIcon,
+            icon: "volunteer_activism",
           },
         ]
       : []),
-    ...(settingsAction ? [settingsAction] : []),
+    {
+      href: "/dashboard/settings" as Route,
+      label: "Einstellungen",
+      icon: "settings",
+    },
   ];
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Balance Card – Revolut style */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/30 via-primary/15 to-transparent px-6 pb-10 pt-8 sm:px-8 sm:pt-10">
-        {/* Decorative circle */}
-        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-2xl sm:h-56 sm:w-56 sm:-right-16 sm:-top-16" />
-        <div className="pointer-events-none absolute -left-8 bottom-0 h-32 w-32 rounded-full bg-white/5 blur-2xl" />
-
-        <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
-          Gesamtkontostand
-        </p>
-        <p className="relative mt-3 text-5xl font-display tracking-tight text-slate-100 sm:text-6xl">
-          {formatEuroFromCents(totalCents)}
-        </p>
-        <div className="relative mt-6 flex flex-wrap gap-6 text-sm">
-          <div>
-            <p className="text-slate-400">Girokonto</p>
-            <p className="mt-1 font-semibold text-slate-100">
-              {formatEuroFromCents(eurBalanceCents)}
-            </p>
-          </div>
-          <div>
-            <p className="text-slate-400">AirCoin Konto</p>
-            <p className="mt-1 font-semibold text-slate-100">
-              {formatAirFromUnits(airBalance)}
-            </p>
-          </div>
-          {savingsTotal > 0 && (
-            <div>
-              <p className="text-slate-400">Festgeld</p>
-              <p className="mt-1 font-semibold text-slate-100">
-                {formatEuroFromCents(savingsTotal)}
-              </p>
-            </div>
-          )}
-          {loanDebt > 0 && (
-            <div>
-              <p className="text-slate-400">Kreditschuld</p>
-              <p className="mt-1 font-semibold text-red-400">
-                -{formatEuroFromCents(loanDebt)}
-              </p>
-            </div>
-          )}
+      {/* Main Balance Area */}
+      <section className="flex flex-col items-center justify-center text-center">
+        <div className="glass-card mb-2 flex items-center gap-2 rounded-full px-4 py-1.5 text-on-surface-variant">
+          <span className="material-symbols-outlined text-sm text-primary">
+            account_balance_wallet
+          </span>
+          <span className="font-label-sm text-label-sm">Girokonto · EUR</span>
+          <span className="material-symbols-outlined text-sm">
+            keyboard_arrow_down
+          </span>
         </div>
-      </div>
 
-      <div>
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+        <h2 className="font-balance-display text-balance-display mb-8 tracking-tight text-on-surface">
+          {formatEuroFromCents(totalCents)}
+        </h2>
+
+        {/* Quick Actions Row */}
+        <div className="flex w-full max-w-md items-start justify-between px-2">
+          {heroActions.map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="group flex flex-col items-center gap-2"
+            >
+              <span
+                className={`relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform group-active:scale-95 ${
+                  action.primary
+                    ? "bg-primary-container text-white shadow-[0_0_20px_rgba(127,61,255,0.4)]"
+                    : "glass-card text-on-surface"
+                }`}
+              >
+                <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                <span className="material-symbols-outlined text-xl">
+                  {action.icon}
+                </span>
+              </span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">
+                {action.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Bento Grid */}
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Promotional Card */}
+        <div className="glass-card mesh-gradient group relative flex h-48 cursor-pointer flex-col justify-end overflow-hidden p-6 md:h-64">
+          <div className="absolute -right-10 -top-10 flex h-48 w-48 items-center justify-center opacity-80">
+            <span className="material-symbols-outlined text-[7rem] text-primary/60 transition-transform duration-500 group-hover:scale-105">
+              account_balance
+            </span>
+          </div>
+          <div className="relative z-10">
+            <h3 className="font-headline-md text-headline-md mb-2 text-on-surface">
+              RBank 2.0 ist da
+            </h3>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Entdecke das neue Design.
+            </p>
+          </div>
+        </div>
+
+        {/* Recent Transactions Card */}
+        <div className="glass-card flex flex-col p-6 md:h-64">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Letzte Aktivitäten
+            </h3>
+            <Link
+              href={"/dashboard/transactions" as Route}
+              className="material-symbols-outlined text-on-surface-variant transition-colors hover:text-primary"
+            >
+              arrow_forward
+            </Link>
+          </div>
+          <div className="hide-scrollbar flex grow flex-col gap-4 overflow-y-auto">
+            {recentTransactions.length === 0 ? (
+              <p className="py-8 text-center text-sm text-on-surface-variant">
+                Noch keine Transaktionen.
+              </p>
+            ) : (
+              recentTransactions.map((transaction) => (
+                <div
+                  key={`${transaction.date.getTime()}-${transaction.amount}-${transaction.description}`}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="glass-card flex h-10 w-10 items-center justify-center rounded-full">
+                      <span className="material-symbols-outlined text-lg text-primary">
+                        {sourceIcon(transaction.source)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-body-md text-body-md leading-tight text-on-surface">
+                        {transaction.description}
+                      </span>
+                      <span className="font-label-sm text-label-sm text-on-surface-variant">
+                        {sourceLabels[transaction.source] ?? "Bank"}
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    className={`font-body-md text-body-md font-semibold ${
+                      transaction.type === "INCOMING"
+                        ? "text-secondary"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    {transaction.type === "INCOMING" ? "+" : "-"}
+                    {(
+                      transaction.currency === "AIR"
+                        ? formatAirFromUnits(transaction.amount)
+                        : formatEuroFromCents(transaction.amount)
+                    ).replace("-", "")}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Accounts */}
+      <section>
+        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
           Konten
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
-              Girokonto
-            </p>
-            <p className="mt-3 text-3xl font-display text-slate-100">
+          <div className="glass-card mesh-gradient relative overflow-hidden p-6 transition-colors">
+            <div className="mb-10 flex items-center gap-3">
+              <div className="glass-card flex h-10 w-10 items-center justify-center rounded-full">
+                <span className="material-symbols-outlined text-primary">euro</span>
+              </div>
+              <span className="font-headline-md text-headline-md text-on-surface">
+                Euro
+              </span>
+            </div>
+            <div className="font-balance-display text-balance-display text-on-surface">
               {formatEuroFromCents(eurBalanceCents)}
+            </div>
+            <p className="font-label-sm text-label-sm mt-2 text-on-surface-variant">
+              Available Balance
             </p>
-            <p className="mt-2 text-sm text-slate-400">Standardkonto in EUR</p>
           </div>
-          <div className="rounded-3xl border border-sky-400/20 bg-sky-500/5 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200">
-              AirCoin Konto
-            </p>
-            <p className="mt-3 text-3xl font-display text-slate-100">
+          <div className="glass-card mesh-gradient relative overflow-hidden p-6 transition-colors">
+            <div className="mb-10 flex items-center gap-3">
+              <div className="glass-card flex h-10 w-10 items-center justify-center rounded-full">
+                <span className="material-symbols-outlined text-secondary">
+                  currency_bitcoin
+                </span>
+              </div>
+              <span className="font-headline-md text-headline-md text-on-surface">
+                AirCoin
+              </span>
+            </div>
+            <div className="font-balance-display text-balance-display text-on-surface">
               {formatAirFromUnits(airBalance)}
-            </p>
-            <p className="mt-2 text-sm text-slate-400">
+            </div>
+            <p className="font-label-sm text-label-sm mt-2 text-on-surface-variant">
               Kleine eigene Währung :D
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Family Card */}
-      <div>
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+      <section>
+        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
           Family Card
         </p>
         <FamilyCard
@@ -342,46 +321,41 @@ export default async function DashboardPage() {
           balanceCents={eurBalanceCents}
           airBalance={airBalance}
         />
-      </div>
+      </section>
 
-      {/* Quick Actions */}
-      <div>
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
-          Schnellzugriff
+      {/* Quick Access */}
+      <section>
+        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
+          Mehr
         </p>
-        <div
-          className="grid gap-3"
-          style={{
-            gridTemplateColumns: `repeat(${quickActions.length}, minmax(0, 1fr))`,
-          }}
-        >
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="flex flex-col items-center gap-2"
-              >
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-primary transition-colors hover:bg-slate-800 hover:shadow-lg hover:shadow-primary/5">
-                  <Icon />
-                </span>
-                <span className="truncate text-xs font-medium text-slate-400">
-                  {action.label}
-                </span>
-              </Link>
-            );
-          })}
+        <div className="grid grid-cols-2 gap-3">
+          {moreActions.map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="glass-card flex items-center gap-3 rounded-2xl p-4 transition-colors hover:bg-surface-container"
+            >
+              <span className="material-symbols-outlined text-xl text-primary">
+                {action.icon}
+              </span>
+              <span className="text-sm font-semibold text-on-surface">
+                {action.label}
+              </span>
+            </Link>
+          ))}
+          <div className="glass-card flex items-center gap-3 rounded-2xl p-4">
+            <span className="material-symbols-outlined text-xl text-on-surface-variant">
+              badge
+            </span>
+            <div>
+              <p className="text-xs text-on-surface-variant">Kundennummer</p>
+              <p className="font-mono text-sm tracking-widest text-on-surface">
+                {user.customerId}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Kundennummer */}
-      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 px-5 py-4">
-        <p className="text-xs text-slate-500">Kundennummer</p>
-        <p className="mt-1 font-mono text-lg tracking-wider text-slate-200">
-          {user.customerId}
-        </p>
-      </div>
+      </section>
     </div>
   );
 }

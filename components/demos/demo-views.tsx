@@ -39,7 +39,7 @@ function DemoCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-800/50 bg-slate-900/40 p-6",
+        "rounded-2xl border border-white/10 bg-surface-container-high/40 p-6",
         className,
       )}
     >
@@ -77,9 +77,9 @@ function DemoInput({
   readOnly?: boolean;
 }) {
   return (
-    <div className="w-full rounded-lg bg-slate-800 px-4 py-4 text-slate-100 outline-none">
+    <div className="w-full rounded-lg bg-surface-container px-4 py-4 text-on-surface outline-none">
       {value ?? (
-        <span className="text-slate-500">{placeholder ?? "…"}</span>
+        <span className="text-on-surface-variant/70">{placeholder ?? "…"}</span>
       )}
     </div>
   );
@@ -92,16 +92,16 @@ function StatusBadge({
 }) {
   const map: Record<string, { label: string; className: string }> = {
     ACTIVE: { label: "Aktiv", className: "bg-primary/10 text-primary" },
-    PENDING: { label: "Ausstehend", className: "bg-amber-500/10 text-amber-300" },
-    COMPLETED: { label: "Bezahlt", className: "bg-emerald-500/10 text-emerald-300" },
-    REFUNDED: { label: "Erstattet", className: "bg-sky-500/10 text-sky-300" },
-    CANCELLED: { label: "Storniert", className: "bg-slate-800 text-slate-400" },
-    EXPIRED: { label: "Abgelaufen", className: "bg-slate-800 text-slate-400" },
+    PENDING: { label: "Ausstehend", className: "bg-tertiary-container/30 text-tertiary" },
+    COMPLETED: { label: "Bezahlt", className: "bg-primary-container/20 text-primary" },
+    REFUNDED: { label: "Erstattet", className: "bg-secondary-container/20 text-secondary" },
+    CANCELLED: { label: "Storniert", className: "bg-surface-container text-on-surface-variant" },
+    EXPIRED: { label: "Abgelaufen", className: "bg-surface-container text-on-surface-variant" },
     UNLOCKED: { label: "Frei", className: "bg-primary/10 text-primary" },
-    PAID_OUT: { label: "Ausgezahlt", className: "bg-slate-800 text-slate-300" },
-    ABBEZAHLT: { label: "Abbezahlt", className: "bg-slate-800 text-slate-300" },
+    PAID_OUT: { label: "Ausgezahlt", className: "bg-surface-container text-on-surface-variant" },
+    ABBEZAHLT: { label: "Abbezahlt", className: "bg-surface-container text-on-surface-variant" },
   };
-  const meta = map[status] ?? { label: status, className: "bg-slate-800 text-slate-300" };
+  const meta = map[status] ?? { label: status, className: "bg-surface-container text-on-surface-variant" };
 
   return (
     <span
@@ -147,31 +147,31 @@ export function DemoDashboardView() {
         <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
           Gesamtkontostand
         </p>
-        <p className="relative mt-3 text-5xl font-display tracking-tight text-slate-100 sm:text-6xl">
+        <p className="relative mt-3 text-5xl  tracking-tight text-on-surface sm:text-6xl">
           {formatEuroFromCents(totalCents)}
         </p>
         <div className="relative mt-6 flex flex-wrap gap-6 text-sm">
           <div>
-            <p className="text-slate-400">Girokonto</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">Girokonto</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {formatEuroFromCents(balanceCents)}
             </p>
           </div>
           <div>
-            <p className="text-slate-400">AirCoin Konto</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">AirCoin Konto</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {(airBalance / 100).toLocaleString("de-DE")} AIR
             </p>
           </div>
           <div>
-            <p className="text-slate-400">Festgeld</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">Festgeld</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {formatEuroFromCents(festgeldCents)}
             </p>
           </div>
           <div>
-            <p className="text-slate-400">Kreditschuld</p>
-            <p className="mt-1 font-semibold text-red-400">
+            <p className="text-on-surface-variant">Kreditschuld</p>
+            <p className="mt-1 font-semibold text-error">
               -{formatEuroFromCents(loanDebtCents)}
             </p>
           </div>
@@ -179,25 +179,25 @@ export function DemoDashboardView() {
       </div>
 
       <div>
-        <DemoEyebrow color="text-slate-500">Konten</DemoEyebrow>
+        <DemoEyebrow color="text-on-surface-variant/70">Konten</DemoEyebrow>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-5">
+          <div className="rounded-3xl border border-white/10 bg-surface-container-high/40 p-5">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
               Girokonto
             </p>
-            <p className="mt-3 text-3xl font-display text-slate-100">
+            <p className="mt-3 text-3xl  text-on-surface">
               {formatEuroFromCents(balanceCents)}
             </p>
-            <p className="mt-2 text-sm text-slate-400">Standardkonto in EUR</p>
+            <p className="mt-2 text-sm text-on-surface-variant">Standardkonto in EUR</p>
           </div>
-          <div className="rounded-3xl border border-sky-400/20 bg-sky-500/5 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200">
+          <div className="rounded-3xl border border-secondary/30 bg-secondary-container/10 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-secondary">
               AirCoin Konto
             </p>
-            <p className="mt-3 text-3xl font-display text-slate-100">
+            <p className="mt-3 text-3xl  text-on-surface">
               {(airBalance / 100).toLocaleString("de-DE")} AIR
             </p>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-on-surface-variant">
               Kleine eigene Währung :D
             </p>
           </div>
@@ -205,14 +205,14 @@ export function DemoDashboardView() {
       </div>
 
       <div>
-        <DemoEyebrow color="text-slate-500">Schnellzugriff</DemoEyebrow>
+        <DemoEyebrow color="text-on-surface-variant/70">Schnellzugriff</DemoEyebrow>
         <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-8">
           {["Überweisen", "Empfangen", "Verlauf", "Kredite", "Festgeld", "Händler", "Spendenboxen", "Einstellungen"].map((label) => (
             <div key={label} className="flex flex-col items-center gap-2">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-primary">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-container-high text-primary">
                 <span className="text-lg font-bold">{label.slice(0, 2).toUpperCase()}</span>
               </span>
-              <span className="truncate text-xs font-medium text-slate-400">
+              <span className="truncate text-xs font-medium text-on-surface-variant">
                 {label}
               </span>
             </div>
@@ -220,9 +220,9 @@ export function DemoDashboardView() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 px-5 py-4">
-        <p className="text-xs text-slate-500">Kundennummer</p>
-        <p className="mt-1 font-mono text-lg tracking-wider text-slate-200">
+      <div className="rounded-2xl border border-white/10 bg-surface-container-high/40 px-5 py-4">
+        <p className="text-xs text-on-surface-variant/70">Kundennummer</p>
+        <p className="mt-1 font-mono text-lg tracking-wider text-on-surface">
           {customerId}
         </p>
       </div>
@@ -240,14 +240,14 @@ export function DemoTransferView() {
         </p>
         <div className="relative mt-4 grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-sm text-slate-400">Girokonto</p>
-            <p className="mt-2 text-4xl font-display tracking-tight text-slate-100">
+            <p className="text-sm text-on-surface-variant">Girokonto</p>
+            <p className="mt-2 text-4xl  tracking-tight text-on-surface">
               {formatEuroFromCents(demoCustomer.balanceCents)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-slate-400">AirCoin Konto</p>
-            <p className="mt-2 text-4xl font-display tracking-tight text-slate-100">
+            <p className="text-sm text-on-surface-variant">AirCoin Konto</p>
+            <p className="mt-2 text-4xl  tracking-tight text-on-surface">
               {(demoCustomer.airBalance / 100).toLocaleString("de-DE")} AIR
             </p>
           </div>
@@ -255,9 +255,9 @@ export function DemoTransferView() {
       </div>
 
       <div>
-        <DemoEyebrow color="text-slate-500">Überweisung senden</DemoEyebrow>
+        <DemoEyebrow color="text-on-surface-variant/70">Überweisung senden</DemoEyebrow>
         <div className="mt-4 space-y-5">
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-200">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-on-surface">
             Aktueller Kontostand:{" "}
             <span className="font-bold text-primary">
               {formatEuroFromCents(demoCustomer.balanceCents)}
@@ -265,18 +265,18 @@ export function DemoTransferView() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">Währung</label>
-            <div className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100">
+            <label className="text-sm font-semibold text-on-surface">Währung</label>
+            <div className="w-full rounded-lg border border-white/10 bg-surface-container-lowest px-4 py-3 text-on-surface">
               EUR
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-on-surface-variant">
               AIR ist eine interne Prämienwährung und kann nicht in Echtgeld
               umgetauscht werden.
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">
+            <label className="text-sm font-semibold text-on-surface">
               Empfänger-Kundennummer
             </label>
             <DemoInput value="10928374" />
@@ -284,24 +284,24 @@ export function DemoTransferView() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">
+            <label className="text-sm font-semibold text-on-surface">
               Betrag in EUR
             </label>
             <DemoInput value="25,00" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">
+            <label className="text-sm font-semibold text-on-surface">
               Verwendungszweck
             </label>
             <DemoInput value="Lunch, Geschenk, Rückzahlung" />
           </div>
 
-          <div className="rounded-xl bg-primary px-6 py-3 text-center text-sm font-bold text-background-dark glow-accent">
+          <div className="rounded-xl bg-primary-container px-6 py-3 text-center text-sm font-bold text-white glow-effect">
             Weiter zur PIN
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div className="rounded-2xl border border-white/10 bg-surface-container-high p-5">
             <DemoEyebrow>Schritt 2 · PIN eingeben</DemoEyebrow>
             <div className="mt-4 grid grid-cols-4 gap-3">
               {[0, 1, 2, 3].map((i) => (
@@ -311,7 +311,7 @@ export function DemoTransferView() {
                     "flex h-16 items-center justify-center rounded-2xl border text-3xl",
                     i < 4
                       ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-slate-800 bg-slate-900/70 text-slate-500",
+                      : "border-white/10 bg-surface-container-high text-on-surface-variant/70",
                   )}
                 >
                   {i < 4 ? "*" : ""}
@@ -326,7 +326,7 @@ export function DemoTransferView() {
                     className={cn(
                       "flex h-16 items-center justify-center rounded-2xl border text-2xl",
                       key
-                        ? "border-slate-800 bg-slate-900 text-slate-100"
+                        ? "border-white/10 bg-surface-container-high text-on-surface"
                         : "bg-transparent",
                     )}
                   >
@@ -363,23 +363,23 @@ export function DemoTransactionsView() {
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80">
             Eingänge
           </p>
-          <p className="mt-2 text-3xl font-display text-primary">
+          <p className="mt-2 text-3xl  text-primary">
             +{formatEuroFromCents(incoming)}
           </p>
         </div>
         <div className="rounded-2xl bg-red-500/10 px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-400/80">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-error/80">
             Ausgänge
           </p>
-          <p className="mt-2 text-3xl font-display text-red-400">
+          <p className="mt-2 text-3xl  text-error">
             -{formatEuroFromCents(outgoing)}
           </p>
         </div>
-        <div className="rounded-2xl bg-sky-500/10 px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-200/80">
+        <div className="rounded-2xl bg-secondary-container/20 px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-secondary/80">
             AirCoin
           </p>
-          <p className="mt-2 text-3xl font-display text-sky-200">
+          <p className="mt-2 text-3xl  text-secondary">
             {(airNet / 100).toLocaleString("de-DE")} AIR
           </p>
         </div>
@@ -391,11 +391,11 @@ export function DemoTransactionsView() {
         {demoTransactions.map((transaction) => (
           <div
             key={transaction.id}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4"
+            className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface-container-high/40 p-4"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="truncate font-semibold text-slate-100">
+                <p className="truncate font-semibold text-on-surface">
                   {transaction.description}
                 </p>
                 <span
@@ -404,19 +404,19 @@ export function DemoTransactionsView() {
                     transaction.source === "TRANSFER"
                       ? "bg-primary/10 text-primary"
                       : transaction.source === "DONATION"
-                        ? "bg-emerald-500/10 text-emerald-300"
+                        ? "bg-primary-container/20 text-primary"
                         : transaction.source === "CHECKOUT"
-                          ? "bg-sky-500/10 text-sky-200"
-                          : "bg-slate-800 text-slate-400",
+                          ? "bg-secondary-container/20 text-secondary"
+                          : "bg-surface-container text-on-surface-variant",
                   )}
                 >
                   {sourceLabel(transaction.source)}
                 </span>
-                <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                   {transaction.currency}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-on-surface-variant/70">
                 {formatDate(transaction.date)}
               </p>
             </div>
@@ -425,7 +425,7 @@ export function DemoTransactionsView() {
                 "shrink-0 font-bold",
                 transaction.type === "INCOMING"
                   ? "text-primary"
-                  : "text-red-400",
+                  : "text-error",
               )}
             >
               {transaction.type === "INCOMING" ? "+" : "-"}
@@ -455,19 +455,19 @@ export function DemoLoansView() {
         <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-blue-400/80">
           Kredite gesamt
         </p>
-        <p className="relative mt-3 text-5xl font-display tracking-tight text-slate-100 sm:text-6xl">
+        <p className="relative mt-3 text-5xl  tracking-tight text-on-surface sm:text-6xl">
           {formatEuroFromCents(totalBorrowed)}
         </p>
         <div className="relative mt-6 flex gap-6 text-sm">
           <div>
-            <p className="text-slate-400">Offener Betrag</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">Offener Betrag</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {formatEuroFromCents(totalRemaining)}
             </p>
           </div>
           <div>
-            <p className="text-slate-400">Aktive Kredite</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">Aktive Kredite</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {activeLoans.length}
             </p>
           </div>
@@ -479,19 +479,19 @@ export function DemoLoansView() {
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-400">
             Naechste Rate
           </p>
-          <p className="mt-2 text-lg font-semibold text-slate-100">
+          <p className="mt-2 text-lg font-semibold text-on-surface">
             {formatEuroFromCents(nextPayment.amount)} am{" "}
             {formatDate(nextPayment.date)}
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-on-surface-variant">
             Privatkredit · Rate {nextPayment.installment}
           </p>
         </div>
       ) : null}
 
       <div className="flex items-center justify-between">
-        <DemoEyebrow color="text-slate-500">Meine Kredite</DemoEyebrow>
-        <span className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-background-dark glow-accent">
+        <DemoEyebrow color="text-on-surface-variant/70">Meine Kredite</DemoEyebrow>
+        <span className="rounded-xl bg-primary-container px-4 py-2 text-sm font-bold text-white glow-effect">
           + Beantragen
         </span>
       </div>
@@ -500,22 +500,22 @@ export function DemoLoansView() {
         {demoLoans.map((loan) => (
           <div
             key={loan.id}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-5"
+            className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface-container-high/40 p-5"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="truncate font-semibold text-slate-100">
+                <p className="truncate font-semibold text-on-surface">
                   {loan.name}
                 </p>
                 <StatusBadge status={loan.status === "COMPLETED" ? "ABBEZAHLT" : loan.status} />
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-on-surface-variant/70">
                 {loan.termMonths} Monate · {loan.interestRate.toFixed(2)}% ·{" "}
                 {formatDate(loan.createdAt)}
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="font-bold text-slate-100">
+              <p className="font-bold text-on-surface">
                 {formatEuroFromCents(loan.amount)}
               </p>
               {loan.status === "ACTIVE" ? (
@@ -538,7 +538,7 @@ export function DemoLoanApplyView() {
   return (
     <div className="grid gap-8 lg:grid-cols-12">
       <DemoCard className="space-y-4 lg:col-span-5">
-        <h3 className="text-xl font-display font-bold">Produkte</h3>
+        <h3 className="text-xl  font-bold">Produkte</h3>
         <div className="space-y-3">
           {demoLoanProducts.map((product) => (
             <button
@@ -549,12 +549,12 @@ export function DemoLoanApplyView() {
                 "w-full rounded-2xl border p-4 text-left transition",
                 selectedProductId === product.id
                   ? "border-primary bg-primary/10"
-                  : "border-slate-800 bg-slate-900/40 hover:border-slate-700",
+                  : "border-white/10 bg-surface-container-high/40 hover:border-white/10",
               )}
             >
-              <p className="font-bold text-slate-100">{product.name}</p>
-              <p className="mt-1 text-xs text-slate-400">{product.description}</p>
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300">
+              <p className="font-bold text-on-surface">{product.name}</p>
+              <p className="mt-1 text-xs text-on-surface-variant">{product.description}</p>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant">
                 <span>
                   {formatEuroFromCents(product.minAmount)} –{" "}
                   {formatEuroFromCents(product.maxAmount)}
@@ -572,12 +572,12 @@ export function DemoLoanApplyView() {
       </DemoCard>
 
       <DemoCard className="space-y-4 lg:col-span-7">
-        <h3 className="text-xl font-display font-bold">Antrag</h3>
+        <h3 className="text-xl  font-bold">Antrag</h3>
         <div className="space-y-4">
           {selectedProduct ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm">
-              <p className="font-bold text-slate-100">{selectedProduct.name}</p>
-              <p className="mt-1 text-slate-400">{selectedProduct.description}</p>
+            <div className="rounded-2xl border border-white/10 bg-surface-container-high p-4 text-sm">
+              <p className="font-bold text-on-surface">{selectedProduct.name}</p>
+              <p className="mt-1 text-on-surface-variant">{selectedProduct.description}</p>
               <p className="mt-2 text-primary">
                 Zinssatz: {selectedProduct.interestRate.toFixed(2)}% p.a.
               </p>
@@ -586,25 +586,25 @@ export function DemoLoanApplyView() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-200">
+              <label className="text-sm font-semibold text-on-surface">
                 Kreditbetrag (EUR)
               </label>
               <DemoInput value="5000" />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-on-surface-variant/70">
                 Min. 1.000,00 € · Max. 50.000,00 €
               </p>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-200">
+              <label className="text-sm font-semibold text-on-surface">
                 Laufzeit (Monate)
               </label>
               <DemoInput value="48" />
-              <p className="text-xs text-slate-500">6–84 Monate</p>
+              <p className="text-xs text-on-surface-variant/70">6–84 Monate</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">
+            <label className="text-sm font-semibold text-on-surface">
               Verwendungszweck (optional)
             </label>
             <DemoInput value="Neue Küche" />
@@ -614,15 +614,15 @@ export function DemoLoanApplyView() {
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
               Voraussichtliche monatliche Rate
             </p>
-            <p className="mt-2 text-3xl font-display text-slate-100">
+            <p className="mt-2 text-3xl  text-on-surface">
               {formatEuroFromCents(11862)}
             </p>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-on-surface-variant">
               Bei 6.50% Zinsen p.a. über 48 Monate
             </p>
           </div>
 
-          <div className="h-14 w-full rounded-xl bg-primary px-6 py-3 text-center text-sm font-bold text-background-dark glow-accent">
+          <div className="h-14 w-full rounded-xl bg-primary-container px-6 py-3 text-center text-sm font-bold text-white glow-effect">
             Kredit beantragen
           </div>
         </div>
@@ -640,21 +640,21 @@ export function DemoFestgeldView() {
   return (
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent px-6 pb-8 pt-8 sm:px-8 sm:pt-10">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-amber-500/10 blur-2xl sm:h-56 sm:w-56" />
-        <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-amber-400/80">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-tertiary-container/30 blur-2xl sm:h-56 sm:w-56" />
+        <p className="relative text-xs font-bold uppercase tracking-[0.3em] text-tertiary/80">
           Festgeld gesamt
         </p>
-        <p className="relative mt-3 text-5xl font-display tracking-tight text-slate-100 sm:text-6xl">
+        <p className="relative mt-3 text-5xl  tracking-tight text-on-surface sm:text-6xl">
           {formatEuroFromCents(totalAmount)}
         </p>
         <div className="relative mt-6 flex gap-6 text-sm">
           <div>
-            <p className="text-slate-400">Aktive Konten</p>
-            <p className="mt-1 font-semibold text-slate-100">{activeCount}</p>
+            <p className="text-on-surface-variant">Aktive Konten</p>
+            <p className="mt-1 font-semibold text-on-surface">{activeCount}</p>
           </div>
           <div>
-            <p className="text-slate-400">Gesamt</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="text-on-surface-variant">Gesamt</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {demoFestgeldAccounts.length}
             </p>
           </div>
@@ -662,31 +662,31 @@ export function DemoFestgeldView() {
       </div>
 
       <div>
-        <DemoEyebrow color="text-slate-500">Konten</DemoEyebrow>
+        <DemoEyebrow color="text-on-surface-variant/70">Konten</DemoEyebrow>
         <div className="mt-4 space-y-3">
           {demoFestgeldAccounts.map((account) => (
             <div
               key={account.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/40 p-5"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-surface-container-high/40 p-5"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate font-semibold text-slate-100">
+                  <p className="truncate font-semibold text-on-surface">
                     {account.label}
                   </p>
                   <StatusBadge status={account.status} />
                 </div>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-on-surface-variant/70">
                   {formatDate(account.startDate)} – {formatDate(account.endDate)} ·{" "}
                   {account.interestRate.toFixed(2)}%
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-bold text-slate-100">
+                <p className="font-bold text-on-surface">
                   {formatEuroFromCents(account.amount)}
                 </p>
                 {account.status === "ACTIVE" ? (
-                  <p className="mt-1 text-xs text-amber-400">
+                  <p className="mt-1 text-xs text-tertiary">
                     +{formatEuroFromCents(account.amount * account.interestRate / 100)} Zins
                   </p>
                 ) : null}
@@ -707,8 +707,8 @@ export function DemoMerchantView() {
   return (
     <div className="space-y-8 pb-8">
       <div>
-        <h2 className="text-2xl font-display font-bold text-slate-100">Händler</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <h2 className="text-2xl  font-bold text-on-surface">Händler</h2>
+        <p className="mt-2 text-sm text-on-surface-variant">
           Deine Händler und deren Zahlungseingänge
         </p>
       </div>
@@ -723,18 +723,18 @@ export function DemoMerchantView() {
               "rounded-2xl border p-5 text-left transition-all",
               selectedMerchantId === merchant.merchantId
                 ? "border-primary bg-primary/10"
-                : "border-slate-800 bg-slate-900/40 hover:border-slate-700",
+                : "border-white/10 bg-surface-container-high/40 hover:border-white/10",
             )}
           >
-            <p className="text-sm font-bold text-slate-100">{merchant.name}</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="text-sm font-bold text-on-surface">{merchant.name}</p>
+            <p className="mt-1 text-xs text-on-surface-variant">
               {merchant.merchantId.slice(0, 8)}...
             </p>
-            <p className="mt-3 text-2xl font-display text-slate-100">
+            <p className="mt-3 text-2xl  text-on-surface">
               {formatEuroFromCents(merchant.totalVolumeCents)}
             </p>
-            <p className="text-xs text-slate-500">Gesamtvolumen</p>
-            <div className="mt-2 flex gap-4 text-xs text-slate-400">
+            <p className="text-xs text-on-surface-variant/70">Gesamtvolumen</p>
+            <div className="mt-2 flex gap-4 text-xs text-on-surface-variant">
               <span>Heute: {formatEuroFromCents(merchant.volumeTodayCents)}</span>
               <span>Monat: {formatEuroFromCents(merchant.volumeMonthCents)}</span>
             </div>
@@ -742,16 +742,16 @@ export function DemoMerchantView() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40">
-        <div className="border-b border-slate-800 px-6 py-4">
-          <h3 className="font-bold text-slate-100">
+      <div className="rounded-2xl border border-white/10 bg-surface-container-high/40">
+        <div className="border-b border-white/10 px-6 py-4">
+          <h3 className="font-bold text-on-surface">
             {selectedMerchant.name} – Zahlungen
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-xs text-slate-500">
+              <tr className="border-b border-white/10 text-left text-xs text-on-surface-variant/70">
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Beschreibung</th>
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Betrag</th>
@@ -762,27 +762,27 @@ export function DemoMerchantView() {
             </thead>
             <tbody>
               {selectedMerchant.sessions.map((session) => (
-                <tr key={session.token} className="border-b border-slate-800/50 last:border-0">
+                <tr key={session.token} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">
                     <StatusBadge status={session.status} />
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-medium text-slate-100">{session.description}</p>
+                    <p className="font-medium text-on-surface">{session.description}</p>
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-100">
+                  <td className="px-6 py-4 font-medium text-on-surface">
                     {formatEuroFromCents(session.amount)}
                   </td>
-                  <td className="px-6 py-4 text-slate-400">
+                  <td className="px-6 py-4 text-on-surface-variant">
                     {session.customerName ?? "—"}
                   </td>
-                  <td className="px-6 py-4 text-slate-400">{formatDate(session.date)}</td>
+                  <td className="px-6 py-4 text-on-surface-variant">{formatDate(session.date)}</td>
                   <td className="px-6 py-4">
                     {session.status === "COMPLETED" ? (
-                      <span className="rounded-lg bg-sky-500/15 px-3 py-1 text-xs font-bold text-sky-300">
+                      <span className="rounded-lg bg-secondary-container/25 px-3 py-1 text-xs font-bold text-secondary">
                         Rückerstatten
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-600">—</span>
+                      <span className="text-xs text-on-surface-variant/60">—</span>
                     )}
                   </td>
                 </tr>
@@ -805,8 +805,8 @@ export function DemoDonationBoxesView() {
     <div className="space-y-8 pb-8">
       <header>
         <DemoEyebrow>Community</DemoEyebrow>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">Spendenboxen</h2>
-        <p className="mt-3 max-w-2xl text-sm text-slate-400">
+        <h2 className="mt-2 text-3xl  text-on-surface">Spendenboxen</h2>
+        <p className="mt-3 max-w-2xl text-sm text-on-surface-variant">
           Erstelle eigene Spendenboxen mit persoenlichem Link und sieh dir alle
           bisher erstellten Boxen im Netzwerk an.
         </p>
@@ -814,18 +814,18 @@ export function DemoDonationBoxesView() {
 
       <DemoCard className="space-y-5">
         <div>
-          <p className="text-sm font-semibold text-slate-100">
+          <p className="text-sm font-semibold text-on-surface">
             Neue Spendenbox erstellen
           </p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-on-surface-variant">
             Name eingeben, Link erzeugen und direkt teilen.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="w-full rounded-lg bg-slate-800 px-4 py-4 text-slate-500">
+          <div className="w-full rounded-lg bg-surface-container px-4 py-4 text-on-surface-variant/70">
             z. B. Klassenfahrt 2026
           </div>
-          <span className="inline-flex h-14 items-center justify-center rounded-2xl bg-primary px-6 text-sm font-bold text-background-dark glow-accent">
+          <span className="inline-flex h-14 items-center justify-center rounded-2xl bg-primary-container px-6 text-sm font-bold text-white glow-effect">
             Spendenbox erstellen
           </span>
         </div>
@@ -833,8 +833,8 @@ export function DemoDonationBoxesView() {
 
       <section className="space-y-4">
         <div>
-          <DemoEyebrow color="text-slate-500">Deine Boxen</DemoEyebrow>
-          <h3 className="mt-2 text-2xl font-display text-slate-100">
+          <DemoEyebrow color="text-on-surface-variant/70">Deine Boxen</DemoEyebrow>
+          <h3 className="mt-2 text-2xl  text-on-surface">
             Eigene Spendenlinks
           </h3>
         </div>
@@ -847,8 +847,8 @@ export function DemoDonationBoxesView() {
 
       <section className="space-y-4">
         <div>
-          <DemoEyebrow color="text-slate-500">Netzwerk</DemoEyebrow>
-          <h3 className="mt-2 text-2xl font-display text-slate-100">
+          <DemoEyebrow color="text-on-surface-variant/70">Netzwerk</DemoEyebrow>
+          <h3 className="mt-2 text-2xl  text-on-surface">
             Alle Spendenboxen
           </h3>
         </div>
@@ -868,14 +868,14 @@ function DonationBoxRow({
   box: { name: string; link: string; ownerName: string; ownerCustomerId: string; createdAt: string };
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
+    <div className="rounded-2xl border border-white/10 bg-surface-container-high p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-100">{box.name}</p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="truncate font-semibold text-on-surface">{box.name}</p>
+          <p className="mt-1 text-sm text-on-surface-variant">
             von {box.ownerName} · #{box.ownerCustomerId}
           </p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-on-surface-variant/70">
             Erstellt am {formatDate(box.createdAt)}
           </p>
           <p className="mt-2 block truncate text-sm text-primary">
@@ -883,10 +883,10 @@ function DonationBoxRow({
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <span className="inline-flex h-10 items-center rounded-full border-2 border-slate-800 px-4 text-xs font-bold text-slate-100">
+          <span className="inline-flex h-10 items-center rounded-full border-2 border-white/10 px-4 text-xs font-bold text-on-surface">
             Link kopieren
           </span>
-          <span className="inline-flex h-10 items-center rounded-full border-2 border-slate-800 px-4 text-xs font-bold text-slate-100">
+          <span className="inline-flex h-10 items-center rounded-full border-2 border-white/10 px-4 text-xs font-bold text-on-surface">
             Oeffnen
           </span>
         </div>
@@ -907,13 +907,13 @@ function CheckoutShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-800/50 bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-8 text-slate-100 sm:px-6">
+    <div className="rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-8 text-on-surface sm:px-6">
       <div className="mx-auto max-w-xl">
         <div className="mb-4 text-center">
           <p className="text-sm font-bold uppercase tracking-widest text-primary">
             RBank Checkout
           </p>
-          <p className="mt-3 text-base text-slate-400">{merchantName}</p>
+          <p className="mt-3 text-base text-on-surface-variant">{merchantName}</p>
         </div>
         {children}
       </div>
@@ -930,8 +930,8 @@ function PinDots({ length, filled }: { length: number; filled: number }) {
           className={cn(
             "flex h-14 items-center justify-center rounded-2xl border text-2xl",
             index < filled
-              ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-              : "border-slate-800 bg-slate-950/70 text-slate-500",
+              ? "border-primary/40 bg-primary-container/10 text-primary"
+              : "border-white/10 bg-surface-container-high text-on-surface-variant/70",
           )}
         >
           {index < filled ? "*" : ""}
@@ -949,7 +949,7 @@ function PinKeypad() {
         key ? (
           <div
             key={`${key}-${index}`}
-            className="flex h-14 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-lg font-bold text-white"
+            className="flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-lg font-bold text-white"
           >
             {key}
           </div>
@@ -972,7 +972,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-slate-400">{label}</span>
+      <span className="text-on-surface-variant">{label}</span>
       <span className={negative ? "font-bold text-rose-200" : "font-bold text-white"}>
         {value}
       </span>
@@ -987,8 +987,8 @@ export function DemoCheckoutView() {
 
   return (
     <CheckoutShell merchantName={session.merchant.name}>
-      <div className="overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900/40 p-0">
-        <div className="relative overflow-hidden border-b border-slate-800 px-6 py-8 sm:px-8">
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-surface-container-high/40 p-0">
+        <div className="relative overflow-hidden border-b border-white/10 px-6 py-8 sm:px-8">
           <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-white/20" />
           <div className="pointer-events-none absolute -bottom-14 -left-14 h-28 w-28 rounded-full bg-white/10" />
           <div className="relative flex items-center gap-4">
@@ -999,10 +999,10 @@ export function DemoCheckoutView() {
               <p className="text-sm font-bold uppercase tracking-widest text-primary">
                 RBank Pay
               </p>
-              <h1 className="mt-3 text-4xl font-display font-black leading-[1.1] tracking-tight text-white sm:text-5xl">
+              <h1 className="mt-3 text-4xl  font-black leading-[1.1] tracking-tight text-white sm:text-5xl">
                 Bezahlung an {session.merchant.name}
               </h1>
-              <p className="mt-3 text-base leading-relaxed text-slate-400">
+              <p className="mt-3 text-base leading-relaxed text-on-surface-variant">
                 Sicherer Checkout mit PIN-Bestaetigung und direkter Belastung
                 deines RBank-Kontos.
               </p>
@@ -1011,19 +1011,19 @@ export function DemoCheckoutView() {
         </div>
 
         <div className="space-y-8 px-6 py-6 sm:px-8 sm:py-8">
-          <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+          <div className="rounded-xl border border-white/10 bg-surface-container-high/40 p-6">
             <p className="text-sm font-bold uppercase tracking-widest text-primary">Betrag</p>
-            <p className="mt-3 text-5xl font-display font-black tracking-tight text-white">
+            <p className="mt-3 text-5xl  font-black tracking-tight text-white">
               {formatEuroFromCents(session.amount)}
             </p>
-            <p className="mt-4 text-base leading-relaxed text-slate-400">
+            <p className="mt-4 text-base leading-relaxed text-on-surface-variant">
               {session.description}
             </p>
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
-              <p className="text-sm text-slate-400">Hallo, {user.displayName}</p>
+            <div className="rounded-xl border border-white/10 bg-surface-container-high/40 p-6">
+              <p className="text-sm text-on-surface-variant">Hallo, {user.displayName}</p>
               <div className="mt-4 space-y-3 text-sm">
                 <Row label="Kontostand" value={formatEuroFromCents(user.balanceCents)} />
                 <Row label="Belastung" value={`- ${formatEuroFromCents(session.amount)}`} negative />
@@ -1032,7 +1032,7 @@ export function DemoCheckoutView() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6">
+            <div className="space-y-4 rounded-xl border border-white/10 bg-surface-container-high/40 p-6">
               <p className="text-sm font-bold uppercase tracking-widest text-primary">
                 PIN bestaetigen
               </p>
@@ -1040,10 +1040,10 @@ export function DemoCheckoutView() {
               <PinKeypad />
             </div>
 
-            <div className="h-14 w-full rounded-2xl bg-emerald-400 text-center text-sm font-bold text-slate-950 inline-flex items-center justify-center">
+            <div className="h-14 w-full rounded-2xl bg-primary-container text-center text-sm font-bold text-on-surface inline-flex items-center justify-center">
               Jetzt bezahlen
             </div>
-            <p className="text-center text-sm font-semibold text-slate-400">
+            <p className="text-center text-sm font-semibold text-on-surface-variant">
               Abbrechen
             </p>
           </div>
@@ -1059,19 +1059,19 @@ export function DemoEmbeddedCheckoutView() {
   const [step, setStep] = useState<"user" | "pin">("user");
 
   return (
-    <div className="rounded-3xl border border-slate-800/50 bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-5 text-slate-100">
+    <div className="rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(52,211,153,0.18),_transparent_36%),linear-gradient(180deg,_#030712_0%,_#020617_100%)] px-4 py-5 text-on-surface">
       <div className="mx-auto flex min-h-[480px] max-w-md flex-col">
         <div className="mb-4 text-center">
           <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
-            <span className={cn("flex items-center gap-1.5", step === "user" || step === "pin" ? "text-white" : "text-slate-600")}>
-              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold", step === "user" || step === "pin" ? "border border-emerald-400 text-emerald-300" : "border border-slate-800 text-slate-600")}>
+            <span className={cn("flex items-center gap-1.5", step === "user" || step === "pin" ? "text-white" : "text-on-surface-variant/60")}>
+              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold", step === "user" || step === "pin" ? "border border-primary text-primary" : "border border-white/10 text-on-surface-variant/60")}>
                 •
               </span>
               Nutzer
             </span>
-            <span className={cn("h-px w-5", step === "pin" ? "bg-emerald-400/50" : "bg-slate-800")} />
-            <span className={cn("flex items-center gap-1.5", step === "pin" ? "text-white" : "text-slate-600")}>
-              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold", step === "pin" ? "border border-emerald-400 text-emerald-300" : "border border-slate-800 text-slate-600")}>
+            <span className={cn("h-px w-5", step === "pin" ? "bg-primary-container/50" : "bg-surface-container")} />
+            <span className={cn("flex items-center gap-1.5", step === "pin" ? "text-white" : "text-on-surface-variant/60")}>
+              <span className={cn("flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold", step === "pin" ? "border border-primary text-primary" : "border border-white/10 text-on-surface-variant/60")}>
                 •
               </span>
               PIN
@@ -1080,14 +1080,14 @@ export function DemoEmbeddedCheckoutView() {
           <p className="mt-2 truncate text-sm font-bold text-white">
             Kaffeehaus Central
           </p>
-          <p className="mt-0.5 text-2xl font-black tracking-tight text-emerald-300">
+          <p className="mt-0.5 text-2xl font-black tracking-tight text-primary">
             {formatEuroFromCents(690)}
           </p>
         </div>
 
         {step === "user" ? (
           <div className="flex flex-1 flex-col">
-            <div className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-600">
+            <div className="w-full rounded-lg border border-white/10 bg-surface-container-high px-3 py-2 text-sm text-on-surface-variant/60">
               Nutzer suchen
             </div>
             <div className="mt-2 flex-1 space-y-1.5">
@@ -1099,19 +1099,19 @@ export function DemoEmbeddedCheckoutView() {
                   className={cn(
                     "w-full rounded-lg border px-3 py-2 text-left transition",
                     selectedUserId === user.id
-                      ? "border-emerald-400/50 bg-emerald-400/10"
-                      : "border-slate-800 bg-slate-950/60 hover:border-slate-700",
+                      ? "border-primary-container/60 bg-primary-container/10"
+                      : "border-white/10 bg-surface-container-high hover:border-white/10",
                   )}
                 >
                   <p className="truncate text-sm font-semibold text-white">{user.displayName}</p>
-                  <p className="truncate text-[11px] text-slate-500">#{user.customerId}</p>
+                  <p className="truncate text-[11px] text-on-surface-variant/70">#{user.customerId}</p>
                 </button>
               ))}
             </div>
             <button
               type="button"
               onClick={() => setStep("pin")}
-              className="mt-3 w-full rounded-lg bg-emerald-400 py-2.5 text-sm font-bold text-slate-950"
+              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-on-surface"
             >
               Weiter
             </button>
@@ -1119,9 +1119,9 @@ export function DemoEmbeddedCheckoutView() {
         ) : (
           <div className="flex flex-1 flex-col">
             {selectedUser ? (
-              <div className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2">
+              <div className="rounded-lg border border-white/10 bg-surface-container-high px-3 py-2">
                 <p className="truncate text-sm font-semibold text-white">{selectedUser.displayName}</p>
-                <p className="truncate text-[11px] text-slate-500">#{selectedUser.customerId}</p>
+                <p className="truncate text-[11px] text-on-surface-variant/70">#{selectedUser.customerId}</p>
               </div>
             ) : null}
 
@@ -1132,8 +1132,8 @@ export function DemoEmbeddedCheckoutView() {
                   className={cn(
                     "flex h-10 w-8 items-center justify-center rounded-md border text-base font-bold",
                     index < 2
-                      ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
-                      : "border-slate-800 bg-slate-950/70 text-transparent",
+                      ? "border-primary-container/60 bg-primary-container/10 text-primary"
+                      : "border-white/10 bg-surface-container-high text-transparent",
                   )}
                 >
                   *
@@ -1147,7 +1147,7 @@ export function DemoEmbeddedCheckoutView() {
                   key ? (
                     <div
                       key={`${key}-${index}`}
-                      className="flex h-12 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-base font-bold text-white"
+                      className="flex h-12 items-center justify-center rounded-lg border border-white/10 bg-surface-container-high text-base font-bold text-white"
                     >
                       {key === "←" ? "⌫" : key}
                     </div>
@@ -1160,11 +1160,11 @@ export function DemoEmbeddedCheckoutView() {
             <button
               type="button"
               onClick={() => setStep("user")}
-              className="mt-3 w-full rounded-lg bg-emerald-400 py-2.5 text-sm font-bold text-slate-950"
+              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-on-surface"
             >
               Jetzt bezahlen
             </button>
-            <p className="mt-2 w-full text-center text-xs font-semibold text-slate-500">
+            <p className="mt-2 w-full text-center text-xs font-semibold text-on-surface-variant/70">
               Zurueck
             </p>
           </div>
@@ -1179,30 +1179,30 @@ export function DemoPaymentRequestView() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="space-y-8 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-6">
+      <div className="space-y-8 rounded-2xl border border-white/10 bg-surface-container-high/40 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <DemoEyebrow>Schritt {step === "amount" ? "1" : "2"}</DemoEyebrow>
-            <h2 className="mt-3 text-3xl font-display text-slate-100">
+            <h2 className="mt-3 text-3xl  text-on-surface">
               {step === "amount" ? "Betrag eingeben" : "PIN eingeben"}
             </h2>
           </div>
-          <span className="inline-flex h-12 items-center rounded-xl border-2 border-slate-800 px-6 text-sm font-bold text-slate-100">
+          <span className="inline-flex h-12 items-center rounded-xl border-2 border-white/10 px-6 text-sm font-bold text-on-surface">
             Zurück
           </span>
         </div>
 
         <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
-          <p className="text-sm text-slate-300">Betrag</p>
-          <p className="mt-2 text-4xl font-display text-primary">
+          <p className="text-sm text-on-surface-variant">Betrag</p>
+          <p className="mt-2 text-4xl  text-primary">
             {formatEuroFromCents(2500)}
           </p>
-          <p className="mt-4 text-sm text-slate-400">Empfänger</p>
-          <p className="mt-1 font-semibold text-slate-100">max@mustermann.de</p>
+          <p className="mt-4 text-sm text-on-surface-variant">Empfänger</p>
+          <p className="mt-1 font-semibold text-on-surface">max@mustermann.de</p>
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-200">
+          <p className="text-sm font-semibold text-on-surface">
             PIN des zahlenden Nutzers
           </p>
           <div className="grid grid-cols-4 gap-3">
@@ -1213,7 +1213,7 @@ export function DemoPaymentRequestView() {
                   "flex h-16 items-center justify-center rounded-2xl border text-3xl",
                   index < 3
                     ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-slate-800 bg-slate-900/70 text-slate-500",
+                    : "border-white/10 bg-surface-container-high text-on-surface-variant/70",
                 )}
               >
                 {index < 3 ? "*" : ""}
@@ -1226,15 +1226,15 @@ export function DemoPaymentRequestView() {
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((digit, index) => (
             <div
               key={`${digit}-${index}`}
-              className="flex h-16 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-2xl text-slate-100"
+              className="flex h-16 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-2xl text-on-surface"
             >
               {digit}
             </div>
           ))}
-          <div className="flex h-16 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-lg text-slate-100">
+          <div className="flex h-16 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-lg text-on-surface">
             Löschen
           </div>
-          <div className="flex h-16 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-2xl text-slate-100">
+          <div className="flex h-16 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-2xl text-on-surface">
             0
           </div>
           <div className="flex h-16 items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 text-2xl font-bold text-primary">
@@ -1242,7 +1242,7 @@ export function DemoPaymentRequestView() {
           </div>
         </div>
 
-        <div className="h-14 w-full rounded-xl bg-primary text-center text-sm font-bold text-background-dark inline-flex items-center justify-center glow-accent">
+        <div className="h-14 w-full rounded-xl bg-primary-container text-center text-sm font-bold text-white inline-flex items-center justify-center glow-effect">
           Zahlung bestaetigen
         </div>
       </div>
@@ -1253,44 +1253,44 @@ export function DemoPaymentRequestView() {
 export function DemoPublicDonationBoxView() {
   return (
     <div className="mx-auto max-w-xl space-y-8 px-4 py-10 sm:px-6">
-      <header className="relative overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900/40 px-6 py-10 sm:px-8">
+      <header className="relative overflow-hidden rounded-xl border border-white/10 bg-surface-container-high/40 px-6 py-10 sm:px-8">
         <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-white/20" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-white/10" />
         <div className="relative z-10">
           <p className="text-sm font-bold uppercase tracking-widest text-primary">
             RBank Spendenbox
           </p>
-          <h1 className="mt-4 text-5xl font-display font-black leading-[1.1] tracking-tight text-slate-100 sm:text-6xl">
+          <h1 className="mt-4 text-5xl  font-black leading-[1.1] tracking-tight text-on-surface sm:text-6xl">
             Tierheim Hoffnung
           </h1>
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate-400">
+          <p className="mt-4 max-w-lg text-lg leading-relaxed text-on-surface-variant">
             Spende direkt ueber diese Spendenbox mit deinem RBank-Konto und
             bestaetige die Zahlung spaeter sicher mit deiner PIN.
           </p>
         </div>
       </header>
 
-      <div className="space-y-6 rounded-xl border border-slate-800/50 bg-slate-900/40 p-6 sm:p-8">
+      <div className="space-y-6 rounded-xl border border-white/10 bg-surface-container-high/40 p-6 sm:p-8">
         <div>
           <p className="text-sm font-bold uppercase tracking-widest text-primary">
             Beitrag
           </p>
-          <div className="mt-3 w-full rounded-lg bg-slate-800 px-4 py-4 text-slate-100">
+          <div className="mt-3 w-full rounded-lg bg-surface-container px-4 py-4 text-on-surface">
             10,00
           </div>
-          <p className="mt-3 text-lg text-slate-400">10,00 €</p>
+          <p className="mt-3 text-lg text-on-surface-variant">10,00 €</p>
         </div>
 
         <div>
-          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-slate-400">
+          <p className="mb-3 text-sm font-bold uppercase tracking-widest text-on-surface-variant">
             Nachricht optional
           </p>
-          <div className="w-full rounded-lg bg-slate-800 px-4 py-4 text-slate-100">
+          <div className="w-full rounded-lg bg-surface-container px-4 py-4 text-on-surface">
             Spende fuer Tierheim Hoffnung
           </div>
         </div>
 
-        <div className="h-14 w-full rounded-full bg-primary text-center text-lg font-bold text-background-dark inline-flex items-center justify-center glow-accent">
+        <div className="h-14 w-full rounded-full bg-primary-container text-center text-lg font-bold text-white inline-flex items-center justify-center glow-effect">
           Mit RBank spenden
         </div>
       </div>
@@ -1315,8 +1315,8 @@ type AdminTabId = (typeof adminTabs)[number]["id"];
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
+    <div className="rounded-2xl border border-white/10 bg-surface-container-high p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.28em] text-on-surface-variant/70">
         {label}
       </p>
       <p className="mt-3 text-2xl font-black text-white">{value}</p>
@@ -1326,12 +1326,12 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 
 function KpiCard({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-950/80 p-5">
-      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
+    <div className="glass-card mesh-gradient rounded-xl p-5">
+      <p className="font-label-sm text-label-sm text-on-surface-variant/70">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-black text-white">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{sub}</p>
+      <p className="font-headline-md text-headline-md mt-2 text-on-surface">{value}</p>
+      <p className="mt-1 text-xs text-on-surface-variant/70">{sub}</p>
     </div>
   );
 }
@@ -1347,7 +1347,7 @@ function AdminTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-800 text-left text-xs text-slate-500">
+          <tr className="border-b border-white/10 text-left text-xs text-on-surface-variant/70">
             {headers.map((header) => (
               <th key={header} className="px-6 py-3 font-semibold uppercase tracking-wider">
                 {header}
@@ -1375,7 +1375,7 @@ export function DemoAdminView() {
 
   return (
     <div className="space-y-8">
-      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 p-1">
+      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-surface-container-high p-1">
         {adminTabs.map((tab) => (
           <button
             key={tab.id}
@@ -1384,8 +1384,8 @@ export function DemoAdminView() {
             className={cn(
               "rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
               activeTab === tab.id
-                ? "bg-primary text-background-dark"
-                : "text-slate-400 hover:text-slate-100",
+                ? "bg-primary-container text-white"
+                : "text-on-surface-variant hover:text-on-surface",
             )}
           >
             {tab.label}
@@ -1431,25 +1431,25 @@ export function DemoAdminView() {
       {activeTab === "customers" ? (
         <div className="space-y-6">
           <DemoCard>
-            <h2 className="mb-4 text-2xl font-display font-bold">Kunden</h2>
+            <h2 className="mb-4 text-2xl  font-bold">Kunden</h2>
             <AdminTable headers={["Kunde", "Konten"]}>
               {demoAdminUsers.map((user) => (
-                <tr key={user.customerId} className="border-b border-slate-800/50 last:border-0">
+                <tr key={user.customerId} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-100">{user.displayName}</div>
-                    <div className="text-xs text-slate-400">
+                    <div className="font-bold text-on-surface">{user.displayName}</div>
+                    <div className="text-xs text-on-surface-variant">
                       #{user.customerId} · {user.stackUserId}
                     </div>
                   </td>
                   <td className="px-6 py-4 font-bold">
                     <div className="flex items-center gap-2">
                       <span>{formatEuroFromCents(user.balanceCents)}</span>
-                      <span className="text-emerald-400">✓</span>
+                      <span className="text-primary">✓</span>
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-on-surface-variant">
                       berechnet: {formatEuroFromCents(user.computedBalanceCents)}
                     </div>
-                    <div className="text-xs text-sky-300">
+                    <div className="text-xs text-secondary">
                       {(user.airBalance / 100).toLocaleString("de-DE")} AIR
                     </div>
                   </td>
@@ -1459,17 +1459,17 @@ export function DemoAdminView() {
           </DemoCard>
 
           <DemoCard>
-            <h2 className="mb-4 text-2xl font-display font-bold">Verlauf</h2>
+            <h2 className="mb-4 text-2xl  font-bold">Verlauf</h2>
             <AdminTable headers={["Datum", "Beschreibung", "Betrag"]}>
               {demoAdminTransactions.map((transaction) => (
-                <tr key={transaction.id} className="border-b border-slate-800/50 last:border-0">
+                <tr key={transaction.id} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">{formatDate(transaction.date)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                      <span className="rounded-full bg-surface-container px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                         {sourceLabel(transaction.source)}
                       </span>
-                      <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                      <span className="rounded-full bg-surface-container px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                         {transaction.currency}
                       </span>
                       <span>{transaction.description}</span>
@@ -1478,7 +1478,7 @@ export function DemoAdminView() {
                   <td
                     className={cn(
                       "px-6 py-4 font-bold",
-                      transaction.type === "INCOMING" ? "text-primary" : "text-red-400",
+                      transaction.type === "INCOMING" ? "text-primary" : "text-error",
                     )}
                   >
                     {transaction.type === "INCOMING" ? "+ " : "- "}
@@ -1495,13 +1495,13 @@ export function DemoAdminView() {
 
       {activeTab === "festgeld" ? (
         <DemoCard>
-          <h2 className="mb-4 text-2xl font-display font-bold">Festgeldkonten</h2>
+          <h2 className="mb-4 text-2xl  font-bold">Festgeldkonten</h2>
           <AdminTable headers={["Kunde", "Bezeichnung", "Betrag", "Zins", "Laufzeit", "Status"]}>
             {demoAdminFestgeldAccounts.map((account) => (
-              <tr key={account.id} className="border-b border-slate-800/50 last:border-0">
+              <tr key={account.id} className="border-b border-white/10 last:border-0">
                 <td className="px-6 py-4">
                   <div className="font-bold">{account.user.displayName}</div>
-                  <div className="text-xs text-slate-400">#{account.user.customerId}</div>
+                  <div className="text-xs text-on-surface-variant">#{account.user.customerId}</div>
                 </td>
                 <td className="px-6 py-4">{account.label}</td>
                 <td className="px-6 py-4">{formatEuroFromCents(account.amount)}</td>
@@ -1513,7 +1513,7 @@ export function DemoAdminView() {
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge status={account.status} />
                     {account.status === "UNLOCKED" ? (
-                      <span className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-background-dark">
+                      <span className="rounded-lg bg-primary-container px-3 py-1 text-xs font-bold text-white">
                         Auszahlen
                       </span>
                     ) : null}
@@ -1528,13 +1528,13 @@ export function DemoAdminView() {
       {activeTab === "loans" ? (
         <div className="space-y-6">
           <DemoCard>
-            <h2 className="mb-4 text-2xl font-display font-bold">Kreditprodukte</h2>
+            <h2 className="mb-4 text-2xl  font-bold">Kreditprodukte</h2>
             <AdminTable headers={["Name", "Betrag", "Laufzeit", "Zins", "Gebühr", "Aktiv"]}>
               {demoAdminLoanProducts.map((product) => (
-                <tr key={product.id} className="border-b border-slate-800/50 last:border-0">
+                <tr key={product.id} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-100">{product.name}</div>
-                    <div className="text-xs text-slate-400">{product.description}</div>
+                    <div className="font-bold text-on-surface">{product.name}</div>
+                    <div className="text-xs text-on-surface-variant">{product.description}</div>
                   </td>
                   <td className="px-6 py-4">
                     {formatEuroFromCents(product.minAmount)} – {formatEuroFromCents(product.maxAmount)}
@@ -1555,15 +1555,15 @@ export function DemoAdminView() {
           </DemoCard>
 
           <DemoCard>
-            <h2 className="mb-4 text-2xl font-display font-bold">
+            <h2 className="mb-4 text-2xl  font-bold">
               Kreditanfragen ({demoAdminPendingLoans.length})
             </h2>
             <AdminTable headers={["Kunde", "Produkt", "Betrag", "Zins", "Laufzeit", "Rate", "Aktion"]}>
               {demoAdminPendingLoans.map((loan) => (
-                <tr key={loan.id} className="border-b border-slate-800/50 last:border-0">
+                <tr key={loan.id} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-100">{loan.user.displayName}</div>
-                    <div className="text-xs text-slate-400">#{loan.user.customerId}</div>
+                    <div className="font-bold text-on-surface">{loan.user.displayName}</div>
+                    <div className="text-xs text-on-surface-variant">#{loan.user.customerId}</div>
                   </td>
                   <td className="px-6 py-4">{loan.loanProduct.name}</td>
                   <td className="px-6 py-4 font-bold">{formatEuroFromCents(loan.amount)}</td>
@@ -1572,10 +1572,10 @@ export function DemoAdminView() {
                   <td className="px-6 py-4">{formatEuroFromCents(loan.monthlyPayment)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <span className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-background-dark">
+                      <span className="rounded-lg bg-primary-container px-3 py-1 text-xs font-bold text-white">
                         Genehmigen
                       </span>
-                      <span className="rounded-lg bg-red-500/15 px-3 py-1 text-xs font-bold text-red-300">
+                      <span className="rounded-lg bg-error-container/40 px-3 py-1 text-xs font-bold text-error">
                         Ablehnen
                       </span>
                     </div>
@@ -1586,34 +1586,34 @@ export function DemoAdminView() {
           </DemoCard>
 
           <DemoCard>
-            <h2 className="mb-4 text-2xl font-display font-bold">
+            <h2 className="mb-4 text-2xl  font-bold">
               Aktive Kredite ({demoAdminActiveLoans.length})
             </h2>
             <AdminTable headers={["Kunde", "Produkt", "Betrag", "Rest", "Zins", "Rate", "Fortschritt"]}>
               {demoAdminActiveLoans.map((loan) => (
-                <tr key={loan.id} className="border-b border-slate-800/50 last:border-0">
+                <tr key={loan.id} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-100">{loan.user.displayName}</div>
-                    <div className="text-xs text-slate-400">#{loan.user.customerId}</div>
+                    <div className="font-bold text-on-surface">{loan.user.displayName}</div>
+                    <div className="text-xs text-on-surface-variant">#{loan.user.customerId}</div>
                   </td>
                   <td className="px-6 py-4">{loan.loanProduct.name}</td>
                   <td className="px-6 py-4">{formatEuroFromCents(loan.amount)}</td>
-                  <td className="px-6 py-4 font-bold text-amber-400">
+                  <td className="px-6 py-4 font-bold text-tertiary">
                     {formatEuroFromCents(loan.remainingAmount)}
                   </td>
                   <td className="px-6 py-4">{loan.interestRate.toFixed(2)}%</td>
                   <td className="px-6 py-4">{formatEuroFromCents(loan.monthlyPayment)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-700">
+                      <div className="h-2 w-20 overflow-hidden rounded-full bg-surface-container-highest">
                         <div
-                          className="h-full rounded-full bg-primary"
+                          className="h-full rounded-full bg-primary-container"
                           style={{
                             width: `${Math.min(100, ((loan.amount - loan.remainingAmount) / loan.amount) * 100)}%`,
                           }}
                         />
                       </div>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-on-surface-variant">
                         {Math.round(((loan.amount - loan.remainingAmount) / loan.amount) * 100)}%
                       </span>
                     </div>
@@ -1631,8 +1631,8 @@ export function DemoAdminView() {
             <DemoCard key={merchant.id}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-display font-bold">{merchant.name}</h2>
-                  <p className="mt-1 font-mono text-xs text-slate-400">{merchant.merchantId}</p>
+                  <h2 className="text-xl  font-bold">{merchant.name}</h2>
+                  <p className="mt-1 font-mono text-xs text-on-surface-variant">{merchant.merchantId}</p>
                   {merchant.ownerName ? (
                     <p className="mt-1 text-xs text-primary">
                       Besitzer: {merchant.ownerName} (#{merchant.ownerCustomerId})
@@ -1647,24 +1647,24 @@ export function DemoAdminView() {
               </div>
               <AdminTable headers={["Status", "Beschreibung", "Betrag", "Kunde", "Datum", "Aktion"]}>
                 {merchant.sessions.map((session) => (
-                  <tr key={session.token} className="border-b border-slate-800/50 last:border-0">
+                  <tr key={session.token} className="border-b border-white/10 last:border-0">
                     <td className="px-6 py-4">
                       <StatusBadge status={session.status} />
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-slate-100">{session.description}</div>
-                      <div className="text-xs text-slate-400">{formatDate(session.createdAt)}</div>
+                      <div className="font-semibold text-on-surface">{session.description}</div>
+                      <div className="text-xs text-on-surface-variant">{formatDate(session.createdAt)}</div>
                     </td>
                     <td className="px-6 py-4">{formatEuroFromCents(session.amount)}</td>
                     <td className="px-6 py-4">{session.customerName ?? "—"}</td>
                     <td className="px-6 py-4">{formatDate(session.createdAt)}</td>
                     <td className="px-6 py-4">
                       {session.status === "COMPLETED" ? (
-                        <span className="rounded-lg bg-sky-500/15 px-3 py-1 text-xs font-bold text-sky-300">
+                        <span className="rounded-lg bg-secondary-container/25 px-3 py-1 text-xs font-bold text-secondary">
                           Refund
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-500">—</span>
+                        <span className="text-xs text-on-surface-variant/70">—</span>
                       )}
                     </td>
                   </tr>
@@ -1678,27 +1678,27 @@ export function DemoAdminView() {
       {activeTab === "aircoin" ? (
         <div className="grid gap-8 lg:grid-cols-12">
           <DemoCard className="space-y-4 lg:col-span-4">
-            <h2 className="text-2xl font-display font-bold">AirCoin</h2>
+            <h2 className="text-2xl  font-bold">AirCoin</h2>
             <MetricCard label="Im Umlauf" value={`${(airInCirculation / 100).toLocaleString("de-DE")} AIR`} />
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-on-surface-variant">
               AIR ist intern, bankweit buchbar und nicht in Echtgeld
               konvertierbar.
             </p>
           </DemoCard>
 
           <DemoCard className="lg:col-span-8">
-            <h2 className="mb-4 text-2xl font-display font-bold">AIR-Transaktionen</h2>
+            <h2 className="mb-4 text-2xl  font-bold">AIR-Transaktionen</h2>
             <AdminTable headers={["Datum", "Kunde", "Beschreibung", "Betrag"]}>
               {demoAdminAirTransactions.map((transaction) => (
-                <tr key={transaction.id} className="border-b border-slate-800/50 last:border-0">
+                <tr key={transaction.id} className="border-b border-white/10 last:border-0">
                   <td className="px-6 py-4">{formatDate(transaction.date)}</td>
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-slate-100">{transaction.customerName}</div>
-                    <div className="text-xs text-slate-400">#{transaction.customerId}</div>
+                    <div className="font-semibold text-on-surface">{transaction.customerName}</div>
+                    <div className="text-xs text-on-surface-variant">#{transaction.customerId}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-sky-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-200">
+                      <span className="rounded-full bg-secondary-container/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-secondary">
                         {transaction.source}
                       </span>
                       <span>{transaction.description}</span>
@@ -1707,7 +1707,7 @@ export function DemoAdminView() {
                   <td
                     className={cn(
                       "px-6 py-4 font-bold",
-                      transaction.type === "INCOMING" ? "text-primary" : "text-red-400",
+                      transaction.type === "INCOMING" ? "text-primary" : "text-error",
                     )}
                   >
                     {transaction.type === "INCOMING" ? "+ " : "- "}

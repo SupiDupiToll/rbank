@@ -14,10 +14,10 @@ export default async function BeantragenPage() {
   return (
     <div className="space-y-8 pb-8">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
+        <p className="font-label-sm text-label-sm text-primary">
           Kredit beantragen
         </p>
-        <h2 className="mt-2 text-3xl font-display text-slate-100">
+        <h2 className="font-headline-md text-headline-md mt-2 text-on-surface">
           Neuen Kredit
         </h2>
       </div>

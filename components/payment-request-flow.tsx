@@ -101,40 +101,31 @@ export function PaymentRequestFlow({
     return (
       <Card className="max-w-xl space-y-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Abschluss
-          </p>
-          <h1 className="mt-3 text-3xl font-display text-slate-100">
+          <p className="font-label-sm text-label-sm text-primary">Abschluss</p>
+          <h1 className="font-headline-md text-headline-md mt-3 text-on-surface">
             Zahlung erfolgreich
           </h1>
         </div>
-        <p className="text-slate-300">
+        <div className="glass-card mesh-gradient flex h-16 w-16 items-center justify-center">
+          <span className="material-symbols-outlined text-3xl text-primary">
+            check_circle
+          </span>
+        </div>
+        <p className="text-on-surface-variant">
           {formatEuroFromCents(amountCents)} wurde dem angegebenen Konto
           belastet und {recipientEmail} gutgeschrieben.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href={returnUrl as Route}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-bold text-background-dark transition-colors hover:bg-primary/80 sm:w-auto"
+            className="bg-primary-container glow-effect flex h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-colors hover:opacity-90 sm:w-auto"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-              />
-            </svg>
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
             Zurück
           </Link>
           <Link
             href="/dashboard"
-            className="flex h-14 w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800 px-6 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 sm:w-auto"
+            className="glass-card flex h-14 w-full items-center justify-center rounded-full px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container sm:w-auto"
           >
             Zum Dashboard
           </Link>
@@ -148,20 +139,18 @@ export function PaymentRequestFlow({
       {step === "amount" ? (
         <Card className="space-y-8">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              Schritt 1
-            </p>
-            <h1 className="mt-3 text-3xl font-display text-slate-100">
+            <p className="font-label-sm text-label-sm text-primary">Schritt 1</p>
+            <h1 className="font-headline-md text-headline-md mt-3 text-on-surface">
               Betrag eingeben
             </h1>
-            <p className="mt-3 text-slate-300">
+            <p className="mt-3 text-on-surface-variant">
               Lege zuerst fest, wie viel an {recipientEmail} gesendet werden
               soll.
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-200">
+            <label className="font-label-sm text-label-sm text-on-surface">
               Betrag in EUR
             </label>
             <Input
@@ -172,18 +161,18 @@ export function PaymentRequestFlow({
             />
           </div>
 
-          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
-            <p className="text-sm text-slate-300">Vorschau</p>
-            <p className="mt-2 text-4xl font-display text-primary">
+          <div className="glass-card mesh-gradient rounded-xl p-5">
+            <p className="text-sm text-on-surface-variant">Vorschau</p>
+            <p className="font-balance-display text-balance-display mt-2 text-primary">
               {isAmountValid ? formatEuroFromCents(amountCents) : "0,00 €"}
             </p>
           </div>
 
-          {message ? <p className="text-sm text-red-300">{message}</p> : null}
+          {message ? <p className="text-sm text-error">{message}</p> : null}
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
-              className="h-14 w-full rounded-xl text-sm sm:w-auto sm:flex-1"
+              className="h-14 w-full text-sm sm:w-auto sm:flex-1"
               onClick={goToPinStep}
               type="button"
             >
@@ -191,21 +180,9 @@ export function PaymentRequestFlow({
             </Button>
             <Link
               href={returnUrl as Route}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-6 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 sm:w-auto"
+              className="glass-card flex h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container sm:w-auto"
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                />
-              </svg>
+              <span className="material-symbols-outlined text-lg">arrow_back</span>
               Zum Dashboard
             </Link>
           </div>
@@ -214,10 +191,8 @@ export function PaymentRequestFlow({
         <Card className="space-y-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-                Schritt 2
-              </p>
-              <h2 className="mt-3 text-3xl font-display text-slate-100">
+              <p className="font-label-sm text-label-sm text-primary">Schritt 2</p>
+              <h2 className="font-headline-md text-headline-md mt-3 text-on-surface">
                 PIN eingeben
               </h2>
             </div>
@@ -230,19 +205,19 @@ export function PaymentRequestFlow({
             </Button>
           </div>
 
-          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-5">
-            <p className="text-sm text-slate-300">Betrag</p>
-            <p className="mt-2 text-4xl font-display text-primary">
+          <div className="glass-card mesh-gradient rounded-xl p-5">
+            <p className="text-sm text-on-surface-variant">Betrag</p>
+            <p className="font-balance-display text-balance-display mt-2 text-primary">
               {formatEuroFromCents(amountCents)}
             </p>
-            <p className="mt-4 text-sm text-slate-400">Empfänger</p>
-            <p className="mt-1 font-semibold text-slate-100">
+            <p className="mt-4 text-sm text-on-surface-variant">Empfänger</p>
+            <p className="mt-1 font-semibold text-on-surface">
               {recipientEmail}
             </p>
           </div>
 
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-slate-200">
+            <p className="font-label-sm text-label-sm text-on-surface">
               PIN des zahlenden Nutzers
             </p>
             <div className="grid grid-cols-4 gap-3">
@@ -253,8 +228,8 @@ export function PaymentRequestFlow({
                   className={cn(
                     "flex h-16 items-center justify-center rounded-2xl border text-3xl",
                     index < pin.length
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : "border-slate-800 bg-slate-900/70 text-slate-500",
+                      ? "border-primary/40 bg-primary-container/20 text-primary"
+                      : "border-white/10 bg-surface-container-high/70 text-on-surface-variant",
                   )}
                 >
                   {index < pin.length ? "*" : ""}
@@ -304,10 +279,10 @@ export function PaymentRequestFlow({
             </Button>
           </div>
 
-          {message ? <p className="text-sm text-red-300">{message}</p> : null}
+          {message ? <p className="text-sm text-error">{message}</p> : null}
 
           <Button
-            className="w-full rounded-xl"
+            className="w-full"
             disabled={isSubmitting || pin.length !== PIN_LENGTH}
             onClick={handleConfirm}
             type="button"
