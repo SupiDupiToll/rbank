@@ -442,16 +442,24 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
               Öffne die VIMPay App, um deine Karte zu verwalten.
             </p>
           </div>
-          <a
+          <button
             className="inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-sm font-semibold text-white transition-transform hover:opacity-90 active:scale-95"
-            href="shortcuts://run-shortcut?name=vimpay"
-            rel="noreferrer"
+            onClick={() => {
+              if (!window.localStorage.getItem("vimpay-shortcut-opened")) {
+                window.localStorage.setItem("vimpay-shortcut-opened", "1");
+                window.location.href =
+                  "https://www.icloud.com/shortcuts/b95fec0194cd41b58b5e52c3d4ed6acf";
+                return;
+              }
+              window.location.href = "shortcuts://run-shortcut?name=vimpay";
+            }}
+            type="button"
           >
             <span className="material-symbols-outlined text-lg">
               open_in_new
             </span>
             Zur VIMPay App
-          </a>
+          </button>
         </section>
       )}
     </div>
