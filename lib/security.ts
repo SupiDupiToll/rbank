@@ -19,6 +19,12 @@ export function sanitizePlainText(value: string, maxLength: number) {
 }
 
 export const customerIdSchema = z.string().regex(/^\d{8}$/);
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email()
+  .max(320);
 export const cuidSchema = z.string().regex(/^c[a-z0-9]{24,}$/i);
 export const amountCentsSchema = z.number().int().positive().max(MAX_AMOUNT_CENTS);
 export const pinSchema = z

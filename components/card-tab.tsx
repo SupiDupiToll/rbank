@@ -181,245 +181,227 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
         </p>
       </header>
 
-      {/* Mastercard */}
-      <div
-        className={cn(
-          "relative mx-auto flex aspect-[1.586] w-full max-w-[380px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
-          !cardActive && "opacity-90 saturate-50",
-        )}
-      >
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="font-body-md text-body-md font-semibold tracking-[0.25em] text-white">
-              RBank
-            </p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
-              Prepaid Mastercard
-            </p>
-          </div>
-          <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-label-sm text-label-sm text-white">
-            <span
-              className={cn("h-2 w-2 rounded-full", {
-                "animate-pulse bg-emerald-400": cardActive,
-                "bg-slate-400": !cardActive,
-              })}
-            />
-            {cardActive ? "Aktiv" : "Noch nicht aktiviert"}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="material-symbols-outlined text-xl text-white/30">
-            contactless
-          </span>
-          <div className="flex h-8 w-11 items-center justify-center rounded-md border border-white/15 bg-[#c9a227]/70">
-            <div className="grid h-5 w-8 grid-cols-2 gap-[3px]">
-              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <p className="font-mono text-lg tracking-[0.2em] text-white sm:text-xl">
-            {card?.cardLastFour ? `•••• ${card.cardLastFour}` : "•••• ••••"}
-          </p>
-          {card?.phoneNumber ? (
-            <p className="mt-2 text-xs text-white/50">{card.phoneNumber}</p>
-          ) : null}
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-              Prepaid
-            </p>
-            <span className="flex items-center">
-              <span className="h-7 w-7 rounded-full bg-[#EB001B] mix-blend-screen" />
-              <span className="-ml-3 h-7 w-7 rounded-full bg-[#F79E1B] mix-blend-screen" />
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Top up */}
-      {cardActive ? (
-        <section className="glass-card space-y-4 rounded-2xl p-6">
-          {step === "amount" ? (
-            <>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-headline-md text-headline-md text-on-surface">
-                    Kartenguthaben aufladen
-                  </h3>
-                  <p className="mt-2 text-sm text-on-surface-variant">
-                    Der Betrag wird von deinem Girokonto abgebucht.
-                  </p>
-                </div>
-              </div>
-
+      {/* Mastercard + top up (only when card is active) */}
+      {cardActive && (
+        <>
+          <div
+            className={cn(
+              "relative mx-auto flex aspect-[1.586] w-full max-w-[380px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
+            )}
+          >
+            <div className="flex items-start justify-between">
               <div>
-                <label className="font-label-sm text-label-sm text-on-surface-variant">
-                  Betrag
-                </label>
-                <div className="mt-2 flex items-center gap-3">
-                  <Input
-                    className="h-14 text-lg"
-                    inputMode="decimal"
-                    min="0"
-                    placeholder="0,00"
-                    step="0.01"
-                    value={amount}
-                    onChange={(event) => {
-                      setAmount(event.target.value);
-                      setMessage("");
-                    }}
-                    type="number"
-                  />
-                  <span className="text-2xl font-semibold text-on-surface">€</span>
+                <p className="font-body-md text-body-md font-semibold tracking-[0.25em] text-white">
+                  RBank
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  Prepaid Mastercard
+                </p>
+              </div>
+              <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-label-sm text-label-sm text-white">
+                <span
+                  className={cn("h-2 w-2 rounded-full", {
+                    "animate-pulse bg-emerald-400": cardActive,
+                    "bg-slate-400": !cardActive,
+                  })}
+                />
+                {cardActive ? "Aktiv" : "Noch nicht aktiviert"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="material-symbols-outlined text-xl text-white/30">
+                contactless
+              </span>
+              <div className="flex h-8 w-11 items-center justify-center rounded-md border border-white/15 bg-[#c9a227]/70">
+                <div className="grid h-5 w-8 grid-cols-2 gap-[3px]">
+                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-on-surface-variant">Verfuegbares Guthaben</span>
-                <span className="font-semibold text-on-surface">
-                  {formatEuroFromCents(balanceCents)}
+            <div>
+              <p className="font-mono text-lg tracking-[0.2em] text-white sm:text-xl">
+                {card?.cardLastFour ? `•••• ${card.cardLastFour}` : "•••• ••••"}
+              </p>
+              {card?.phoneNumber ? (
+                <p className="mt-2 text-xs text-white/50">{card.phoneNumber}</p>
+              ) : null}
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+                  Prepaid
+                </p>
+                <span className="flex items-center">
+                  <span className="h-7 w-7 rounded-full bg-[#EB001B] mix-blend-screen" />
+                  <span className="-ml-3 h-7 w-7 rounded-full bg-[#F79E1B] mix-blend-screen" />
                 </span>
               </div>
+            </div>
+          </div>
 
-              <Button
-                className="w-full"
-                disabled={busy || !isAmountValid}
-                onClick={goToPinStep}
-                type="button"
-              >
-                Weiter zur PIN
-              </Button>
-            </>
-          ) : (
-            <>
-              <div className="flex items-start justify-between gap-4">
+          {/* Top up */}
+          <section className="glass-card space-y-4 rounded-2xl p-6">
+            {step === "amount" ? (
+              <>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-headline-md text-headline-md text-on-surface">
+                      Kartenguthaben aufladen
+                    </h3>
+                    <p className="mt-2 text-sm text-on-surface-variant">
+                      Der Betrag wird von deinem Girokonto abgebucht.
+                    </p>
+                  </div>
+                </div>
+
                 <div>
-                  <p className="font-label-sm text-label-sm text-primary">
-                    Schritt 2
-                  </p>
-                  <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
-                    PIN eingeben
-                  </h3>
-                  <p className="mt-2 text-sm text-on-surface-variant">
-                    Bestaetige die Aufladung über {formattedAmount} mit deiner
-                    4-stelligen PIN.
-                  </p>
+                  <label className="font-label-sm text-label-sm text-on-surface-variant">
+                    Betrag
+                  </label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <Input
+                      className="h-14 text-lg"
+                      inputMode="decimal"
+                      min="0"
+                      placeholder="0,00"
+                      step="0.01"
+                      value={amount}
+                      onChange={(event) => {
+                        setAmount(event.target.value);
+                        setMessage("");
+                      }}
+                      type="number"
+                    />
+                    <span className="text-2xl font-semibold text-on-surface">€</span>
+                  </div>
                 </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-on-surface-variant">Verfuegbares Guthaben</span>
+                  <span className="font-semibold text-on-surface">
+                    {formatEuroFromCents(balanceCents)}
+                  </span>
+                </div>
+
                 <Button
-                  disabled={busy}
-                  onClick={() => {
-                    setStep("amount");
-                    setPin("");
-                    setMessage("");
-                  }}
+                  className="w-full"
+                  disabled={busy || !isAmountValid}
+                  onClick={goToPinStep}
                   type="button"
-                  variant="outline"
                 >
-                  Zurueck
+                  Weiter zur PIN
                 </Button>
-              </div>
-
-              <div className="space-y-3">
-                <p className="font-label-sm text-label-sm text-on-surface">
-                  Deine PIN
-                </p>
-                <div className="grid grid-cols-4 gap-3">
-                  {Array.from({ length: PIN_LENGTH }, (_, index) => (
-                    <div
-                      key={index}
-                      aria-hidden="true"
-                      className={cn(
-                        "flex h-16 items-center justify-center rounded-2xl border text-3xl",
-                        index < pin.length
-                          ? "border-primary/40 bg-primary-container/20 text-primary"
-                          : "glass-card text-on-surface-variant",
-                      )}
-                    >
-                      {index < pin.length ? "*" : "•"}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {keypadDigits.map((digit) => (
+              </>
+            ) : (
+              <>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-label-sm text-label-sm text-primary">
+                      Schritt 2
+                    </p>
+                    <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
+                      PIN eingeben
+                    </h3>
+                    <p className="mt-2 text-sm text-on-surface-variant">
+                      Bestaetige die Aufladung über {formattedAmount} mit deiner
+                      4-stelligen PIN.
+                    </p>
+                  </div>
                   <Button
-                    key={digit}
-                    className="h-16 rounded-2xl text-2xl"
                     disabled={busy}
-                    onClick={() => handleDigitInput(digit)}
+                    onClick={() => {
+                      setStep("amount");
+                      setPin("");
+                      setMessage("");
+                    }}
                     type="button"
                     variant="outline"
                   >
-                    {digit}
+                    Zurueck
                   </Button>
-                ))}
-                <Button
-                  className="h-16 rounded-2xl text-sm"
-                  disabled={busy}
-                  onClick={handleBackspace}
-                  type="button"
-                  variant="outline"
-                >
-                  Loeschen
-                </Button>
-                <Button
-                  className="h-16 rounded-2xl text-2xl"
-                  disabled={busy}
-                  onClick={() => handleDigitInput("0")}
-                  type="button"
-                  variant="outline"
-                >
-                  0
-                </Button>
-                <Button
-                  className="h-16 rounded-2xl"
-                  disabled={busy}
-                  onClick={handleTopup}
-                  type="button"
-                >
-                  {busy ? "Lade auf…" : "Bestaetigen"}
-                </Button>
-              </div>
-            </>
-          )}
+                </div>
 
-          {message ? (
-            <p className="text-center text-sm text-error">{message}</p>
-          ) : null}
-          {success ? (
-            <p className="text-center text-sm text-secondary">{success}</p>
-          ) : null}
-        </section>
-      ) : (
-        <section className="glass-card space-y-3 rounded-2xl p-6 text-center">
-          <span className="material-symbols-outlined mx-auto text-4xl text-primary">
-            credit_card
-          </span>
-          <h3 className="font-headline-md text-headline-md text-on-surface">
-            Karte beantragen
-          </h3>
-          <p className="text-sm text-on-surface-variant">
-            Beantrage deine Prepaid Mastercard direkt unten im Formular. Nach der
-            Aktivierung erscheinen hier die Kartendaten und du kannst dein
-            Guthaben aufladen.
-          </p>
-        </section>
+                <div className="space-y-3">
+                  <p className="font-label-sm text-label-sm text-on-surface">
+                    Deine PIN
+                  </p>
+                  <div className="grid grid-cols-4 gap-3">
+                    {Array.from({ length: PIN_LENGTH }, (_, index) => (
+                      <div
+                        key={index}
+                        aria-hidden="true"
+                        className={cn(
+                          "flex h-16 items-center justify-center rounded-2xl border text-3xl",
+                          index < pin.length
+                            ? "border-primary/40 bg-primary-container/20 text-primary"
+                            : "glass-card text-on-surface-variant",
+                        )}
+                      >
+                        {index < pin.length ? "*" : "•"}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {keypadDigits.map((digit) => (
+                    <Button
+                      key={digit}
+                      className="h-16 rounded-2xl text-2xl"
+                      disabled={busy}
+                      onClick={() => handleDigitInput(digit)}
+                      type="button"
+                      variant="outline"
+                    >
+                      {digit}
+                    </Button>
+                  ))}
+                  <Button
+                    className="h-16 rounded-2xl text-sm"
+                    disabled={busy}
+                    onClick={handleBackspace}
+                    type="button"
+                    variant="outline"
+                  >
+                    Loeschen
+                  </Button>
+                  <Button
+                    className="h-16 rounded-2xl text-2xl"
+                    disabled={busy}
+                    onClick={() => handleDigitInput("0")}
+                    type="button"
+                    variant="outline"
+                  >
+                    0
+                  </Button>
+                  <Button
+                    className="h-16 rounded-2xl"
+                    disabled={busy}
+                    onClick={handleTopup}
+                    type="button"
+                  >
+                    {busy ? "Lade auf…" : "Bestaetigen"}
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {message ? (
+              <p className="text-center text-sm text-error">{message}</p>
+            ) : null}
+            {success ? (
+              <p className="text-center text-sm text-secondary">{success}</p>
+            ) : null}
+          </section>
+        </>
       )}
 
       {/* External card flow */}
       {!cardActive ? (
         <section>
-          <div className="mb-4">
-            <p className="font-label-sm text-label-sm text-on-surface-variant">
-              Karte beantragen
-            </p>
-          </div>
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white">
             <iframe
               allow="clipboard-read; clipboard-write; fullscreen"

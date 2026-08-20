@@ -16,11 +16,13 @@ import { rateLimitPolicies } from "@/lib/rate-limit";
 import {
   amountCentsSchema,
   customerIdSchema,
+  emailSchema,
   pinSchema,
   safeTextSchema,
 } from "@/lib/security";
 import { verifyPin } from "@/lib/pin";
 import { refreshWalletPassForUser } from "@/lib/wallet/service";
+import { stackServerApp } from "@/stack/server";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -44,13 +46,20 @@ export async function POST(request: Request) {
 
     const body = await parseJsonBody(
       request,
-      z.object({
-        recipientCustomerId: customerIdSchema,
-        amount: amountCentsSchema,
-        currency: z.nativeEnum(TransactionCurrency),
-        description: safeTextSchema(120),
-        pin: pinSchema,
-      }),
+      z
+        .object({
+          recipientCustomerId: customerIdSchema.optional(),
+          recipientEmail: emailSchema.optional(),
+          amount: amountCentsSchema,
+          currency: z.nativeEnum(TransactionCurrency),
+          description: safeTextSchema(120),
+          pin: pinSchema,
+        })
+        .refine(
+          (value) =>
+            Boolean(value.recipientCustomerId) !== Boolean(value.recipientEmail),
+          "Empfänger angeben.",
+        ),
     );
 
     const isPinValid = await verifyPin(body.pin, user.paymentPinHash);
@@ -62,11 +71,27 @@ export async function POST(request: Request) {
       );
     }
 
-    if (body.recipientCustomerId === user.customerId) {
+    const recipient = await resolveRecipient(body.recipientCustomerId, body.recipientEmail);
+
+    if (!recipient) {
+      return NextResponse.json(
+        { error: "Empfaenger wurde nicht gefunden." },
+        { status: 404 },
+      );
+    }
+
+    if (recipient.role !== "CUSTOMER") {
+      return NextResponse.json(
+        { error: "Empfaenger wurde nicht gefunden." },
+        { status: 404 },
+      );
+    }
+
+    if (recipient.id === user.id) {
       return NextResponse.json(
         {
           error:
-            "Ueberweisungen an die eigene Kundennummer sind nicht erlaubt.",
+            "Ueberweisungen an das eigene Konto sind nicht erlaubt.",
         },
         { status: 400 },
       );
@@ -77,15 +102,6 @@ export async function POST(request: Request) {
     const transferResult = await prisma
       .$transaction(
         async (tx) => {
-          const recipient = await tx.user.findUnique({
-            where: { customerId: body.recipientCustomerId },
-            select: { id: true, customerId: true, role: true },
-          });
-
-          if (!recipient || recipient.role !== "CUSTOMER") {
-            throw new Error("TRANSFER_REJECTED");
-          }
-
           const outgoingTransaction = await tx.transaction.create({
             data: {
               userId: user.id,
@@ -136,14 +152,7 @@ export async function POST(request: Request) {
           return { outgoingTransaction, incomingTransaction };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      )
-      .catch((error: unknown) => {
-        if (error instanceof Error && error.message === "TRANSFER_REJECTED") {
-          return null;
-        }
-
-        throw error;
-      });
+      );
 
     if (!transferResult) {
       return NextResponse.json(
@@ -164,4 +173,34 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   });
+}
+
+async function resolveRecipient(
+  recipientCustomerId: string | undefined,
+  recipientEmail: string | undefined,
+) {
+  if (recipientCustomerId) {
+    return prisma.user.findUnique({
+      where: { customerId: recipientCustomerId },
+      select: { id: true, customerId: true, role: true },
+    });
+  }
+
+  if (recipientEmail) {
+    const stackUsers = await stackServerApp.listUsers({ query: recipientEmail });
+    const matchedStackUser = stackUsers.find(
+      (stackUser) => stackUser.primaryEmail?.trim().toLowerCase() === recipientEmail,
+    );
+
+    if (!matchedStackUser) {
+      return null;
+    }
+
+    return prisma.user.findUnique({
+      where: { stackUserId: matchedStackUser.id },
+      select: { id: true, customerId: true, role: true },
+    });
+  }
+
+  return null;
 }

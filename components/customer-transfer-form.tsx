@@ -25,8 +25,9 @@ export function CustomerTransferForm({
   const router = useRouter();
   const [step, setStep] = useState<"form" | "pin">("form");
   const [currency, setCurrency] = useState<TransferCurrency>("EUR");
-  const [recipientCustomerId, setRecipientCustomerId] = useState("");
+  const [recipientInput, setRecipientInput] = useState("");
   const [resolvedRecipient, setResolvedRecipient] = useState("");
+  const [resolvedCustomerId, setResolvedCustomerId] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [pin, setPin] = useState("");
@@ -48,12 +49,16 @@ export function CustomerTransferForm({
       : formatEuroFromCents(amountCents);
 
   useEffect(() => {
-    const normalizedCustomerId = recipientCustomerId.trim();
+    const normalized = recipientInput.trim();
 
     setResolvedRecipient("");
+    setResolvedCustomerId("");
     setMessage("");
 
-    if (!/^\d{8}$/.test(normalizedCustomerId)) {
+    const isCustomerId = /^\d{8}$/.test(normalized);
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+
+    if (!isCustomerId && !isEmail) {
       return;
     }
 
@@ -64,12 +69,13 @@ export function CustomerTransferForm({
 
       try {
         const response = await fetch(
-          `/api/customer/resolve/${normalizedCustomerId}`,
+          `/api/customer/resolve/${encodeURIComponent(normalized)}`,
           {
             signal: controller.signal,
           },
         );
         const data = (await response.json()) as {
+          customerId?: string;
           displayName?: string;
           error?: string;
         };
@@ -80,6 +86,7 @@ export function CustomerTransferForm({
         }
 
         setResolvedRecipient(data.displayName ?? "");
+        setResolvedCustomerId(data.customerId ?? "");
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setMessage("Empfänger konnte nicht geprüft werden.");
@@ -92,14 +99,10 @@ export function CustomerTransferForm({
     void resolveRecipient();
 
     return () => controller.abort();
-  }, [recipientCustomerId]);
+  }, [recipientInput]);
 
   function goToPinStep() {
-    if (
-      !/^\d{8}$/.test(recipientCustomerId.trim()) ||
-      !isAmountValid ||
-      !description.trim()
-    ) {
+    if (!resolvedCustomerId || !isAmountValid || !description.trim()) {
       setMessage("Bitte alle Felder korrekt ausfüllen.");
       return;
     }
@@ -142,7 +145,7 @@ export function CustomerTransferForm({
           [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
         },
         body: JSON.stringify({
-          recipientCustomerId: recipientCustomerId.trim(),
+          recipientCustomerId: resolvedCustomerId,
           amount: amountCents,
           currency,
           description: description.trim(),
@@ -158,8 +161,9 @@ export function CustomerTransferForm({
       }
 
       setIsSuccessful(true);
-      setRecipientCustomerId("");
+      setRecipientInput("");
       setResolvedRecipient("");
+      setResolvedCustomerId("");
       setAmount("");
       setDescription("");
       setPin("");
@@ -246,7 +250,7 @@ export function CustomerTransferForm({
                 Empfänger
               </p>
               <p className="mt-1 font-semibold text-on-surface">
-                {resolvedRecipient || recipientCustomerId}
+                {resolvedRecipient || recipientInput}
               </p>
             </div>
           </div>
@@ -379,16 +383,13 @@ export function CustomerTransferForm({
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-on-surface">
-          Empfänger-Kundennummer
+          Empfänger-Kundennummer oder E-Mail
         </label>
         <Input
-          inputMode="numeric"
-          maxLength={8}
-          onChange={(event) =>
-            setRecipientCustomerId(event.target.value.replace(/\D/g, ""))
-          }
-          placeholder="47291836"
-          value={recipientCustomerId}
+          inputMode="email"
+          onChange={(event) => setRecipientInput(event.target.value)}
+          placeholder="47291836 oder max@example.com"
+          value={recipientInput}
         />
         <p className="flex min-h-5 items-center gap-1 text-xs text-on-surface-variant">
           {isResolvingRecipient ? (
@@ -404,7 +405,7 @@ export function CustomerTransferForm({
               Empfänger: {resolvedRecipient}
             </>
           ) : (
-            "8-stellige Kundennummer eingeben"
+            "Kundennummer oder E-Mail-Adresse eingeben"
           )}
         </p>
       </div>
