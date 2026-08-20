@@ -8,6 +8,9 @@ const serverEnvSchema = z.object({
   NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
   STACK_SECRET_SERVER_KEY: z.string().min(32),
   STACK_ADMIN_EMAILS: z.string().min(1),
+  CARD_WEBHOOK_SECRET: z.string().min(1).optional(),
+  CARD_IFRAME_URL: z.string().url().optional(),
+  CARD_NOTIFY_EMAIL: z.string().email().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 });
@@ -21,6 +24,9 @@ const parsedEnv = serverEnvSchema.safeParse({
     process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
   STACK_SECRET_SERVER_KEY: process.env.STACK_SECRET_SERVER_KEY,
   STACK_ADMIN_EMAILS: process.env.STACK_ADMIN_EMAILS,
+  CARD_WEBHOOK_SECRET: process.env.CARD_WEBHOOK_SECRET,
+  CARD_IFRAME_URL: process.env.CARD_IFRAME_URL,
+  CARD_NOTIFY_EMAIL: process.env.CARD_NOTIFY_EMAIL,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
@@ -53,3 +59,5 @@ if (
 
 export const env = parsedEnv.data;
 export const appOrigin = new URL(env.APP_URL).origin;
+export const cardIframeUrl = env.CARD_IFRAME_URL ?? "https://vvvpdvda1t.zite.so/";
+export const cardNotifyEmail = env.CARD_NOTIFY_EMAIL ?? "rui@sdtoll.de";

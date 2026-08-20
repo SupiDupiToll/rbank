@@ -18,6 +18,7 @@ const sourceLabels = {
   OVERDRAFT_INTEREST: "Dispozins",
   LOAN_DISBURSEMENT: "Kredit",
   LOAN_REPAYMENT: "Rate",
+  CARD_TOPUP: "Karte",
 } as const;
 
 function sourceIcon(source: string): string {
@@ -36,6 +37,8 @@ function sourceIcon(source: string): string {
       return "payments";
     case "OVERDRAFT_INTEREST":
       return "percent";
+    case "CARD_TOPUP":
+      return "credit_card";
     default:
       return "receipt_long";
   }

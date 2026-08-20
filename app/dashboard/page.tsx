@@ -5,11 +5,6 @@ import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
-import { FamilyCard } from "@/components/family-card";
-import {
-  getWalletPassRecord,
-  getWalletPassStatusForUser,
-} from "@/lib/wallet/service";
 
 const sourceLabels: Record<string, string> = {
   ADMIN: "Bank",
@@ -20,6 +15,7 @@ const sourceLabels: Record<string, string> = {
   OVERDRAFT_INTEREST: "Dispozins",
   LOAN_DISBURSEMENT: "Kredit",
   LOAN_REPAYMENT: "Rate",
+  CARD_TOPUP: "Karte",
 };
 
 function sourceIcon(source: string): string {
@@ -38,6 +34,8 @@ function sourceIcon(source: string): string {
       return "payments";
     case "OVERDRAFT_INTEREST":
       return "percent";
+    case "CARD_TOPUP":
+      return "credit_card";
     default:
       return "receipt_long";
   }
@@ -110,11 +108,6 @@ export default async function DashboardPage() {
   const loanDebt = loans._sum.remainingAmount ?? 0;
   const totalCents = eurBalanceCents + savingsTotal - loanDebt;
 
-  const [walletStatus, walletPass] = await Promise.all([
-    getWalletPassStatusForUser(user.id),
-    getWalletPassRecord(user.id),
-  ]);
-
   const moreActions = [
     {
       href: "/dashboard/kredite" as Route,
@@ -125,6 +118,11 @@ export default async function DashboardPage() {
       href: "/dashboard/haendler" as Route,
       label: "Händler",
       icon: "storefront",
+    },
+    {
+      href: "/dashboard/karte" as Route,
+      label: "Karte",
+      icon: "credit_card",
     },
     ...(user.showDonationBoxesList
       ? [
@@ -308,19 +306,6 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-      </section>
-
-      {/* Family Card */}
-      <section>
-        <p className="font-label-sm text-label-sm mb-4 text-on-surface-variant">
-          Family Card
-        </p>
-        <FamilyCard
-          initialStatus={walletStatus}
-          initialCardLastFour={walletPass?.cardLastFour ?? null}
-          balanceCents={eurBalanceCents}
-          airBalance={airBalance}
-        />
       </section>
 
       {/* Quick Access */}

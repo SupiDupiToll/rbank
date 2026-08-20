@@ -27,6 +27,7 @@ const baseNavigation: NavItem[] = [
   { href: "/dashboard/transactions", label: "Transaktionen", icon: "receipt_long" },
   { href: "/dashboard/kredite", label: "Kredite", icon: "request_quote" },
   { href: "/dashboard/festgeld", label: "Festgeld", icon: "savings" },
+  { href: "/dashboard/karte", label: "Karte", icon: "credit_card" },
   { href: "/dashboard/haendler", label: "Händler", icon: "storefront" },
 ];
 

@@ -19,7 +19,7 @@ export type AdminTransaction = {
   amount: number;
   currency: "EUR" | "AIR";
   description: string;
-  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND" | "OVERDRAFT_INTEREST" | "LOAN_DISBURSEMENT" | "LOAN_REPAYMENT";
+  source: "ADMIN" | "TRANSFER" | "CHECKOUT" | "DONATION" | "REFUND" | "OVERDRAFT_INTEREST" | "LOAN_DISBURSEMENT" | "LOAN_REPAYMENT" | "CARD_TOPUP";
   transferId: string | null;
   date: Date;
 };

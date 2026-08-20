@@ -30,7 +30,7 @@ const appCsp = [
   "font-src 'self' data:",
   "manifest-src 'self'",
   "connect-src 'self' https://api.stack-auth.com https://*.stack-auth.com https://*.built-with-stack-auth.com wss://api.stack-auth.com wss://*.stack-auth.com",
-  "frame-src 'self' https://*.stack-auth.com https://*.built-with-stack-auth.com",
+  "frame-src 'self' https://*.stack-auth.com https://*.built-with-stack-auth.com https://vvvpdvda1t.zite.so",
   "worker-src 'self' blob:",
 ].join("; ");
 

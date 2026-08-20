@@ -28,6 +28,22 @@ model User {
   loans                 Loan[]
   merchants             Merchant[]
   walletPass            WalletPass?
+  card                  Card?
+}
+
+model Card {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  email        String
+  phoneNumber  String
+  cardLastFour String     @map("card_last_four")
+  status       CardStatus @default(ACTIVE)
+  balanceCents Int        @default(0) @map("balance_cents")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  activatedAt  DateTime?  @map("activated_at")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model DonationBox {
@@ -279,6 +295,7 @@ enum TransactionSource {
   OVERDRAFT_INTEREST
   LOAN_DISBURSEMENT
   LOAN_REPAYMENT
+  CARD_TOPUP
 }
 
 enum LoanStatus {
@@ -315,4 +332,9 @@ enum WalletPassStatus {
   ACTIVE
   LOCKED
   REVOKED
+}
+
+enum CardStatus {
+  PENDING
+  ACTIVE
 }
