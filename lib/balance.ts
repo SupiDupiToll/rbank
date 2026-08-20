@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents } from "@/lib/banking";
+import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 export async function syncUserBalance(userId: string) {
   const transactions = await prisma.transaction.findMany({
@@ -11,6 +12,7 @@ export async function syncUserBalance(userId: string) {
     where: { id: userId },
     data: { balanceCents },
   });
+  await refreshWalletPassForUser(userId);
 }
 
 export async function syncAllUserBalances() {

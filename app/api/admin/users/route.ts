@@ -19,22 +19,26 @@ export async function GET(request: Request) {
       where: { role: "CUSTOMER" },
       orderBy: { createdAt: "asc" },
       select: {
+        id: true,
         customerId: true,
         displayName: true,
         stackUserId: true,
         balanceCents: true,
+        isBlocked: true,
         transactions: { select: { type: true, amount: true, currency: true } }
       }
     });
 
     return NextResponse.json({
       users: users.map((customer) => ({
+        id: customer.id,
         customerId: customer.customerId,
         displayName: customer.displayName,
         stackUserId: customer.stackUserId,
         balanceCents: customer.balanceCents,
         computedBalanceCents: calculateBalanceCents(customer.transactions, "EUR"),
-        airBalance: calculateBalanceCents(customer.transactions, "AIR")
+        airBalance: calculateBalanceCents(customer.transactions, "AIR"),
+        isBlocked: customer.isBlocked,
       }))
     });
   });

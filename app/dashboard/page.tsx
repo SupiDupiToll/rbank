@@ -5,6 +5,11 @@ import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { FamilyCard } from "@/components/family-card";
+import {
+  getWalletPassRecord,
+  getWalletPassStatusForUser,
+} from "@/lib/wallet/service";
 
 function HomeIcon() {
   return (
@@ -231,6 +236,11 @@ export default async function DashboardPage() {
   const savingsTotal = savings._sum.amount ?? 0;
   const loanDebt = loans._sum.remainingAmount ?? 0;
   const totalCents = eurBalanceCents + savingsTotal - loanDebt;
+
+  const [walletStatus, walletPass] = await Promise.all([
+    getWalletPassStatusForUser(user.id),
+    getWalletPassRecord(user.id),
+  ]);
   const mainActions = baseQuickActions.filter((a) => a.label !== "Einstellungen");
   const settingsAction = baseQuickActions.find((a) => a.label === "Einstellungen");
   const quickActions = [
@@ -319,6 +329,19 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Family Card */}
+      <div>
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
+          Family Card
+        </p>
+        <FamilyCard
+          initialStatus={walletStatus}
+          initialCardLastFour={walletPass?.cardLastFour ?? null}
+          balanceCents={eurBalanceCents}
+          airBalance={airBalance}
+        />
       </div>
 
       {/* Quick Actions */}

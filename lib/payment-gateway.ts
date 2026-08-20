@@ -7,6 +7,7 @@ import {
   decryptWebhookSecret,
   expireStalePaymentSession,
 } from "@/lib/payments";
+import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
   include: {
@@ -385,6 +386,15 @@ export async function completeCheckoutPayment(token: string, userId: string) {
 
   void sendMerchantWebhook(token);
   await clearCheckoutCookie(token);
+
+  const affectedUserIds = [
+    result.session.userId,
+    result.session.recipientUserId,
+    result.session.merchant.user?.id ?? null,
+  ].filter((id): id is string => Boolean(id));
+  for (const affectedUserId of new Set(affectedUserIds)) {
+    void refreshWalletPassForUser(affectedUserId);
+  }
 
   return result;
 }

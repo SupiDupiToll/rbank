@@ -20,6 +20,7 @@ import {
   safeTextSchema,
 } from "@/lib/security";
 import { verifyPin } from "@/lib/pin";
+import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -121,6 +122,7 @@ export async function POST(request: Request) {
             },
             select: {
               id: true,
+              userId: true,
               type: true,
               amount: true,
               description: true,
@@ -149,6 +151,9 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    void refreshWalletPassForUser(user.id);
+    void refreshWalletPassForUser(transferResult.incomingTransaction.userId);
 
     return NextResponse.json(
       {

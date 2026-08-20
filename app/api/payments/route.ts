@@ -15,6 +15,7 @@ import { verifyPin } from "@/lib/pin";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { amountCentsSchema, cuidSchema, pinSchema } from "@/lib/security";
+import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -136,6 +137,9 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    void refreshWalletPassForUser(body.payerUserId);
+    void refreshWalletPassForUser(recipient.id);
 
     return NextResponse.json(
       {

@@ -17,6 +17,7 @@ model User {
   paymentPinHash        String?           @map("payment_pin_hash")
   pinLockedUntil        DateTime?         @map("pin_locked_until")
   showDonationBoxesList Boolean           @default(false) @map("show_donation_boxes_list")
+  isBlocked             Boolean           @default(false) @map("is_blocked")
   balanceCents          Int               @default(0) @map("balance_cents")
   donationBoxes         DonationBox[]
   festgeld              FestgeldAccount[]
@@ -26,6 +27,7 @@ model User {
   transactions          Transaction[]
   loans                 Loan[]
   merchants             Merchant[]
+  walletPass            WalletPass?
 }
 
 model DonationBox {
@@ -143,6 +145,50 @@ model PinAttempt {
 
   @@index([userId, createdAt])
   @@index([ip, createdAt])
+}
+
+model WalletPass {
+  id                     String                 @id @default(cuid())
+  userId                 String                 @unique
+  accountId              String
+  serialNumber           String                 @unique
+  passTypeIdentifier     String
+  authenticationTokenHash String                @map("authentication_token_hash")
+  cardLastFour           String                 @map("card_last_four")
+  status                 WalletPassStatus       @default(ACTIVE)
+  contentHash            String?                @map("content_hash")
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  revokedAt              DateTime?              @map("revoked_at")
+  lastPushUpdate         DateTime?              @map("last_push_update")
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registrations          WalletRegistration[]
+
+  @@index([userId])
+  @@index([status, updatedAt])
+}
+
+model WalletDevice {
+  id                       String                 @id @default(cuid())
+  deviceLibraryIdentifier  String                 @unique @map("device_library_identifier")
+  pushToken                String?                @map("push_token")
+  createdAt                DateTime               @default(now()) @map("created_at")
+  updatedAt                DateTime               @updatedAt @map("updated_at")
+  registrations            WalletRegistration[]
+
+  @@index([deviceLibraryIdentifier])
+}
+
+model WalletRegistration {
+  id        String       @id @default(cuid())
+  passId    String       @map("pass_id")
+  deviceId  String       @map("device_id")
+  createdAt DateTime     @default(now()) @map("created_at")
+  pass      WalletPass   @relation(fields: [passId], references: [id], onDelete: Cascade)
+  device    WalletDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([passId, deviceId])
+  @@index([deviceId])
 }
 
 model LoanProduct {
@@ -263,4 +309,10 @@ enum PaymentSessionStatus {
   CANCELLED
   EXPIRED
   REFUNDED
+}
+
+enum WalletPassStatus {
+  ACTIVE
+  LOCKED
+  REVOKED
 }

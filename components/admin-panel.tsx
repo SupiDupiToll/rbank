@@ -197,6 +197,40 @@ export function AdminPanel({
     }
   }, [selectedCustomerId]);
 
+  const toggleUserBlocked = useCallback(
+    async (user: AdminUserRow, blocked: boolean) => {
+      try {
+        const response = await fetch(`/api/admin/users/${user.id}/block`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
+          },
+          body: JSON.stringify({ blocked }),
+        });
+
+        if (!response.ok) {
+          const data = (await response.json()) as { error?: string };
+          toast(data.error ?? "Kunde konnte nicht gesperrt werden.", "error");
+          return;
+        }
+
+        setUsers((currentUsers) =>
+          currentUsers.map((entry) =>
+            entry.id === user.id ? { ...entry, isBlocked: blocked } : entry,
+          ),
+        );
+        toast(
+          blocked ? "Kunde gesperrt." : "Kunde entsperrt.",
+          "success",
+        );
+      } catch {
+        toast("Kunde konnte nicht gesperrt werden.", "error");
+      }
+    },
+    [],
+  );
+
   const loadTransactions = useCallback(async (customerId: string) => {
     const response = await fetch(`/api/admin/users/${customerId}/transactions`);
     if (!response.ok) return;
@@ -638,6 +672,20 @@ export function AdminPanel({
                       <div className="text-xs text-slate-400">
                         #{user.customerId} · {user.stackUserId}
                       </div>
+                      <button
+                        className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                          user.isBlocked
+                            ? "bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                            : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                        }`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void toggleUserBlocked(user, !user.isBlocked);
+                        }}
+                        type="button"
+                      >
+                        {user.isBlocked ? "🔒 Gesperrt" : "Sperren"}
+                      </button>
                     </Td>
                     <Td className="font-bold">
                       <div className="flex items-center gap-2">

@@ -3,12 +3,14 @@ import { calculateBalanceCents, getBalancesByCurrency } from "@/lib/banking";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
 
 export type AdminUserRow = {
+  id: string;
   customerId: string;
   displayName: string | null;
   stackUserId: string;
   balanceCents: number;
   computedBalanceCents: number;
   airBalance: number;
+  isBlocked: boolean;
 };
 
 export type AdminTransaction = {
@@ -113,7 +115,8 @@ export async function getAdminDashboardData() {
         displayName: true,
         stackUserId: true,
         balanceCents: true,
-        transactions: { select: { type: true, amount: true, currency: true } }
+        isBlocked: true,
+        transactions: { select: { type: true, amount: true, currency: true } },
       }
     }),
     prisma.festgeldAccount.findMany({
@@ -175,12 +178,14 @@ export async function getAdminDashboardData() {
   ]);
 
   const mappedUsers = users.map((customer) => ({
+    id: customer.id,
     customerId: customer.customerId,
     displayName: customer.displayName,
     stackUserId: customer.stackUserId,
     balanceCents: customer.balanceCents,
     computedBalanceCents: calculateBalanceCents(customer.transactions, "EUR"),
-    airBalance: calculateBalanceCents(customer.transactions, "AIR")
+    airBalance: calculateBalanceCents(customer.transactions, "AIR"),
+    isBlocked: customer.isBlocked,
   }));
 
   const selectedUserId = users[0]?.id;
