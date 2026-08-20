@@ -11,6 +11,7 @@ import {
 } from "@/lib/api-helpers";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { amountCentsSchema, safeTextSchema } from "@/lib/security";
+import { invalidateGlobalData } from "@/lib/cache";
 
 export async function GET(request: Request) {
   return safeRoute(async () => {
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
     }
 
     const product = await prisma.loanProduct.create({ data: body });
+
+    invalidateGlobalData();
 
     return NextResponse.json({ product }, { status: 201 });
   });

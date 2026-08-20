@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { getFestgeldDurationDays } from "@/lib/festgeld";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -63,6 +64,9 @@ export async function POST(request: Request, context: Params) {
         payoutTransactionId: null
       }
     });
+
+    invalidateUserData(user.id);
+    invalidateGlobalData();
 
     return NextResponse.json({ account: renewedAccount });
   });

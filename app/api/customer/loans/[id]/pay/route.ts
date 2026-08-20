@@ -12,6 +12,7 @@ import { makePayment } from "@/lib/loan";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -44,6 +45,8 @@ export async function POST(request: Request, context: Params) {
 
     try {
       const result = await makePayment(loanId, user.id);
+      invalidateUserData(user.id);
+      invalidateGlobalData();
       return NextResponse.json(result);
     } catch (err) {
       if (err instanceof Error) {

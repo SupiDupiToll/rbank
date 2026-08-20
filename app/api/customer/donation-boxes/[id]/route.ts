@@ -15,6 +15,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema, MAX_NAME_LENGTH } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -67,6 +68,9 @@ export async function DELETE(request: Request, context: Params) {
       where: { id: donationBox.id },
       data: { isActive: false },
     });
+
+    invalidateGlobalData();
+    invalidateUserData(user.id);
 
     return NextResponse.json({ success: true, id: donationBox.id });
   });
@@ -146,6 +150,9 @@ export async function PATCH(request: Request, context: Params) {
         },
       },
     });
+
+    invalidateGlobalData();
+    invalidateUserData(user.id);
 
     return NextResponse.json({
       donationBox: {

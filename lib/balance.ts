@@ -3,11 +3,21 @@ import { calculateBalanceCents } from "@/lib/banking";
 import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 export async function syncUserBalance(userId: string) {
+  const current = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { balanceCents: true },
+  });
+
   const transactions = await prisma.transaction.findMany({
     where: { userId, currency: "EUR" },
     select: { type: true, amount: true },
   });
   const balanceCents = calculateBalanceCents(transactions, "EUR");
+
+  if (current?.balanceCents === balanceCents) {
+    return;
+  }
+
   await prisma.user.update({
     where: { id: userId },
     data: { balanceCents },

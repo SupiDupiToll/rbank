@@ -5,6 +5,7 @@ import { formatGermanDate } from "@/lib/date";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   PENDING: {
@@ -30,29 +31,40 @@ export default async function KreditePage() {
   const user = await getCurrentAppUser();
   if (!user) return null;
 
-  await settleCustomerAccounting(user.id);
+  const { loans, nextPayment } = await remember(
+    pageCacheKeys.krediteList(user.id),
+    CACHE_TTL.page,
+    async () => {
+      await settleCustomerAccounting(user.id);
 
-  const loans = await prisma.loan.findMany({
-    where: { userId: user.id },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-    include: {
-      loanProduct: { select: { name: true } },
+      const loans = await prisma.loan.findMany({
+        where: { userId: user.id },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+        include: {
+          loanProduct: { select: { name: true } },
+        },
+      });
+
+      const activeLoans = loans.filter((l) => l.status === "ACTIVE");
+      const nextPayment =
+        activeLoans.length > 0
+          ? await prisma.loanPayment.findFirst({
+              where: {
+                loanId: { in: activeLoans.map((l) => l.id) },
+                status: "SCHEDULED",
+              },
+              orderBy: { scheduledDate: "asc" },
+              include: { loan: { include: { loanProduct: { select: { name: true } } } } },
+            })
+          : null;
+
+      return { loans, nextPayment };
     },
-  });
+  );
 
   const activeLoans = loans.filter((l) => l.status === "ACTIVE");
   const totalRemaining = activeLoans.reduce((sum, l) => sum + l.remainingAmount, 0);
   const totalBorrowed = activeLoans.reduce((sum, l) => sum + l.amount, 0);
-  const nextPayment = activeLoans.length > 0
-    ? await prisma.loanPayment.findFirst({
-        where: {
-          loanId: { in: activeLoans.map((l) => l.id) },
-          status: "SCHEDULED",
-        },
-        orderBy: { scheduledDate: "asc" },
-        include: { loan: { include: { loanProduct: { select: { name: true } } } } },
-      })
-    : null;
 
   return (
     <div className="space-y-8 pb-8">

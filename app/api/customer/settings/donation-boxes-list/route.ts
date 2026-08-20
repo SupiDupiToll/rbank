@@ -10,6 +10,7 @@ import {
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
+import { invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -41,6 +42,8 @@ export async function POST(request: Request) {
       data: { showDonationBoxesList: body.enabled },
       select: { showDonationBoxesList: true },
     });
+
+    invalidateUserData(user.id);
 
     return NextResponse.json({
       enabled: updatedUser.showDonationBoxesList,

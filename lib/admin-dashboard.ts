@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { calculateBalanceCents, getBalancesByCurrency } from "@/lib/banking";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 export type AdminUserRow = {
   id: string;
@@ -99,9 +100,10 @@ export type AdminMerchant = {
 };
 
 export async function getAdminDashboardData() {
-  await settleCustomerAccounting();
+  return remember(pageCacheKeys.admin(), CACHE_TTL.admin, async () => {
+    await settleCustomerAccounting();
 
-  const now = new Date();
+    const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -301,4 +303,5 @@ export async function getAdminDashboardData() {
       };
     }),
   };
+  });
 }

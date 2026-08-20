@@ -8,6 +8,7 @@ import {
   calculateFestgeldInterestCents,
 } from "@/lib/festgeld";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 export default async function FestgeldPage() {
   const user = await getCurrentAppUser();
@@ -16,12 +17,18 @@ export default async function FestgeldPage() {
     return null;
   }
 
-  await settleCustomerAccounting(user.id);
+  const festgeldAccounts = await remember(
+    pageCacheKeys.festgeldList(user.id),
+    CACHE_TTL.page,
+    async () => {
+      await settleCustomerAccounting(user.id);
 
-  const festgeldAccounts = await prisma.festgeldAccount.findMany({
-    where: { userId: user.id },
-    orderBy: [{ endDate: "asc" }, { createdAt: "desc" }],
-  });
+      return prisma.festgeldAccount.findMany({
+        where: { userId: user.id },
+        orderBy: [{ endDate: "asc" }, { createdAt: "desc" }],
+      });
+    },
+  );
 
   const totalAmount = festgeldAccounts
     .filter((a) => a.status !== "PAID_OUT")

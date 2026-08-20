@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { safeRoute } from "@/lib/api-helpers";
 import { env } from "@/lib/env";
 import { stackServerApp } from "@/stack/server";
+import { invalidateUserData } from "@/lib/cache";
 
 const cardWebhookBodySchema = z.object({
   event: z.enum(["card_activated", "card_updated"]),
@@ -96,6 +97,8 @@ export async function POST(request: Request) {
         balanceCents: true,
       },
     });
+
+    invalidateUserData(rbankUser.id);
 
     return NextResponse.json({ ok: true, card });
   });

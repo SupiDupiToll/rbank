@@ -12,6 +12,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { merchantIdSchema, safeTextSchema } from "@/lib/security";
+import { invalidateGlobalData } from "@/lib/cache";
 
 type Params = {
   params: Promise<{ merchantId: string }>;
@@ -77,6 +78,8 @@ export async function PATCH(request: Request, context: Params) {
         userId: ownerUserId,
       },
     });
+
+    invalidateGlobalData();
 
     return NextResponse.json({ merchant });
   });

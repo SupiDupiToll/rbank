@@ -30,8 +30,10 @@ export function calculateOverdraftInterestCents(balanceCents: number) {
 
 async function settleOverdraftInterestForUser(userId: string) {
   await prisma.$transaction(async (tx) => {
+    const todayStart = getUtcDayStart(new Date());
+
     const transactions = await tx.transaction.findMany({
-      where: { userId, currency: "EUR" },
+      where: { userId, currency: "EUR", date: { lt: todayStart } },
       orderBy: [{ date: "asc" }, { createdAt: "asc" }],
       select: {
         type: true,
@@ -45,7 +47,6 @@ async function settleOverdraftInterestForUser(userId: string) {
       return;
     }
 
-    const todayStart = getUtcDayStart(new Date());
     const lastDayToSettle = addUtcDays(todayStart, -1);
     const settledDays = new Set<number>();
 

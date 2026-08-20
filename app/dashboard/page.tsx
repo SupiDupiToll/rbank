@@ -5,6 +5,7 @@ import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 const sourceLabels: Record<string, string> = {
   ADMIN: "Bank",
@@ -72,36 +73,41 @@ export default async function DashboardPage() {
     return null;
   }
 
-  await settleCustomerAccounting(user.id);
+  const [transactions, savings, loans, recentTransactions] = await remember(
+    pageCacheKeys.overview(user.id),
+    CACHE_TTL.overview,
+    async () => {
+      await settleCustomerAccounting(user.id);
 
-  const [transactions, savings, loans, recentTransactions] =
-    await Promise.all([
-      prisma.transaction.findMany({
-        where: { userId: user.id },
-        select: { type: true, amount: true, currency: true },
-      }),
-      prisma.festgeldAccount.aggregate({
-        where: { userId: user.id },
-        _sum: { amount: true },
-      }),
-      prisma.loan.aggregate({
-        where: { userId: user.id, status: "ACTIVE" },
-        _sum: { remainingAmount: true },
-      }),
-      prisma.transaction.findMany({
-        where: { userId: user.id },
-        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-        take: 5,
-        select: {
-          description: true,
-          type: true,
-          amount: true,
-          currency: true,
-          source: true,
-          date: true,
-        },
-      }),
-    ]);
+      return Promise.all([
+        prisma.transaction.findMany({
+          where: { userId: user.id },
+          select: { type: true, amount: true, currency: true },
+        }),
+        prisma.festgeldAccount.aggregate({
+          where: { userId: user.id },
+          _sum: { amount: true },
+        }),
+        prisma.loan.aggregate({
+          where: { userId: user.id, status: "ACTIVE" },
+          _sum: { remainingAmount: true },
+        }),
+        prisma.transaction.findMany({
+          where: { userId: user.id },
+          orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+          take: 5,
+          select: {
+            description: true,
+            type: true,
+            amount: true,
+            currency: true,
+            source: true,
+            date: true,
+          },
+        }),
+      ]);
+    },
+  );
 
   const { eurBalanceCents, airBalance } = getBalancesByCurrency(transactions);
   const savingsTotal = savings._sum.amount ?? 0;

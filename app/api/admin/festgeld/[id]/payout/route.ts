@@ -12,6 +12,7 @@ import { payoutUnlockedFestgeldAccount } from "@/lib/festgeld";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -49,6 +50,8 @@ export async function POST(request: Request, context: Params) {
     }
 
     const result = await payoutUnlockedFestgeldAccount(account.id);
+    invalidateUserData(account.userId);
+    invalidateGlobalData();
 
     return NextResponse.json(result);
   });

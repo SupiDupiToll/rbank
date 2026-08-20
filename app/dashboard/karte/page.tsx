@@ -2,6 +2,7 @@ import { CardTab } from "@/components/card-tab";
 import { cardIframeUrl } from "@/lib/env";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 export default async function KartePage() {
   const user = await getCurrentAppUser();
@@ -10,24 +11,29 @@ export default async function KartePage() {
     return null;
   }
 
-  const [card, account] = await Promise.all([
-    prisma.card.findUnique({
-      where: { userId: user.id },
-      select: {
-        id: true,
-        status: true,
-        email: true,
-        phoneNumber: true,
-        cardLastFour: true,
-        balanceCents: true,
-        activatedAt: true,
-      },
-    }),
-    prisma.user.findUnique({
-      where: { id: user.id },
-      select: { balanceCents: true },
-    }),
-  ]);
+  const [card, account] = await remember(
+    pageCacheKeys.card(user.id),
+    CACHE_TTL.page,
+    () =>
+      Promise.all([
+        prisma.card.findUnique({
+          where: { userId: user.id },
+          select: {
+            id: true,
+            status: true,
+            email: true,
+            phoneNumber: true,
+            cardLastFour: true,
+            balanceCents: true,
+            activatedAt: true,
+          },
+        }),
+        prisma.user.findUnique({
+          where: { id: user.id },
+          select: { balanceCents: true },
+        }),
+      ]),
+  );
 
   return (
     <CardTab

@@ -10,6 +10,7 @@ import {
 } from "@/lib/api-helpers";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -58,7 +59,17 @@ export async function DELETE(request: Request, context: Params) {
     const { id } = await context.params;
     const loanId = parseInput(cuidSchema, id);
 
+    const loanRecord = await prisma.loan.findUnique({
+      where: { id: loanId },
+      select: { userId: true },
+    });
+
     await prisma.loan.delete({ where: { id: loanId } });
+
+    if (loanRecord) {
+      invalidateUserData(loanRecord.userId);
+    }
+    invalidateGlobalData();
 
     return NextResponse.json({ success: true });
   });

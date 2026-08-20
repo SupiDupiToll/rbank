@@ -12,6 +12,7 @@ import {
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { cuidSchema } from "@/lib/security";
 import { refreshWalletPassForUser } from "@/lib/wallet/service";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function PATCH(
   request: Request,
@@ -57,6 +58,8 @@ export async function PATCH(
     });
 
     await refreshWalletPassForUser(userId, true);
+    invalidateUserData(userId);
+    invalidateGlobalData();
 
     return NextResponse.json({ blocked: body.blocked });
   });

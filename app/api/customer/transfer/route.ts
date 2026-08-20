@@ -23,6 +23,7 @@ import {
 import { verifyPin } from "@/lib/pin";
 import { refreshWalletPassForUser } from "@/lib/wallet/service";
 import { stackServerApp } from "@/stack/server";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -163,6 +164,9 @@ export async function POST(request: Request) {
 
     void refreshWalletPassForUser(user.id);
     void refreshWalletPassForUser(transferResult.incomingTransaction.userId);
+    invalidateUserData(user.id);
+    invalidateUserData(transferResult.incomingTransaction.userId);
+    invalidateGlobalData();
 
     return NextResponse.json(
       {

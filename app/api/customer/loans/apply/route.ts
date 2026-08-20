@@ -10,6 +10,7 @@ import {
   safeRoute,
 } from "@/lib/api-helpers";
 import { rateLimitPolicies } from "@/lib/rate-limit";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 import { amountCentsSchema, safeTextSchema } from "@/lib/security";
 import { calculateAnnuity, generateAmortizationSchedule } from "@/lib/loan";
 
@@ -93,6 +94,9 @@ export async function POST(request: Request) {
         purpose: body.purpose ?? null,
       },
     });
+
+    invalidateUserData(user.id);
+    invalidateGlobalData();
 
     return NextResponse.json({ loan }, { status: 201 });
   });

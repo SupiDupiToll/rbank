@@ -16,6 +16,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { MAX_NAME_LENGTH } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -60,6 +61,9 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    invalidateGlobalData();
+    invalidateUserData(user.id);
 
     return NextResponse.json(
       {

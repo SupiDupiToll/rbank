@@ -18,6 +18,7 @@ import {
   isoDateStringSchema,
   safeTextSchema,
 } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -82,6 +83,8 @@ export async function POST(request: Request) {
     });
 
     await syncUserBalance(accountHolder.id);
+    invalidateUserData(accountHolder.id);
+    invalidateGlobalData();
 
     return NextResponse.json({ transaction }, { status: 201 });
   });

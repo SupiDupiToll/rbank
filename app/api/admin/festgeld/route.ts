@@ -19,6 +19,7 @@ import {
   MAX_LABEL_LENGTH,
   safeTextSchema
 } from "@/lib/security";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -68,6 +69,9 @@ export async function POST(request: Request) {
       startDate: body.startDate,
       endDate: body.endDate
     });
+
+    invalidateGlobalData();
+    invalidateUserData(accountHolder.id);
 
     return NextResponse.json({ account }, { status: 201 });
   });

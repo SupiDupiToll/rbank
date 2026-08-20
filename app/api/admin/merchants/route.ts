@@ -18,6 +18,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { safeTextSchema } from "@/lib/security";
+import { invalidateGlobalData } from "@/lib/cache";
 
 export async function GET(request: Request) {
   return safeRoute(async () => {
@@ -99,6 +100,8 @@ export async function POST(request: Request) {
         userId: ownerUserId,
       },
     });
+
+    invalidateGlobalData();
 
     return NextResponse.json({
       merchant: {

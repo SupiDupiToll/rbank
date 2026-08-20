@@ -10,6 +10,7 @@ import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { calculateFestgeldInterestCents } from "@/lib/festgeld";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 type FestgeldDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -21,11 +22,17 @@ export default async function FestgeldDetailPage({ params }: FestgeldDetailPageP
 
   const { id } = await params;
 
-  await settleCustomerAccounting(user.id);
+  const account = await remember(
+    pageCacheKeys.festgeldDetail(user.id, id),
+    CACHE_TTL.page,
+    async () => {
+      await settleCustomerAccounting(user.id);
 
-  const account = await prisma.festgeldAccount.findFirst({
-    where: { id, userId: user.id }
-  });
+      return prisma.festgeldAccount.findFirst({
+        where: { id, userId: user.id }
+      });
+    },
+  );
 
   if (!account) {
     notFound();

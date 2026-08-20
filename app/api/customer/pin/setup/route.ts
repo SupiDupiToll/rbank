@@ -13,6 +13,7 @@ import { hashPin } from "@/lib/pin";
 import { prisma } from "@/lib/prisma";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { pinSchema } from "@/lib/security";
+import { invalidateGlobalData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: { paymentPinHash: pinHash }
     });
+
+    invalidateGlobalData();
 
     return NextResponse.json({ success: true });
   });

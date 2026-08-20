@@ -12,6 +12,7 @@ import {
 } from "@/lib/api-helpers";
 import { rateLimitPolicies } from "@/lib/rate-limit";
 import { amountCentsSchema, cuidSchema, safeTextSchema } from "@/lib/security";
+import { invalidateGlobalData } from "@/lib/cache";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -60,6 +61,8 @@ export async function PUT(request: Request, context: Params) {
       data: body,
     });
 
+    invalidateGlobalData();
+
     return NextResponse.json({ product });
   });
 }
@@ -82,6 +85,8 @@ export async function DELETE(request: Request, context: Params) {
     const productId = parseInput(cuidSchema, id);
 
     await prisma.loanProduct.delete({ where: { id: productId } });
+
+    invalidateGlobalData();
 
     return NextResponse.json({ success: true });
   });

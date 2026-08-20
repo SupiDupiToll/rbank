@@ -8,6 +8,14 @@ import {
   expireStalePaymentSession,
 } from "@/lib/payments";
 import { refreshWalletPassForUser } from "@/lib/wallet/service";
+import {
+  CACHE_TTL,
+  invalidateGlobalData,
+  invalidatePayData,
+  invalidateUserData,
+  pageCacheKeys,
+  remember,
+} from "@/lib/cache";
 
 type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
   include: {
@@ -41,14 +49,34 @@ type PaymentSessionRecord = Prisma.PaymentSessionGetPayload<{
 }>;
 
 export async function getPaymentSessionByToken(token: string) {
-  await expireStalePaymentSession(token);
+  return remember(
+    pageCacheKeys.pay(token),
+    CACHE_TTL.checkout,
+    async () => {
+      await expireStalePaymentSession(token);
 
-  return prisma.paymentSession.findUnique({
-    where: { token },
-    include: {
-      donationBox: true,
-      merchant: {
+      return prisma.paymentSession.findUnique({
+        where: { token },
         include: {
+          donationBox: true,
+          merchant: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  customerId: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
+          recipientUser: {
+            select: {
+              id: true,
+              customerId: true,
+              displayName: true,
+            },
+          },
           user: {
             select: {
               id: true,
@@ -57,23 +85,9 @@ export async function getPaymentSessionByToken(token: string) {
             },
           },
         },
-      },
-      recipientUser: {
-        select: {
-          id: true,
-          customerId: true,
-          displayName: true,
-        },
-      },
-      user: {
-        select: {
-          id: true,
-          customerId: true,
-          displayName: true,
-        },
-      },
+      });
     },
-  });
+  );
 }
 
 export function serializePaymentSession(session: PaymentSessionRecord) {
@@ -108,55 +122,67 @@ export function serializePaymentSession(session: PaymentSessionRecord) {
 }
 
 export async function getCheckoutUserSummary(userId: string) {
-  await settleCustomerAccounting(userId);
+  return remember(
+    pageCacheKeys.checkoutUser(userId),
+    CACHE_TTL.checkout,
+    async () => {
+      await settleCustomerAccounting(userId);
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      customerId: true,
-      displayName: true,
-      transactions: {
-        where: { currency: "EUR" },
-        select: { type: true, amount: true, currency: true },
-      },
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          customerId: true,
+          displayName: true,
+          transactions: {
+            where: { currency: "EUR" },
+            select: { type: true, amount: true, currency: true },
+          },
+        },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      return {
+        id: user.id,
+        customerId: user.customerId,
+        displayName: user.displayName ?? `Kunde ${user.customerId}`,
+        balanceCents: calculateBalanceCents(user.transactions, "EUR"),
+      };
     },
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  return {
-    id: user.id,
-    customerId: user.customerId,
-    displayName: user.displayName ?? `Kunde ${user.customerId}`,
-    balanceCents: calculateBalanceCents(user.transactions, "EUR"),
-  };
+  );
 }
 
 export async function getEmbeddedCheckoutUsers() {
-  const users = await prisma.user.findMany({
-    where: {
-      role: "CUSTOMER",
-      paymentPinHash: { not: null },
-    },
-    select: {
-      id: true,
-      customerId: true,
-      displayName: true,
-    },
-    orderBy: [
-      { displayName: "asc" },
-      { customerId: "asc" },
-    ],
-  });
+  return remember(
+    pageCacheKeys.embeddedUsers(),
+    CACHE_TTL.lists,
+    async () => {
+      const users = await prisma.user.findMany({
+        where: {
+          role: "CUSTOMER",
+          paymentPinHash: { not: null },
+        },
+        select: {
+          id: true,
+          customerId: true,
+          displayName: true,
+        },
+        orderBy: [
+          { displayName: "asc" },
+          { customerId: "asc" },
+        ],
+      });
 
-  return users.map((user) => ({
-    id: user.id,
-    customerId: user.customerId,
-    displayName: user.displayName ?? `Kunde ${user.customerId}`,
-  }));
+      return users.map((user) => ({
+        id: user.id,
+        customerId: user.customerId,
+        displayName: user.displayName ?? `Kunde ${user.customerId}`,
+      }));
+    },
+  );
 }
 
 export async function sendMerchantWebhook(sessionToken: string) {
@@ -394,7 +420,10 @@ export async function completeCheckoutPayment(token: string, userId: string) {
   ].filter((id): id is string => Boolean(id));
   for (const affectedUserId of new Set(affectedUserIds)) {
     void refreshWalletPassForUser(affectedUserId);
+    invalidateUserData(affectedUserId);
   }
+  invalidatePayData(token);
+  invalidateGlobalData();
 
   return result;
 }
@@ -414,6 +443,8 @@ export async function cancelPaymentSession(token: string) {
   }
 
   await clearCheckoutCookie(token);
+  invalidatePayData(token);
+  invalidateGlobalData();
   return true;
 }
 
@@ -475,7 +506,15 @@ export async function refundCompletedPayment(token: string) {
             paymentSessionId: session.id,
           },
         });
+
+        invalidateUserData(merchantOwner.id);
       }
+
+      if (session.userId) {
+        invalidateUserData(session.userId);
+      }
+      invalidatePayData(token);
+      invalidateGlobalData();
 
       return tx.paymentSession.update({
         where: { id: session.id },

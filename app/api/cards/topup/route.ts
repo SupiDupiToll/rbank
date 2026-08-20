@@ -17,6 +17,7 @@ import { syncUserBalance } from "@/lib/balance";
 import { sendEmailToAddress } from "@/lib/email";
 import { cardNotifyEmail } from "@/lib/env";
 import { formatEuroFromCents } from "@/lib/money";
+import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -108,6 +109,8 @@ export async function POST(request: Request) {
     });
 
     await syncUserBalance(user.id);
+    invalidateUserData(user.id);
+    invalidateGlobalData();
 
     await sendEmailToAddress(
       cardNotifyEmail,

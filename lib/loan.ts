@@ -326,7 +326,7 @@ export async function payoffLoan(loanId: string, userId: string) {
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 
-export async function sendPaymentReminders() {
+export async function sendPaymentReminders(userId?: string) {
   const threeDaysFromNow = new Date();
   threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
@@ -338,6 +338,7 @@ export async function sendPaymentReminders() {
     where: {
       status: "SCHEDULED",
       scheduledDate: { gte: threeDaysFromNow, lte: threeDaysFromNowEnd },
+      ...(userId ? { loan: { userId } } : {}),
     },
     include: {
       loan: {
@@ -374,7 +375,7 @@ export async function sendPaymentReminders() {
 
 export async function processDuePayments(userId?: string) {
   try {
-    await sendPaymentReminders();
+    await sendPaymentReminders(userId);
   } catch {
     // Don't block payment processing
   }

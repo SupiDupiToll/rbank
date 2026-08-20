@@ -4,6 +4,7 @@ import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 type TransactionsPageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -64,25 +65,31 @@ export default async function TransactionsPage({
     return null;
   }
 
-  await settleCustomerAccounting(user.id);
-
   const { q = "" } = await searchParams;
   const query = q.trim();
 
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      userId: user.id,
-      ...(query
-        ? {
-            description: {
-              contains: query,
-              mode: "insensitive",
-            },
-          }
-        : {}),
+  const transactions = await remember(
+    pageCacheKeys.transactions(user.id, query),
+    CACHE_TTL.page,
+    async () => {
+      await settleCustomerAccounting(user.id);
+
+      return prisma.transaction.findMany({
+        where: {
+          userId: user.id,
+          ...(query
+            ? {
+                description: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              }
+            : {}),
+        },
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      });
     },
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-  });
+  );
 
   const eurTransactions = transactions.filter(
     (transaction) => transaction.currency === "EUR",

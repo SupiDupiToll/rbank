@@ -8,6 +8,7 @@ import { formatGermanDate } from "@/lib/date";
 import { getCurrentAppUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
+import { CACHE_TTL, pageCacheKeys, remember } from "@/lib/cache";
 
 type KreditDetailProps = {
   params: Promise<{ id: string }>;
@@ -35,15 +36,21 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
 
   const { id } = await params;
 
-  await settleCustomerAccounting(user.id);
+  const loan = await remember(
+    pageCacheKeys.krediteDetail(user.id, id),
+    CACHE_TTL.page,
+    async () => {
+      await settleCustomerAccounting(user.id);
 
-  const loan = await prisma.loan.findFirst({
-    where: { id, userId: user.id },
-    include: {
-      loanProduct: { select: { name: true } },
-      payments: { orderBy: { installmentNumber: "asc" } },
+      return prisma.loan.findFirst({
+        where: { id, userId: user.id },
+        include: {
+          loanProduct: { select: { name: true } },
+          payments: { orderBy: { installmentNumber: "asc" } },
+        },
+      });
     },
-  });
+  );
 
   if (!loan) notFound();
 
