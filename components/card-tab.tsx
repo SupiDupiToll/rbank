@@ -404,9 +404,8 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
           </div>
           <a
             className="inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-sm font-semibold text-white transition-transform hover:opacity-90 active:scale-95"
-            href={iframeUrl}
+            href="shortcuts://run-shortcut?name=vimpay"
             rel="noreferrer"
-            target="_blank"
           >
             <span className="material-symbols-outlined text-lg">
               open_in_new
