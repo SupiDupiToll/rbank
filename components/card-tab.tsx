@@ -144,7 +144,7 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
       {/* Mastercard */}
       <div
         className={cn(
-          "relative flex aspect-[1.586] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
+          "relative mx-auto flex aspect-[1.586] w-full max-w-[380px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
           !cardActive && "opacity-90 saturate-50",
         )}
       >
