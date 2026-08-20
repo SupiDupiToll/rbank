@@ -144,21 +144,20 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
       {/* Mastercard */}
       <div
         className={cn(
-          "virtual-card-bg relative overflow-hidden rounded-2xl p-6 shadow-[0_20px_40px_rgba(127,61,255,0.25)] transition-transform duration-300 sm:p-8",
+          "relative flex aspect-[1.586] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
           !cardActive && "opacity-90 saturate-50",
         )}
       >
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5" />
-        <div className="absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-white/5" />
-
-        <div className="relative z-10 flex items-start justify-between">
+        <div className="flex items-start justify-between">
           <div>
-            <p className="font-label-sm text-label-sm text-white/70">RBank</p>
-            <p className="mt-1 font-headline-md text-headline-md text-white">
+            <p className="font-body-md text-body-md font-semibold tracking-[0.25em] text-white">
+              RBank
+            </p>
+            <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
               Prepaid Mastercard
             </p>
           </div>
-          <span className="flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 font-label-sm text-label-sm text-white backdrop-blur-md">
+          <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-label-sm text-label-sm text-white">
             <span
               className={cn("h-2 w-2 rounded-full", {
                 "animate-pulse bg-emerald-400": cardActive,
@@ -169,35 +168,36 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
           </span>
         </div>
 
-        <div className="relative z-10 mt-10 grid gap-6 sm:grid-cols-2">
-          <div>
-            <p className="font-label-sm text-label-sm text-white/70">
-              Kartenguthaben
-            </p>
-            <p className="font-balance-display text-balance-display mt-2 text-white">
-              {formatEuroFromCents(card?.balanceCents ?? 0)}
-            </p>
-          </div>
-          {card?.phoneNumber ? (
-            <div>
-              <p className="font-label-sm text-label-sm text-white/70">
-                Telefonnummer
-              </p>
-              <p className="mt-2 font-body-md text-body-md text-white">
-                {card.phoneNumber}
-              </p>
+        <div className="flex items-center justify-between">
+          <span className="material-symbols-outlined text-xl text-white/30">
+            contactless
+          </span>
+          <div className="flex h-8 w-11 items-center justify-center rounded-md border border-white/15 bg-[#c9a227]/70">
+            <div className="grid h-5 w-8 grid-cols-2 gap-[3px]">
+              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
+              <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
             </div>
-          ) : null}
+          </div>
         </div>
 
-        <div className="relative z-10 mt-10 flex items-center justify-between">
-          <p className="font-mono text-base tracking-[0.2em] text-white">
+        <div>
+          <p className="font-mono text-lg tracking-[0.2em] text-white sm:text-xl">
             {card?.cardLastFour ? `•••• ${card.cardLastFour}` : "•••• ••••"}
           </p>
-          <span className="flex items-center">
-            <span className="h-8 w-8 rounded-full bg-[#EB001B] mix-blend-screen" />
-            <span className="-ml-3 h-8 w-8 rounded-full bg-[#F79E1B] mix-blend-screen" />
-          </span>
+          {card?.phoneNumber ? (
+            <p className="mt-2 text-xs text-white/50">{card.phoneNumber}</p>
+          ) : null}
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+              Prepaid
+            </p>
+            <span className="flex items-center">
+              <span className="h-7 w-7 rounded-full bg-[#EB001B] mix-blend-screen" />
+              <span className="-ml-3 h-7 w-7 rounded-full bg-[#F79E1B] mix-blend-screen" />
+            </span>
+          </div>
         </div>
       </div>
 
@@ -373,29 +373,48 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
       )}
 
       {/* External card flow */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <p className="font-label-sm text-label-sm text-on-surface-variant">
-            Kartenverwaltung
-          </p>
+      {!cardActive ? (
+        <section>
+          <div className="mb-4">
+            <p className="font-label-sm text-label-sm text-on-surface-variant">
+              Karte beantragen
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white">
+            <iframe
+              allow="clipboard-read; clipboard-write; fullscreen"
+              className="h-[640px] w-full md:h-[720px]"
+              src={iframeUrl}
+              title="RBank Karte beantragen"
+            />
+          </div>
+        </section>
+      ) : (
+        <section className="glass-card flex flex-col items-center gap-4 rounded-2xl p-8 text-center">
+          <span className="material-symbols-outlined text-4xl text-primary">
+            contactless
+          </span>
+          <div>
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Karte verwalten
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Öffne die VIMPay App, um deine Karte zu verwalten.
+            </p>
+          </div>
           <a
-            className="text-sm font-semibold text-primary transition-colors hover:opacity-80"
+            className="inline-flex h-12 items-center gap-2 rounded-2xl bg-primary px-6 text-sm font-semibold text-white transition-transform hover:opacity-90 active:scale-95"
             href={iframeUrl}
             rel="noreferrer"
             target="_blank"
           >
-            Im neuen Tab oeffnen
+            <span className="material-symbols-outlined text-lg">
+              open_in_new
+            </span>
+            Zur VIMPay App
           </a>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white">
-          <iframe
-            allow="clipboard-read; clipboard-write; fullscreen"
-            className="h-[640px] w-full md:h-[720px]"
-            src={iframeUrl}
-            title="RBank Karte"
-          />
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
