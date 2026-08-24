@@ -158,7 +158,7 @@ export function LoanApplicationForm({ products }: LoanApplicationFormProps) {
                     ? (selectedProduct.maxAmount / 100).toString()
                     : undefined
                 }
-                step="100"
+                step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="z.B. 5000"

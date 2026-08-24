@@ -13,6 +13,7 @@ import { rateLimitPolicies } from "@/lib/rate-limit";
 import { invalidateGlobalData, invalidateUserData } from "@/lib/cache";
 import { amountCentsSchema, safeTextSchema } from "@/lib/security";
 import { calculateAnnuity, generateAmortizationSchedule } from "@/lib/loan";
+import { formatEuroFromCents } from "@/lib/money";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
 
     if (body.amount < product.minAmount || body.amount > product.maxAmount) {
       return NextResponse.json(
-        { error: `Betrag muss zwischen ${(product.minAmount / 100).toFixed(2)}€ und ${(product.maxAmount / 100).toFixed(2)}€ liegen.` },
+        { error: `Betrag muss zwischen ${formatEuroFromCents(product.minAmount)} und ${formatEuroFromCents(product.maxAmount)} liegen.` },
         { status: 400 },
       );
     }
