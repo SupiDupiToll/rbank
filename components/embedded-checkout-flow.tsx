@@ -51,9 +51,6 @@ export function EmbeddedCheckoutFlow({
   const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(
     null,
   );
-  const [transactionId, setTransactionId] = useState(
-    initialSession.transactionId,
-  );
 
   const filteredUsers = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -88,11 +85,7 @@ export function EmbeddedCheckoutFlow({
       return;
     }
 
-    const timeout = window.setTimeout(() => {
-      window.location.href = successRedirectUrl;
-    }, 3000);
-
-    return () => window.clearTimeout(timeout);
+    window.location.href = successRedirectUrl;
   }, [successRedirectUrl]);
 
   async function submitPayment() {
@@ -142,7 +135,6 @@ export function EmbeddedCheckoutFlow({
         return;
       }
 
-      setTransactionId(data.transactionId ?? null);
       setSuccessRedirectUrl(data.redirectUrl ?? initialSession.redirectUrl);
       setPaymentPin("");
       setIsProcessing(false);
@@ -155,12 +147,7 @@ export function EmbeddedCheckoutFlow({
   if (successRedirectUrl) {
     return (
       <Shell>
-        <SuccessState
-          amount={initialSession.amount}
-          merchantName={initialSession.merchant.name}
-          redirectUrl={successRedirectUrl}
-          transactionId={transactionId}
-        />
+        <ProcessingState />
       </Shell>
     );
   }
@@ -181,14 +168,7 @@ export function EmbeddedCheckoutFlow({
       />
 
       {isProcessing ? (
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="space-y-3 text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-surface-container-highest border-t-primary" />
-            <p className="text-sm font-semibold text-on-surface">
-              Zahlung wird verarbeitet...
-            </p>
-          </div>
-        </div>
+        <ProcessingState />
       ) : step === "user" ? (
         <UserStep
           filteredUsers={filteredUsers}
@@ -515,41 +495,15 @@ function StatusCard({ session }: { session: EmbeddedCheckoutSession }) {
   );
 }
 
-function SuccessState({
-  amount,
-  merchantName,
-  redirectUrl,
-  transactionId,
-}: {
-  amount: number;
-  merchantName: string;
-  redirectUrl: string;
-  transactionId: string | null;
-}) {
+function ProcessingState() {
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="glass-card mesh-gradient flex h-14 w-14 items-center justify-center">
-        <span className="material-symbols-outlined text-2xl text-primary">
-          check_circle
-        </span>
-      </div>
-      <h1 className="mt-4 text-2xl font-black tracking-tight text-on-surface">
-        Zahlung erfolgreich!
-      </h1>
-      <p className="mt-2 text-sm text-on-surface-variant">
-        {formatEuroFromCents(amount)} wurden an {merchantName} ueberwiesen.
-      </p>
-      {transactionId ? (
-        <p className="font-label-sm text-label-sm mt-2 text-on-surface-variant/70">
-          Transaktion {transactionId}
+    <div className="flex flex-1 items-center justify-center py-10">
+      <div className="space-y-3 text-center">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-surface-container-highest border-t-primary" />
+        <p className="text-sm font-semibold text-on-surface">
+          Zahlung wird verarbeitet...
         </p>
-      ) : null}
-      <a
-        className="bg-primary-container glow-effect mt-6 rounded-full px-6 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"
-        href={redirectUrl}
-      >
-        Jetzt zum Shop zurueck
-      </a>
+      </div>
     </div>
   );
 }
