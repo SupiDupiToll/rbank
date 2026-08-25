@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { AdminLoan, AdminLoanProduct } from "@/lib/admin-dashboard";
 import { formatEuroFromCents } from "@/lib/money";
 import { formatGermanDate } from "@/lib/date";
@@ -18,6 +18,7 @@ type AdminLoansProps = {
   initialPendingLoans: AdminLoan[];
   initialActiveLoans: AdminLoan[];
   initialCompletedLoans: AdminLoan[];
+  refreshToken?: number;
 };
 
 export function AdminLoans({
@@ -25,6 +26,7 @@ export function AdminLoans({
   initialPendingLoans,
   initialActiveLoans,
   initialCompletedLoans,
+  refreshToken,
 }: AdminLoansProps) {
   const [products, setProducts] = useState<AdminLoanProduct[]>(initialProducts);
   const [pendingLoans, setPendingLoans] = useState<AdminLoan[]>(initialPendingLoans);
@@ -77,6 +79,14 @@ export function AdminLoans({
       setCompletedLoans(data.loans);
     }
   }, []);
+
+  useEffect(() => {
+    if (refreshToken) {
+      void loadLoans();
+      void loadProducts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshToken]);
 
   function startEdit(product: AdminLoanProduct) {
     setEditingProductId(product.id);

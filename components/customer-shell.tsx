@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/logout-button";
 import { NavigationLoadingBar } from "@/components/navigation-loading-bar";
+import { RefreshButton } from "@/components/refresh-button";
 
 type CustomerShellProps = {
   customerId: string;
@@ -112,6 +113,7 @@ export function CustomerShell({
             >
               <span className="material-symbols-outlined text-lg">search</span>
             </button>
+            <RefreshButton aria-label="Daten aktualisieren" />
             <LogoutButton className="glass-card flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-on-surface-variant transition-all hover:opacity-80 active:scale-95" />
           </div>
         </div>
@@ -142,6 +144,7 @@ export function CustomerShell({
             >
               <span className="material-symbols-outlined text-lg">search</span>
             </button>
+            <RefreshButton aria-label="Daten aktualisieren" />
             <LogoutButton className="glass-card flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-transform active:scale-95" />
           </div>
         </div>

@@ -19,6 +19,7 @@ import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { MerchantCredentialsModal } from "@/components/merchant-credentials-modal";
 import { AdminLoans } from "@/components/admin-loans";
 import { toast } from "@/components/ui/toast";
+import { RefreshButton } from "@/components/refresh-button";
 import type { AdminLoan, AdminLoanProduct } from "@/lib/admin-dashboard";
 
 type TabId = "dashboard" | "customers" | "festgeld" | "loans" | "merchants" | "aircoin" | "shop";
@@ -280,6 +281,28 @@ export function AdminPanel({
     setSelectedMerchantId(nextSelectedMerchant?.merchantId ?? "");
     hydrateMerchantForm(nextSelectedMerchant);
   }, [hydrateMerchantForm, selectedMerchantId]);
+
+  const [refreshToken, setRefreshToken] = useState(0);
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.allSettled([
+      loadUsers(),
+      loadFestgeld(),
+      loadAirTransactions(),
+      loadMerchants(),
+    ]);
+    if (selectedCustomerId) {
+      await loadTransactions(selectedCustomerId);
+    }
+    setRefreshToken((token) => token + 1);
+  }, [
+    loadUsers,
+    loadFestgeld,
+    loadAirTransactions,
+    loadMerchants,
+    loadTransactions,
+    selectedCustomerId,
+  ]);
 
   useEffect(() => {
     if (!fgEndDate) {
@@ -578,6 +601,7 @@ export function AdminPanel({
             Verwaltung
           </h1>
         </div>
+        <RefreshButton onRefresh={handleRefresh} />
       </header>
 
       <div className="flex gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-surface-container/80 p-1">
@@ -967,6 +991,7 @@ export function AdminPanel({
         initialPendingLoans={initialPendingLoans}
         initialActiveLoans={initialActiveLoans}
         initialCompletedLoans={initialCompletedLoans}
+        refreshToken={refreshToken}
       />
       ) : null}
 
