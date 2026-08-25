@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { LoanActions } from "@/components/loan-actions";
+import { LoanExtensionForm } from "@/components/loan-extension";
 import { formatEuroFromCents } from "@/lib/money";
 import { formatGermanDate } from "@/lib/date";
 import { getCurrentAppUser } from "@/lib/current-user";
@@ -147,12 +148,21 @@ export default async function KreditDetailPage({ params }: KreditDetailProps) {
         </div>
 
         {loan.status === "ACTIVE" ? (
-          <LoanActions
-            loanId={loan.id}
-            remainingAmount={loan.remainingAmount}
-            monthlyPayment={loan.monthlyPayment}
-            canPay={loan.remainingAmount > 0}
-          />
+          <div className="space-y-4">
+            <LoanActions
+              loanId={loan.id}
+              remainingAmount={loan.remainingAmount}
+              monthlyPayment={loan.monthlyPayment}
+              canPay={loan.remainingAmount > 0}
+            />
+            <LoanExtensionForm
+              loanId={loan.id}
+              remainingAmount={loan.remainingAmount}
+              termMonths={loan.termMonths}
+              interestRate={loan.interestRate}
+              paidCount={paidCount}
+            />
+          </div>
         ) : loan.status === "COMPLETED" && loan.paidOffAt ? (
           <div className="glass-card rounded-2xl p-5 text-sm text-on-surface-variant">
             Kredit vollstaendig abbezahlt am{" "}

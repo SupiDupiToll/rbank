@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Table, Td, Th } from "@/components/ui/table";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { toast } from "@/components/ui/toast";
+import { AdminLoanExtensions } from "@/components/admin-loan-extensions";
 
 type AdminLoansProps = {
   initialProducts: AdminLoanProduct[];
@@ -685,6 +686,7 @@ export function AdminLoans({
         </Card>
       ) : null}
 
+      <AdminLoanExtensions />
     </div>
   );
 }

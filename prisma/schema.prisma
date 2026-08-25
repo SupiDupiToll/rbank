@@ -244,11 +244,36 @@ model Loan {
   createdAt              DateTime      @default(now()) @map("created_at")
   disbursementTxId       String?       @map("disbursement_tx_id")
   paidOffAt              DateTime?     @map("paid_off_at")
-  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  loanProduct            LoanProduct?  @relation(fields: [loanProductId], references: [id])
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loanProduct            LoanProduct?     @relation(fields: [loanProductId], references: [id])
   payments               LoanPayment[]
+  extensions             LoanExtension[]
 
   @@index([userId, status])
+  @@index([status, createdAt])
+}
+
+model LoanExtension {
+  id                   String             @id @default(cuid())
+  loanId               String             @map("loan_id")
+  requestedByUserId    String             @map("requested_by_user_id")
+  requestedTermMonths  Int                @map("requested_term_months")
+  reason               String?
+  status               LoanExtensionStatus @default(PENDING)
+  reviewedByUserId     String?            @map("reviewed_by_user_id")
+  reviewedAt           DateTime?          @map("reviewed_at")
+  rejectionReason      String?            @map("rejection_reason")
+  oldTermMonths        Int                @map("old_term_months")
+  oldInterestRate      Float              @map("old_interest_rate")
+  oldOneTimeFeeCents   Int?               @map("old_one_time_fee_cents")
+  newTermMonths        Int?               @map("new_term_months")
+  newInterestRate      Float?             @map("new_interest_rate")
+  newOneTimeFeeCents   Int?               @map("new_one_time_fee_cents")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  loan                 Loan               @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId, status])
   @@index([status, createdAt])
 }
 
@@ -303,6 +328,13 @@ enum LoanStatus {
   APPROVED
   ACTIVE
   COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum LoanExtensionStatus {
+  PENDING
+  APPROVED
   REJECTED
   CANCELLED
 }

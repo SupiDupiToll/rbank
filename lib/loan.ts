@@ -70,6 +70,50 @@ export function generateAmortizationSchedule(amount: number, annualRate: number,
   return { schedule, monthlyPayment };
 }
 
+export type LoanScheduleEntry = {
+  installmentNumber: number;
+  amount: number;
+  principalPortion: number;
+  interestPortion: number;
+  remainingBalance: number;
+};
+
+export function buildLoanSchedule(
+  amount: number,
+  annualRate: number,
+  termMonths: number,
+  oneTimeFeeCents?: number | null,
+): { schedule: LoanScheduleEntry[]; monthlyPayment: number } {
+  let schedule: LoanScheduleEntry[];
+  let monthlyPayment: number;
+
+  if (annualRate === 0 && oneTimeFeeCents && oneTimeFeeCents > 0) {
+    monthlyPayment = Math.round(amount / termMonths);
+    let remaining = amount;
+    const flatSchedule: LoanScheduleEntry[] = [];
+    for (let i = 1; i <= termMonths; i++) {
+      const isLast = i === termMonths;
+      const principalPortion = isLast ? remaining : monthlyPayment;
+      const amt = isLast ? principalPortion + oneTimeFeeCents : principalPortion;
+      remaining -= principalPortion;
+      flatSchedule.push({
+        installmentNumber: i,
+        amount: amt,
+        principalPortion,
+        interestPortion: 0,
+        remainingBalance: remaining,
+      });
+    }
+    schedule = flatSchedule;
+  } else {
+    const result = generateAmortizationSchedule(amount, annualRate, termMonths);
+    schedule = result.schedule;
+    monthlyPayment = result.monthlyPayment;
+  }
+
+  return { schedule, monthlyPayment };
+}
+
 export async function approveLoan(loanId: string, adminUserId: string) {
   return prisma.$transaction(async (tx) => {
     const loan = await tx.loan.findUnique({
@@ -80,45 +124,18 @@ export async function approveLoan(loanId: string, adminUserId: string) {
     if (!loan) throw new Error("LOAN_NOT_FOUND");
     if (loan.status !== "PENDING") throw new Error("LOAN_NOT_PENDING");
 
-    let schedule: Array<{
-      installmentNumber: number;
-      amount: number;
-      principalPortion: number;
-      interestPortion: number;
-      remainingBalance: number;
-    }>;
-    let monthlyPayment: number;
+    const { schedule, monthlyPayment } = buildLoanSchedule(
+      loan.amount,
+      loan.interestRate,
+      loan.termMonths,
+      loan.oneTimeFeeCents,
+    );
     let totalRepayment: number;
     let totalInterest: number;
-
     if (loan.interestRate === 0 && loan.oneTimeFeeCents && loan.oneTimeFeeCents > 0) {
-      monthlyPayment = Math.round(loan.amount / loan.termMonths);
-      let remaining = loan.amount;
-      const flatSchedule = [];
-      for (let i = 1; i <= loan.termMonths; i++) {
-        const isLast = i === loan.termMonths;
-        const principalPortion = isLast ? remaining : monthlyPayment;
-        const amount = isLast ? principalPortion + loan.oneTimeFeeCents : principalPortion;
-        remaining -= principalPortion;
-        flatSchedule.push({
-          installmentNumber: i,
-          amount,
-          principalPortion,
-          interestPortion: 0,
-          remainingBalance: remaining,
-        });
-      }
-      schedule = flatSchedule;
       totalRepayment = loan.amount + loan.oneTimeFeeCents;
       totalInterest = 0;
     } else {
-      const result = generateAmortizationSchedule(
-        loan.amount,
-        loan.interestRate,
-        loan.termMonths,
-      );
-      schedule = result.schedule;
-      monthlyPayment = result.monthlyPayment;
       totalRepayment = schedule.reduce((sum, p) => sum + p.amount, 0);
       totalInterest = totalRepayment - loan.amount;
     }
@@ -419,4 +436,144 @@ export async function processDuePayments(userId?: string) {
   }
 
   return results;
+}
+
+export async function requestLoanExtension(
+  loanId: string,
+  userId: string,
+  termMonths: number,
+  reason?: string,
+) {
+  return prisma.$transaction(async (tx) => {
+    const loan = await tx.loan.findFirst({ where: { id: loanId, userId } });
+    if (!loan) throw new Error("LOAN_NOT_FOUND");
+    if (loan.status !== "ACTIVE") throw new Error("LOAN_NOT_ACTIVE");
+
+    const paidCount = await tx.loanPayment.count({
+      where: { loanId, status: "PAID" },
+    });
+    if (Number.isFinite(termMonths) && termMonths <= paidCount) {
+      throw new Error("INVALID_TERM");
+    }
+
+    const openRequest = await tx.loanExtension.findFirst({
+      where: { loanId, status: "PENDING" },
+    });
+    if (openRequest) throw new Error("EXTENSION_ALREADY_PENDING");
+
+    return tx.loanExtension.create({
+      data: {
+        loanId,
+        requestedByUserId: userId,
+        requestedTermMonths: termMonths,
+        reason,
+        oldTermMonths: loan.termMonths,
+        oldInterestRate: loan.interestRate,
+        oldOneTimeFeeCents: loan.oneTimeFeeCents,
+      },
+    });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+export async function approveLoanExtension(
+  extensionId: string,
+  adminUserId: string,
+  input: { termMonths: number; interestRate: number; oneTimeFeeCents: number },
+) {
+  return prisma.$transaction(async (tx) => {
+    const extension = await tx.loanExtension.findUnique({
+      where: { id: extensionId },
+      include: { loan: true },
+    });
+    if (!extension) throw new Error("NOT_FOUND");
+    if (extension.status !== "PENDING") throw new Error("EXTENSION_NOT_PENDING");
+    const loan = extension.loan;
+
+    const paidCount = await tx.loanPayment.count({
+      where: { loanId: loan.id, status: "PAID" },
+    });
+    if (input.termMonths <= paidCount) throw new Error("INVALID_TERM");
+
+    const now = new Date();
+
+    await tx.loanPayment.deleteMany({
+      where: { loanId: loan.id, status: "SCHEDULED" },
+    });
+
+    const { schedule, monthlyPayment } = buildLoanSchedule(
+      loan.remainingAmount,
+      input.interestRate,
+      input.termMonths,
+      input.oneTimeFeeCents,
+    );
+    const totalRepayment = schedule.reduce((s, p) => s + p.amount, 0);
+    const totalInterest = totalRepayment - loan.remainingAmount;
+
+    await tx.loanPayment.createMany({
+      data: schedule.map((p, i) => {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() + i + 1);
+        date.setDate(0);
+        return {
+          loanId: loan.id,
+          installmentNumber: paidCount + p.installmentNumber,
+          scheduledDate: date,
+          amount: p.amount,
+          principalPortion: p.principalPortion,
+          interestPortion: p.interestPortion,
+          remainingBalance: p.remainingBalance,
+          status: "SCHEDULED" as const,
+        };
+      }),
+    });
+
+    await tx.loan.update({
+      where: { id: loan.id },
+      data: {
+        termMonths: input.termMonths,
+        monthlyPayment,
+        totalInterest: Math.max(0, totalInterest),
+        totalRepayment,
+        interestRate: input.interestRate,
+        oneTimeFeeCents: input.oneTimeFeeCents,
+        oneTimeFeePaid: false,
+      },
+    });
+
+    return tx.loanExtension.update({
+      where: { id: extensionId },
+      data: {
+        status: "APPROVED",
+        reviewedByUserId: adminUserId,
+        reviewedAt: now,
+        newTermMonths: input.termMonths,
+        newInterestRate: input.interestRate,
+        newOneTimeFeeCents: input.oneTimeFeeCents,
+      },
+    });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+export async function rejectLoanExtension(
+  extensionId: string,
+  adminUserId: string,
+  reason?: string,
+) {
+  return prisma.$transaction(async (tx) => {
+    const extension = await tx.loanExtension.findUnique({
+      where: { id: extensionId },
+    });
+    if (!extension) throw new Error("NOT_FOUND");
+    if (extension.status !== "PENDING") throw new Error("EXTENSION_NOT_PENDING");
+
+    return tx.loanExtension.update({
+      where: { id: extensionId },
+      data: {
+        status: "REJECTED",
+        reviewedByUserId: adminUserId,
+        reviewedAt: new Date(),
+        rejectionReason: reason ?? null,
+      },
+    });
+  });
 }
