@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  appendDigits,
+  NumericKeypad,
+  removeLastDigit,
+} from "@/components/ui/numeric-keypad";
+import { Stepper } from "@/components/ui/stepper";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { formatAirFromUnits, formatEuroFromCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -16,19 +22,28 @@ type CustomerTransferFormProps = {
 type TransferCurrency = "EUR" | "AIR";
 
 const PIN_LENGTH = 4;
+const MAX_DIGITS = 9;
 const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+const STEP_LABELS = [
+  "Betrag",
+  "Empfänger",
+  "Notiz",
+  "Prüfen",
+  "PIN",
+];
 
 export function CustomerTransferForm({
   balanceCents,
   airBalance,
 }: CustomerTransferFormProps) {
   const router = useRouter();
-  const [step, setStep] = useState<"form" | "pin">("form");
+  const [step, setStep] = useState(0);
   const [currency, setCurrency] = useState<TransferCurrency>("EUR");
+  const [amountCents, setAmountCents] = useState("");
   const [recipientInput, setRecipientInput] = useState("");
   const [resolvedRecipient, setResolvedRecipient] = useState("");
   const [resolvedCustomerId, setResolvedCustomerId] = useState("");
-  const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
@@ -36,17 +51,26 @@ export function CustomerTransferForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
 
-  const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
-  const isAmountValid = Number.isInteger(amountCents) && amountCents > 0;
   const availableBalance = currency === "AIR" ? airBalance : balanceCents;
-  const formattedAvailableBalance =
+  const availableBalanceLabel = useMemo(
+    () =>
+      currency === "AIR"
+        ? formatAirFromUnits(availableBalance)
+        : formatEuroFromCents(availableBalance),
+    [currency, availableBalance],
+  );
+
+  const numericAmount = amountCents === "" ? 0 : Number(amountCents);
+  const isAmountValid = numericAmount > 0;
+  const enteredAmountLabel =
     currency === "AIR"
-      ? formatAirFromUnits(availableBalance)
-      : formatEuroFromCents(availableBalance);
+      ? formatAirFromUnits(numericAmount)
+      : formatEuroFromCents(numericAmount);
+
   const formattedTransferAmount =
     currency === "AIR"
-      ? formatAirFromUnits(amountCents)
-      : formatEuroFromCents(amountCents);
+      ? formatAirFromUnits(Number(amountCents || "0"))
+      : formatEuroFromCents(Number(amountCents || "0"));
 
   useEffect(() => {
     const normalized = recipientInput.trim();
@@ -101,31 +125,61 @@ export function CustomerTransferForm({
     return () => controller.abort();
   }, [recipientInput]);
 
+  function validateAmountInput(): boolean {
+    setMessage("");
+    if (!isAmountValid) {
+      setMessage("Bitte einen gültigen Betrag eingeben.");
+      return false;
+    }
+    if (numericAmount > availableBalance) {
+      setMessage("Der verfügbare Kontostand reicht nicht aus.");
+      return false;
+    }
+    return true;
+  }
+
   function goToPinStep() {
-    if (!resolvedCustomerId || !isAmountValid || !description.trim()) {
+    if (!resolvedCustomerId || !validateAmountInput()) {
       setMessage("Bitte alle Felder korrekt ausfüllen.");
       return;
     }
+    setStep(4);
+  }
 
-    if (amountCents > availableBalance) {
-      setMessage("Der verfügbare Kontostand reicht nicht aus.");
+  function goToReview() {
+    if (!validateAmountInput()) return;
+    if (!resolvedCustomerId) {
+      setMessage("Bitte gib einen gültigen Empfänger an.");
       return;
     }
+    setStep(3);
+  }
 
-    setMessage("");
-    setStep("pin");
+  function goToNote() {
+    if (!validateAmountInput()) return;
+    if (!resolvedCustomerId) {
+      setMessage("Bitte gib einen gültigen Empfänger an.");
+      return;
+    }
+    setStep(2);
   }
 
   function handleDigitInput(digit: string) {
-    setMessage("");
     setPin((currentPin) =>
       currentPin.length >= PIN_LENGTH ? currentPin : `${currentPin}${digit}`,
     );
   }
 
   function handleBackspace() {
-    setMessage("");
     setPin((currentPin) => currentPin.slice(0, -1));
+  }
+
+  function handleAppendAmount(digits: string) {
+    setAmountCents((current) => appendDigits(current, digits, MAX_DIGITS));
+  }
+
+  function handleBackspaceAmount() {
+    setAmountCents((current) => removeLastDigit(current));
   }
 
   async function handleSubmit() {
@@ -146,7 +200,7 @@ export function CustomerTransferForm({
         },
         body: JSON.stringify({
           recipientCustomerId: resolvedCustomerId,
-          amount: amountCents,
+          amount: numericAmount,
           currency,
           description: description.trim(),
           pin,
@@ -164,10 +218,10 @@ export function CustomerTransferForm({
       setRecipientInput("");
       setResolvedRecipient("");
       setResolvedCustomerId("");
-      setAmount("");
+      setAmountCents("");
       setDescription("");
       setPin("");
-      setStep("form");
+      setStep(0);
       router.refresh();
     } finally {
       setIsSubmitting(false);
@@ -199,13 +253,13 @@ export function CustomerTransferForm({
     );
   }
 
-  if (step === "pin") {
+  if (step === 4) {
     return (
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="font-label-sm text-label-sm text-primary">
-              Schritt 2
+              Schritt 5 · Bestätigen
             </p>
             <h3 className="font-headline-md text-headline-md mt-2 text-on-surface">
               PIN eingeben
@@ -216,7 +270,7 @@ export function CustomerTransferForm({
           </div>
           <Button
             onClick={() => {
-              setStep("form");
+              setStep(3);
               setPin("");
               setMessage("");
             }}
@@ -232,11 +286,7 @@ export function CustomerTransferForm({
             Betrag
           </p>
           <p className="font-balance-display text-balance-display mt-2 text-primary">
-            {isAmountValid
-              ? formattedTransferAmount
-              : currency === "AIR"
-                ? "0 AIR"
-                : "0,00 €"}
+            {formattedTransferAmount}
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div>
@@ -337,112 +387,265 @@ export function CustomerTransferForm({
           onClick={handleSubmit}
           type="button"
         >
-          {isSubmitting
-            ? "Überweisung wird geprüft..."
-            : "Überweisung bestätigen"}
+          {isSubmitting ? "Überweisung wird geprüft..." : "Überweisung bestätigen"}
         </Button>
       </div>
     );
   }
 
   return (
-    <form
-      className="space-y-5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        goToPinStep();
-      }}
-    >
-      <div className="glass-card flex items-center gap-3 rounded-2xl p-4">
-        <span className="material-symbols-outlined text-primary">
-          account_balance_wallet
+    <div className="space-y-6">
+      <Stepper steps={STEP_LABELS} current={step} />
+
+      {step === 0 ? (
+        <div className="space-y-6">
+          <div className="flex items-stretch justify-center gap-2 rounded-2xl bg-surface-container p-1">
+            {(["EUR", "AIR"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCurrency(c)}
+                className={cn(
+                  "flex-1 rounded-xl py-2 text-sm font-semibold transition-all",
+                  currency === c
+                    ? "bg-primary-container text-white glow-effect"
+                    : "text-on-surface-variant hover:text-on-surface",
+                )}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-on-surface-variant">Betrag</p>
+            <p className="font-balance-display text-balance-display mt-2 break-words text-on-surface">
+              {amountCents === "" ? "0,00 €" : enteredAmountLabel}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAmountCents(String(availableBalance))}
+              className="mt-3 inline-flex items-center gap-1 rounded-full bg-surface-container px-3 py-1 text-sm text-primary transition hover:bg-surface-container-high"
+            >
+              <span className="material-symbols-outlined text-base">account_balance_wallet</span>
+              <span className="font-medium">{availableBalanceLabel}</span>
+            </button>
+          </div>
+
+          <p className="text-center text-xs text-on-surface-variant">
+            {amountCents === "" ? "Tippe den Betrag ein" : "Tippe, um zu zahlen"}
+          </p>
+
+          <NumericKeypad
+            onAppend={handleAppendAmount}
+            onBackspace={handleBackspaceAmount}
+          />
+
+          {message ? <p className="text-center text-sm text-error">{message}</p> : null}
+
+          <Button
+            className="w-full"
+            disabled={!isAmountValid || numericAmount > availableBalance}
+            onClick={() => {
+              if (validateAmountInput()) setStep(1);
+            }}
+            type="button"
+          >
+            Weiter
+          </Button>
+        </div>
+      ) : null}
+
+      {step === 1 ? (
+        <div className="space-y-5">
+          <div>
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Wem willst du überweisen?
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Gib die {currency}-Summe deines Gegenübers ein.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-on-surface">
+              Empfänger-Kundennummer oder E-Mail
+            </label>
+            <Input
+              autoFocus
+              inputMode="email"
+              onChange={(event) => setRecipientInput(event.target.value)}
+              placeholder="47291836 oder max@example.com"
+              value={recipientInput}
+            />
+            <p className="flex min-h-5 items-center gap-1 text-xs text-on-surface-variant">
+              {isResolvingRecipient ? (
+                <>
+                  <span className="h-3 w-3 animate-spin rounded-full border border-on-surface-variant border-t-primary" />
+                  Empfänger wird geprüft...
+                </>
+              ) : resolvedRecipient ? (
+                <>
+                  <span className="material-symbols-outlined text-sm text-secondary">
+                    check_circle
+                  </span>
+                  Empfänger: {resolvedRecipient}
+                </>
+              ) : (
+                "Kundennummer oder E-Mail-Adresse eingeben"
+              )}
+            </p>
+          </div>
+
+          {message ? <p className="text-sm text-error">{message}</p> : null}
+
+          <div className="flex flex-col gap-3">
+            <Button
+              className="w-full"
+              disabled={isResolvingRecipient || !resolvedCustomerId}
+              onClick={goToNote}
+              type="button"
+            >
+              Weiter
+            </Button>
+            <Button
+              className="w-full"
+              onClick={() => {
+                setMessage("");
+                setStep(0);
+              }}
+              type="button"
+              variant="outline"
+            >
+              Zurück
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === 2 ? (
+        <div className="space-y-5">
+          <div>
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Möchtest du etwas dazuschreiben?
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Optionaler Verwendungszweck.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-on-surface">
+              Notiz (optional)
+            </label>
+            <Input
+              maxLength={120}
+              onChange={(event) => setDescription(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  goToReview();
+                }
+              }}
+              placeholder="Lunch, Geschenk, Rückzahlung"
+              value={description}
+            />
+            <p className="text-right text-xs text-on-surface-variant">
+              {description.length}/120
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button className="w-full" onClick={goToReview} type="button">
+              Weiter
+            </Button>
+            <Button
+              className="w-full"
+              onClick={() => setStep(1)}
+              type="button"
+              variant="outline"
+            >
+              Zurück
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === 3 ? (
+        <div className="space-y-5">
+          <div>
+            <h3 className="font-headline-md text-headline-md text-on-surface">
+              Alles korrekt?
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Bitte überprüfe deine Angaben.
+            </p>
+          </div>
+
+          <div className="glass-card divide-y divide-white/5 overflow-hidden rounded-2xl">
+            <ReviewRow
+              icon="payments"
+              label="Betrag"
+              value={`${formattedTransferAmount} · ${currency}`}
+              onEdit={() => setStep(0)}
+            />
+            <ReviewRow
+              icon="person"
+              label="Empfänger"
+              value={resolvedRecipient || recipientInput}
+              onEdit={() => setStep(1)}
+            />
+            <ReviewRow
+              icon="sticky_note_2"
+              label="Notiz"
+              value={description.trim() || "—"}
+              onEdit={() => setStep(2)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button className="w-full" onClick={goToPinStep} type="button">
+              Weiter zur PIN
+            </Button>
+            <Button
+              className="w-full"
+              onClick={() => setStep(2)}
+              type="button"
+              variant="outline"
+            >
+              Zurück
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ReviewRow({
+  icon,
+  label,
+  value,
+  onEdit,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-4 p-4">
+      <span className="material-symbols-outlined text-on-surface-variant">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-on-surface-variant">{label}</p>
+        <p className="truncate font-semibold text-on-surface">{value}</p>
+      </div>
+      <button onClick={onEdit} type="button" className="shrink-0">
+        <span className="material-symbols-outlined text-on-surface-variant hover:text-primary">
+          edit
         </span>
-        <p className="text-sm text-on-surface">
-          Aktueller Kontostand:{" "}
-          <span className="font-bold text-primary">
-            {formattedAvailableBalance}
-          </span>
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-on-surface">Währung</label>
-        <select
-          className="w-full rounded-2xl border border-white/10 bg-surface-container-high px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary"
-          onChange={(event) => setCurrency(event.target.value as TransferCurrency)}
-          value={currency}
-        >
-          <option value="EUR">EUR</option>
-          <option value="AIR">AIR</option>
-        </select>
-        <p className="text-xs text-on-surface-variant">
-          AIR ist eine interne Prämienwährung und kann nicht in Echtgeld
-          umgetauscht werden.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-on-surface">
-          Empfänger-Kundennummer oder E-Mail
-        </label>
-        <Input
-          inputMode="email"
-          onChange={(event) => setRecipientInput(event.target.value)}
-          placeholder="47291836 oder max@example.com"
-          value={recipientInput}
-        />
-        <p className="flex min-h-5 items-center gap-1 text-xs text-on-surface-variant">
-          {isResolvingRecipient ? (
-            <>
-              <span className="h-3 w-3 animate-spin rounded-full border border-on-surface-variant border-t-primary" />
-              Empfänger wird geprüft...
-            </>
-          ) : resolvedRecipient ? (
-            <>
-              <span className="material-symbols-outlined text-sm text-secondary">
-                check_circle
-              </span>
-              Empfänger: {resolvedRecipient}
-            </>
-          ) : (
-            "Kundennummer oder E-Mail-Adresse eingeben"
-          )}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-on-surface">
-          Betrag in {currency}
-        </label>
-        <Input
-          inputMode="decimal"
-          onChange={(event) => setAmount(event.target.value)}
-          placeholder="25,00"
-          value={amount}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-on-surface">
-          Verwendungszweck
-        </label>
-        <Input
-          maxLength={120}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="Lunch, Geschenk, Rückzahlung"
-          value={description}
-        />
-      </div>
-
-      {message ? <p className="text-sm text-error">{message}</p> : null}
-
-      <Button
-        className="w-full"
-        disabled={isSubmitting || isResolvingRecipient || !resolvedRecipient}
-        type="submit"
-      >
-        Weiter zur PIN
-      </Button>
-    </form>
+      </button>
+    </div>
   );
 }
