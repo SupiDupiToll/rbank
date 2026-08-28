@@ -65,7 +65,7 @@ const embeddedCheckoutCsp = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors https://*.sdtoll.de",
+  `frame-ancestors ${process.env.RBANK_EMBED_FRAME_ANCESTORS ?? "https://*.sdtoll.de"}`,
   "img-src 'self' data:",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
   "style-src 'self' 'unsafe-inline'",

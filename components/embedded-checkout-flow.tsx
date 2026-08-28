@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  isEmbeddedInIframe,
+  postEmbedMessage,
+} from "@/lib/embed-bridge";
 import { formatEuroFromCents } from "@/lib/money";
 
 type EmbeddedCheckoutSession = {
@@ -37,6 +41,8 @@ export function EmbeddedCheckoutFlow({
   availableUsers,
   embedKey,
 }: Props) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isFramed] = useState(() => isEmbeddedInIframe());
   const [step, setStep] = useState<"user" | "pin">("user");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     availableUsers[0]?.id ?? null,
@@ -80,13 +86,59 @@ export function EmbeddedCheckoutFlow({
     setSelectedUserId(filteredUsers[0]?.id ?? null);
   }, [filteredUsers, selectedUserId]);
 
+  // Dem Host signalisieren, dass die Checkout-Seite geladen ist (nur im iframe).
+  useEffect(() => {
+    if (isFramed) {
+      postEmbedMessage({ type: "rbank:ready" });
+    }
+  }, [isFramed]);
+
+  // Aktuelle Inhaltshoehe melden, damit der Host das iframe passend skaliert.
+  useEffect(() => {
+    if (!isFramed || successRedirectUrl) {
+      return;
+    }
+
+    const root = rootRef.current;
+    if (!root) {
+      return;
+    }
+
+    postEmbedMessage({ type: "rbank:height", height: root.scrollHeight });
+  }, [
+    isFramed,
+    step,
+    filteredUsers.length,
+    paymentPin.length,
+    message,
+    isProcessing,
+    successRedirectUrl,
+    initialSession.status,
+  ]);
+
+  // Nicht-PENDING-Zustaende (bereits bezahlt/abgebrochen/abgelaufen/erstattet)
+  // an den Host melden, damit er z.B. ein Modal schliessen kann.
+  useEffect(() => {
+    if (!isFramed || initialSession.status === "PENDING") {
+      return;
+    }
+
+    postEmbedMessage({ type: "rbank:status", status: initialSession.status });
+  }, [isFramed, initialSession.status]);
+
   useEffect(() => {
     if (!successRedirectUrl) {
       return;
     }
 
+    if (isFramed) {
+      // Im iframe entscheidet der Host (SDK), wohin der Nutzer danach geht.
+      postEmbedMessage({ type: "rbank:success", redirectUrl: successRedirectUrl });
+      return;
+    }
+
     window.location.href = successRedirectUrl;
-  }, [successRedirectUrl]);
+  }, [isFramed, successRedirectUrl]);
 
   async function submitPayment() {
     if (!selectedUser) {
@@ -146,7 +198,7 @@ export function EmbeddedCheckoutFlow({
 
   if (successRedirectUrl) {
     return (
-      <Shell>
+      <Shell rootRef={rootRef}>
         <ProcessingState />
       </Shell>
     );
@@ -154,14 +206,14 @@ export function EmbeddedCheckoutFlow({
 
   if (initialSession.status !== "PENDING") {
     return (
-      <Shell>
+      <Shell rootRef={rootRef}>
         <StatusCard session={initialSession} />
       </Shell>
     );
   }
 
   return (
-    <Shell>
+    <Shell rootRef={rootRef}>
       <Header
         session={initialSession}
         step={step}
@@ -202,9 +254,18 @@ export function EmbeddedCheckoutFlow({
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({
+  children,
+  rootRef,
+}: {
+  children: React.ReactNode;
+  rootRef?: React.Ref<HTMLDivElement>;
+}) {
   return (
-    <div className="flex h-full min-h-0 flex-col px-4 py-5 text-on-surface">
+    <div
+      ref={rootRef}
+      className="flex h-full min-h-[480px] flex-col px-4 py-5 text-on-surface"
+    >
       {children}
     </div>
   );

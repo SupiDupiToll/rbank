@@ -1,0 +1,12 @@
+/* Schlankes Embed-Layout (Route-Gruppe app/(embed)).
+   Das iframe waechst mit dem Inhalt: Der Host skaliert es ueber die
+   rbank:height-Meldungen des RBankCheckout SDK. Dafuer darf das html-Element
+   hier nicht die 884px-Mindesthoehe der normalen App erben. */
+
+html.embed-root {
+    min-height: auto;
+}
+
+html.embed-root body {
+    min-height: 100dvh;
+}

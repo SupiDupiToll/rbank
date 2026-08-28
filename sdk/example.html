@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>RBank Checkout SDK – Beispiel</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                max-width: 480px;
+                margin: 0 auto;
+                padding: 24px 16px;
+                color: #111;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            p {
+                color: #555;
+                line-height: 1.5;
+            }
+            #checkout {
+                margin-top: 16px;
+                border-radius: 12px;
+                overflow: hidden;
+                background: #f4f4f5;
+                min-height: 120px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>RBank Checkout</h1>
+        <p>
+            Der Betrag und der Empfaenger werden durch die RBank-Session
+            bestimmt. Das iframe wird erst geladen, sobald es in den Viewport
+            kommt (lazy).
+        </p>
+
+        <div id="checkout"></div>
+
+        <script src="https://rbank.sdtoll.de/rbank-checkout.js" defer></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                window.checkoutInstance = RBankCheckout.mount({
+                    token: "pay_DEIN_TOKEN",
+                    key: "DEIN_EMBED_KEY",
+                    container: "#checkout",
+                    lazy: true,
+                    height: 480,
+                    onReady: function () {
+                        console.log("[RBank] Checkout bereit");
+                    },
+                    onHeight: function (height) {
+                        console.log("[RBank] Neue Hoehe:", height);
+                    },
+                    onStatus: function (status) {
+                        console.log("[RBank] Status:", status);
+                    },
+                    onSuccess: function (result) {
+                        console.log("[RBank] Zahlung erfolgreich");
+                        window.location.href = result.redirectUrl;
+                    },
+                });
+            });
+        </script>
+    </body>
+</html>

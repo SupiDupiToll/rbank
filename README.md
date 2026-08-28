@@ -141,7 +141,28 @@ Errors: `401` invalid credentials, `400` invalid input / self-payout, `404` reci
    STACK_ADMIN_EMAILS="admin@example.com"
    ```
 
-The embedded checkout is available at `/embed/pay/:token?key=...` and only allows framing from `https://*.sdtoll.de` via CSP.
+The embedded checkout is available at `/embed/pay/:token?key=...` and only allows framing from `https://*.sdtoll.de` via CSP (override with `RBANK_EMBED_FRAME_ANCESTORS` in `next.config.ts`, e.g. `http://localhost:3000` for local testing).
+
+### Embedded Checkout / RBankCheckout SDK
+
+For host applications, use the **RBankCheckout SDK** (`/rbank-checkout.js`, served by RBank) instead of embedding the iframe directly:
+
+```html
+<script src="https://rbank.example.com/rbank-checkout.js" defer></script>
+<script>
+  RBankCheckout.mount({
+    token: "pay_...",
+    key: "dein-embed-key", // RBANK_EMBED_CHECKOUT_KEY
+    container: "#checkout",
+    lazy: true, // iframe erst laden, wenn sichtbar
+    onSuccess: function (result) { window.location.href = result.redirectUrl; },
+  });
+</script>
+```
+
+Vorteile: lazy geladenes iframe (schnelle Ladezeit), Auto-Sizing per `postMessage`
+und die PIN bleibt im RBank-iframe (Sicherheitsgrenze – Stripe-Elements-Prinzip).
+Vollstaendige Doku: [`sdk/README.md`](sdk/README.md), Beispiel: [`sdk/example.html`](sdk/example.html).
 
 4. Run database migrations and seed:
 
