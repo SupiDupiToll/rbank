@@ -125,6 +125,8 @@ function sourceLabel(source: string) {
     OVERDRAFT_INTEREST: "Dispozins",
     LOAN_DISBURSEMENT: "Kredit",
     LOAN_REPAYMENT: "Rate",
+    CARD_TOPUP: "Karte",
+    PAYOUT: "Auszahlung",
   };
   return map[source] ?? source;
 }

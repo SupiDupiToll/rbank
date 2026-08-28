@@ -17,6 +17,7 @@ const sourceLabels: Record<string, string> = {
   LOAN_DISBURSEMENT: "Kredit",
   LOAN_REPAYMENT: "Rate",
   CARD_TOPUP: "Karte",
+  PAYOUT: "Auszahlung",
 };
 
 function sourceIcon(source: string): string {
@@ -37,6 +38,8 @@ function sourceIcon(source: string): string {
       return "percent";
     case "CARD_TOPUP":
       return "credit_card";
+    case "PAYOUT":
+      return "payments";
     default:
       return "receipt_long";
   }

@@ -29,6 +29,8 @@ model User {
   merchants             Merchant[]
   walletPass            WalletPass?
   card                  Card?
+  payoutsPaid           Payout[]  @relation("PayoutPayer")
+  payoutsReceived       Payout[]  @relation("PayoutRecipient")
 }
 
 model Card {
@@ -114,9 +116,34 @@ model Merchant {
   userId              String?          @map("user_id")
   user                User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   paymentSessions     PaymentSession[]
+  payouts             Payout[]
 
   @@index([isActive, createdAt])
   @@index([userId])
+}
+
+model Payout {
+  id                    String   @id @default(cuid())
+  merchantDbId          String   @map("merchant_db_id")
+  payerUserId           String   @map("payer_user_id")
+  recipientUserId       String   @map("recipient_user_id")
+  amount                Int
+  currency              String   @default("EUR")
+  description           String
+  metadataJson          Json?    @map("metadata_json")
+  idempotencyKey        String?  @map("idempotency_key")
+  payoutDate            DateTime @map("payout_date")
+  outgoingTransactionId String   @map("outgoing_transaction_id")
+  incomingTransactionId String   @map("incoming_transaction_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  merchant              Merchant @relation(fields: [merchantDbId], references: [id], onDelete: Cascade)
+  payerUser             User     @relation("PayoutPayer", fields: [payerUserId], references: [id])
+  recipientUser         User     @relation("PayoutRecipient", fields: [recipientUserId], references: [id])
+
+  @@unique([merchantDbId, idempotencyKey])
+  @@index([merchantDbId, createdAt])
+  @@index([recipientUserId, createdAt])
+  @@index([payerUserId, createdAt])
 }
 
 model PaymentSession {
@@ -321,6 +348,7 @@ enum TransactionSource {
   LOAN_DISBURSEMENT
   LOAN_REPAYMENT
   CARD_TOPUP
+  PAYOUT
 }
 
 enum LoanStatus {

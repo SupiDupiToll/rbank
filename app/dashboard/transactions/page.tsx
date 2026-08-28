@@ -20,6 +20,7 @@ const sourceLabels = {
   LOAN_DISBURSEMENT: "Kredit",
   LOAN_REPAYMENT: "Rate",
   CARD_TOPUP: "Karte",
+  PAYOUT: "Auszahlung",
 } as const;
 
 function sourceIcon(source: string): string {
@@ -40,6 +41,8 @@ function sourceIcon(source: string): string {
       return "percent";
     case "CARD_TOPUP":
       return "credit_card";
+    case "PAYOUT":
+      return "payments";
     default:
       return "receipt_long";
   }
@@ -54,6 +57,7 @@ const sourceTint: Record<string, string> = {
   LOAN_REPAYMENT: "text-primary",
   OVERDRAFT_INTEREST: "text-error",
   ADMIN: "text-on-surface-variant",
+  PAYOUT: "text-secondary",
 };
 
 export default async function TransactionsPage({

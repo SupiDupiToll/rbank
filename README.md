@@ -33,6 +33,64 @@ Built with [Next.js](https://nextjs.org/) (App Router), [Prisma](https://prisma.
 - Refund support
 - QR-code-based payments
 
+## Payout API
+
+Merchants can pay out money to customers from their **owner account** using the same checkout credentials (`Authorization: Bearer <merchantId>:<merchantSecret>`). The amount is debited from the merchant's owner account (`User` linked to the merchant in the admin panel) and credited to the customer's Girokonto. The recipient can be addressed by 8-digit `customerId` **or** by `email`.
+
+| Endpoint | Description |
+|---|---|
+| `POST /api/payouts` | Creates a payout to a customer (debited from the owner account) |
+| `GET /api/payouts` | Lists the merchant's payouts (`?limit=` up to 200, default 50) |
+| `GET /api/payouts/:id` | Returns a single payout |
+
+### Create a payout
+
+```bash
+curl -X POST https://rbank.sdtoll.de/api/payouts \
+  -H "Authorization: Bearer $MERCHANT_ID:$MERCHANT_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 2500,
+    "currency": "EUR",
+    "customerId": "12345678",
+    "description": "Auslosung Gewinnspiel",
+    "metadata": { "campaign": "summer-2026" },
+    "idempotencyKey": "payout-42"
+  }'
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `amount` | `number` | Amount in cents (positive, max 100 000 000) |
+| `currency` | `string` | `EUR` (only currency supported) |
+| `customerId` | `string` | Recipient's 8-digit customer number — exactly one of `customerId` / `email` is required |
+| `email` | `string` | Recipient's email address (resolved via Stack Auth) — exactly one of `customerId` / `email` is required |
+| `description` | `string` | Purpose shown on both statements (max 120 chars) |
+| `metadata` | `object` | Optional key/value metadata |
+| `idempotencyKey` | `string` | Optional unique key per merchant; replaying the same key returns the original payout instead of paying out twice |
+
+Response (`201` on new payout, `200` on idempotent replay):
+
+```json
+{
+  "id": "c...",
+  "status": "COMPLETED",
+  "amount": 2500,
+  "currency": "EUR",
+  "description": "Auslosung Gewinnspiel",
+  "metadata": { "campaign": "summer-2026" },
+  "merchantName": "RundiShop",
+  "customerId": "12345678",
+  "customerName": "Lisa Schmidt",
+  "payoutDate": "2026-08-28T12:00:00.000Z",
+  "createdAt": "2026-08-28T12:00:00.000Z",
+  "outgoingTransactionId": "c...",
+  "incomingTransactionId": "c..."
+}
+```
+
+Errors: `401` invalid credentials, `400` invalid input / self-payout, `404` recipient not found, `422` no owner account assigned or insufficient funds on the owner account.
+
 ## Tech Stack
 
 | Layer | Technology |

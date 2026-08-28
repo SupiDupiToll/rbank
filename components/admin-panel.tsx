@@ -91,6 +91,13 @@ function getTransactionSourceMeta(source: AdminTransaction["source"]) {
     };
   }
 
+  if (source === "PAYOUT") {
+    return {
+      label: "AUSZAHLUNG",
+      className: "bg-secondary-container/20 text-secondary",
+    };
+  }
+
   return {
     label: source,
     className: "bg-surface-container text-on-surface-variant",
