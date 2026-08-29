@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import {
+  appendDigits,
+  NumericKeypad,
+  removeLastDigit,
+} from "@/components/ui/numeric-keypad";
 import { CSRF_HEADER_NAME, getCsrfTokenFromDocumentCookie } from "@/lib/csrf";
 import { formatEuroFromCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -17,9 +19,12 @@ type PaymentRequestFlowProps = {
   recipientUserId?: string;
   recipientEmail: string;
   returnUrl: string;
+  /** Wird aufgerufen, wenn das Popup geschlossen werden soll (statt Navigation). */
+  onClose?: () => void;
 };
 
 const PIN_LENGTH = 4;
+const MAX_DIGITS = 9;
 const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export function PaymentRequestFlow({
@@ -27,17 +32,28 @@ export function PaymentRequestFlow({
   recipientUserId,
   recipientEmail,
   returnUrl,
+  onClose,
 }: PaymentRequestFlowProps) {
   const isScanMode = Boolean(recipientUserId);
-  const [amount, setAmount] = useState("");
+  const [amountInput, setAmountInput] = useState("");
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [step, setStep] = useState<"amount" | "pin">("amount");
 
-  const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
-  const isAmountValid = Number.isInteger(amountCents) && amountCents > 0;
+  const amountCents = amountInput === "" ? 0 : Number(amountInput);
+  const isAmountValid = amountCents > 0;
+
+  function handleAmountAppend(digits: string) {
+    setMessage("");
+    setAmountInput((current) => appendDigits(current, digits, MAX_DIGITS));
+  }
+
+  function handleAmountBackspace() {
+    setMessage("");
+    setAmountInput((current) => removeLastDigit(current));
+  }
 
   function goToPinStep() {
     if (!isAmountValid) {
@@ -59,6 +75,14 @@ export function PaymentRequestFlow({
   function handleBackspace() {
     setMessage("");
     setPin((currentPin) => currentPin.slice(0, -1));
+  }
+
+  function closeOrGoBack() {
+    if (onClose) {
+      onClose();
+      return;
+    }
+    window.location.href = returnUrl;
   }
 
   async function handleConfirm() {
@@ -122,21 +146,13 @@ export function PaymentRequestFlow({
             ? `${formatEuroFromCents(amountCents)} wurde an ${recipientEmail} überwiesen.`
             : `${formatEuroFromCents(amountCents)} wurde dem angegebenen Konto belastet und ${recipientEmail} gutgeschrieben.`}
         </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href={returnUrl as Route}
-            className="bg-primary-container glow-effect flex h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-colors hover:opacity-90 sm:w-auto"
-          >
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            Zurück
-          </Link>
-          <Link
-            href="/dashboard"
-            className="glass-card flex h-14 w-full items-center justify-center rounded-full px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container sm:w-auto"
-          >
-            Zum Dashboard
-          </Link>
-        </div>
+        <Button
+          className="h-14 w-full"
+          onClick={closeOrGoBack}
+          type="button"
+        >
+          Fertig
+        </Button>
       </Card>
     );
   }
@@ -144,68 +160,68 @@ export function PaymentRequestFlow({
   return (
     <div className="mx-auto max-w-2xl">
       {step === "amount" ? (
-        <Card className="space-y-8">
+        <Card className="space-y-6">
           <div>
             <p className="font-label-sm text-label-sm text-primary">Schritt 1</p>
             <h1 className="font-headline-md text-headline-md mt-3 text-on-surface">
               Betrag eingeben
             </h1>
-            <p className="mt-3 text-on-surface-variant">
+            <p className="mt-2 text-sm text-on-surface-variant">
               {isScanMode
                 ? `Lege zuerst fest, wie viel an ${recipientEmail} gezahlt werden soll.`
                 : `Lege zuerst fest, wie viel an ${recipientEmail} gesendet werden soll.`}
             </p>
           </div>
 
-          <div className="space-y-2">
-            <label className="font-label-sm text-label-sm text-on-surface">
-              Betrag in EUR
-            </label>
-            <Input
-              inputMode="decimal"
-              onChange={(event) => setAmount(event.target.value)}
-              placeholder="25,00"
-              value={amount}
-            />
-          </div>
-
-          <div className="glass-card mesh-gradient rounded-xl p-5">
-            <p className="text-sm text-on-surface-variant">Vorschau</p>
-            <p className="font-balance-display text-balance-display mt-2 text-primary">
-              {isAmountValid ? formatEuroFromCents(amountCents) : "0,00 €"}
+          <div className="text-center">
+            <p className="text-sm text-on-surface-variant">Betrag</p>
+            <p className="font-balance-display text-balance-display mt-2 break-words text-on-surface">
+              {amountCents === 0 ? "0,00 €" : formatEuroFromCents(amountCents)}
             </p>
           </div>
 
+          <NumericKeypad
+            onAppend={handleAmountAppend}
+            onBackspace={handleAmountBackspace}
+          />
+
           {message ? <p className="text-sm text-error">{message}</p> : null}
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3">
             <Button
-              className="h-14 w-full text-sm sm:w-auto sm:flex-1"
+              className="h-14 w-full text-sm"
+              disabled={!isAmountValid}
               onClick={goToPinStep}
               type="button"
             >
               Weiter zur PIN
             </Button>
-            <Link
-              href={returnUrl as Route}
-              className="glass-card flex h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container sm:w-auto"
+            <Button
+              className="w-full"
+              onClick={closeOrGoBack}
+              type="button"
+              variant="outline"
             >
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
-              Zum Dashboard
-            </Link>
+              Abbrechen
+            </Button>
           </div>
         </Card>
       ) : (
-        <Card className="space-y-8">
+        <Card className="space-y-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-label-sm text-label-sm text-primary">Schritt 2</p>
+              <p className="font-label-sm text-label-sm text-primary">
+                Schritt 2
+              </p>
               <h2 className="font-headline-md text-headline-md mt-3 text-on-surface">
                 PIN eingeben
               </h2>
             </div>
             <Button
-              onClick={() => setStep("amount")}
+              onClick={() => {
+                setMessage("");
+                setStep("amount");
+              }}
               type="button"
               variant="outline"
             >

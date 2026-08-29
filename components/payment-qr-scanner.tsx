@@ -318,6 +318,7 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
               recipientUserId={scannedRecipient.userId}
               recipientEmail={scannedRecipient.displayName}
               returnUrl="/dashboard"
+              onClose={closePaymentPopup}
             />
           </div>
         </div>
