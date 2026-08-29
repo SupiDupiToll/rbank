@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#131313",
+  themeColor: "#f7f9fb",
   width: "device-width",
   initialScale: 1,
 };
@@ -36,7 +36,7 @@ export default function EmbedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" className="dark embed-root">
+    <html lang="de" className="embed-root">
       <body className={inter.variable}>{children}</body>
     </html>
   );

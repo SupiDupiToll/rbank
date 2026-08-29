@@ -156,7 +156,7 @@ export function CustomerShell({
 
       {/* BottomNavBar (Mobile) */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-lg border-t border-white/10 bg-surface/80 shadow-[0_-10px_30px_rgba(127,61,255,0.1)] backdrop-blur-xl md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-lg border-t border-white/40 bg-surface/80 shadow-[0_-10px_30px_rgba(30,58,95,0.12)] backdrop-blur-xl md:hidden"
         style={{
           paddingBottom: "calc(env(safe-area-inset-bottom) + 0.5rem)",
         }}
@@ -185,7 +185,7 @@ export function CustomerShell({
                   {item.label}
                 </span>
                 {active ? (
-                  <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_#7f3dff]" />
+                  <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-secondary-container shadow-[0_0_8px_#5ed8ff]" />
                 ) : null}
               </Link>
             );

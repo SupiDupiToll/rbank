@@ -951,7 +951,7 @@ function PinKeypad() {
         key ? (
           <div
             key={`${key}-${index}`}
-            className="flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-lg font-bold text-white"
+            className="flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-surface-container-high text-lg font-bold text-on-surface"
           >
             {key}
           </div>
@@ -975,7 +975,7 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-on-surface-variant">{label}</span>
-      <span className={negative ? "font-bold text-rose-200" : "font-bold text-white"}>
+      <span className={negative ? "font-bold text-error" : "font-bold text-on-surface"}>
         {value}
       </span>
     </div>
@@ -1001,7 +1001,7 @@ export function DemoCheckoutView() {
               <p className="text-sm font-bold uppercase tracking-widest text-primary">
                 RBank Pay
               </p>
-              <h1 className="mt-3 text-4xl  font-black leading-[1.1] tracking-tight text-white sm:text-5xl">
+              <h1 className="mt-3 text-4xl  font-black leading-[1.1] tracking-tight text-on-surface sm:text-5xl">
                 Bezahlung an {session.merchant.name}
               </h1>
               <p className="mt-3 text-base leading-relaxed text-on-surface-variant">
@@ -1015,7 +1015,7 @@ export function DemoCheckoutView() {
         <div className="space-y-8 px-6 py-6 sm:px-8 sm:py-8">
           <div className="rounded-xl border border-white/10 bg-surface-container-high/40 p-6">
             <p className="text-sm font-bold uppercase tracking-widest text-primary">Betrag</p>
-            <p className="mt-3 text-5xl  font-black tracking-tight text-white">
+            <p className="mt-3 text-5xl  font-black tracking-tight text-on-surface">
               {formatEuroFromCents(session.amount)}
             </p>
             <p className="mt-4 text-base leading-relaxed text-on-surface-variant">
@@ -1042,7 +1042,7 @@ export function DemoCheckoutView() {
               <PinKeypad />
             </div>
 
-            <div className="h-14 w-full rounded-2xl bg-primary-container text-center text-sm font-bold text-on-surface inline-flex items-center justify-center">
+            <div className="h-14 w-full rounded-2xl bg-primary-container text-center text-sm font-bold text-white inline-flex items-center justify-center">
               Jetzt bezahlen
             </div>
             <p className="text-center text-sm font-semibold text-on-surface-variant">
@@ -1079,7 +1079,7 @@ export function DemoEmbeddedCheckoutView() {
               PIN
             </span>
           </div>
-          <p className="mt-2 truncate text-sm font-bold text-white">
+          <p className="mt-2 truncate text-sm font-bold text-white/90">
             Kaffeehaus Central
           </p>
           <p className="mt-0.5 text-2xl font-black tracking-tight text-primary">
@@ -1105,7 +1105,7 @@ export function DemoEmbeddedCheckoutView() {
                       : "border-white/10 bg-surface-container-high hover:border-white/10",
                   )}
                 >
-                  <p className="truncate text-sm font-semibold text-white">{user.displayName}</p>
+                  <p className="truncate text-sm font-semibold text-on-surface">{user.displayName}</p>
                   <p className="truncate text-[11px] text-on-surface-variant/70">#{user.customerId}</p>
                 </button>
               ))}
@@ -1113,7 +1113,7 @@ export function DemoEmbeddedCheckoutView() {
             <button
               type="button"
               onClick={() => setStep("pin")}
-              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-on-surface"
+              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-white"
             >
               Weiter
             </button>
@@ -1122,7 +1122,7 @@ export function DemoEmbeddedCheckoutView() {
           <div className="flex flex-1 flex-col">
             {selectedUser ? (
               <div className="rounded-lg border border-white/10 bg-surface-container-high px-3 py-2">
-                <p className="truncate text-sm font-semibold text-white">{selectedUser.displayName}</p>
+                <p className="truncate text-sm font-semibold text-on-surface">{selectedUser.displayName}</p>
                 <p className="truncate text-[11px] text-on-surface-variant/70">#{selectedUser.customerId}</p>
               </div>
             ) : null}
@@ -1149,7 +1149,7 @@ export function DemoEmbeddedCheckoutView() {
                   key ? (
                     <div
                       key={`${key}-${index}`}
-                      className="flex h-12 items-center justify-center rounded-lg border border-white/10 bg-surface-container-high text-base font-bold text-white"
+                      className="flex h-12 items-center justify-center rounded-lg border border-white/10 bg-surface-container-high text-base font-bold text-on-surface"
                     >
                       {key === "←" ? "⌫" : key}
                     </div>
@@ -1162,7 +1162,7 @@ export function DemoEmbeddedCheckoutView() {
             <button
               type="button"
               onClick={() => setStep("user")}
-              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-on-surface"
+              className="mt-3 w-full rounded-lg bg-primary-container py-2.5 text-sm font-bold text-white"
             >
               Jetzt bezahlen
             </button>
@@ -1321,7 +1321,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-bold uppercase tracking-[0.28em] text-on-surface-variant/70">
         {label}
       </p>
-      <p className="mt-3 text-2xl font-black text-white">{value}</p>
+      <p className="mt-3 text-2xl font-black text-on-surface">{value}</p>
     </div>
   );
 }

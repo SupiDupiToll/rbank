@@ -178,7 +178,7 @@ export default async function DashboardPage() {
               <span
                 className={`relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform group-active:scale-95 ${
                   action.primary
-                    ? "bg-primary-container text-white shadow-[0_0_20px_rgba(127,61,255,0.4)]"
+                    ? "bg-primary-container text-white shadow-[0_0_20px_rgba(94,216,255,0.35)]"
                     : "glass-card text-on-surface"
                 }`}
               >

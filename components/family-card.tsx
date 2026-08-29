@@ -189,7 +189,7 @@ export function FamilyCard({
 
   return (
     <div className="space-y-6" id="family-card">
-      <div className="virtual-card-bg relative rounded-2xl p-6 shadow-[0_20px_40px_rgba(127,61,255,0.25)] transition-transform duration-300 sm:p-8">
+      <div className="virtual-card-bg relative rounded-2xl p-6 shadow-[0_20px_40px_rgba(30,58,95,0.25)] transition-transform duration-300 sm:p-8">
         <div className="relative z-10 flex items-start justify-between">
           <div>
             <p className="font-label-sm text-label-sm text-white/70">RBank</p>

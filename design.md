@@ -1,245 +1,165 @@
-# Design System — KAI 2.0
-
-> This file defines the visual design system to be used consistently across all generated apps and websites. AI generators must strictly follow these specifications.
-
+---
+name: Aetheris Finance
+colors:
+  surface: '#f7f9fb'
+  surface-dim: '#d8dadc'
+  surface-bright: '#f7f9fb'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f2f4f6'
+  surface-container: '#eceef0'
+  surface-container-high: '#e6e8ea'
+  surface-container-highest: '#e0e3e5'
+  on-surface: '#191c1e'
+  on-surface-variant: '#43474e'
+  inverse-surface: '#2d3133'
+  inverse-on-surface: '#eff1f3'
+  outline: '#74777f'
+  outline-variant: '#c4c6cf'
+  surface-tint: '#455f87'
+  primary: '#022448'
+  on-primary: '#ffffff'
+  primary-container: '#1e3a5f'
+  on-primary-container: '#8aa4cf'
+  inverse-primary: '#adc8f5'
+  secondary: '#006780'
+  on-secondary: '#ffffff'
+  secondary-container: '#5ed8ff'
+  on-secondary-container: '#005c72'
+  tertiary: '#390061'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#580091'
+  on-tertiary-container: '#c886ff'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#d5e3ff'
+  primary-fixed-dim: '#adc8f5'
+  on-primary-fixed: '#001c3b'
+  on-primary-fixed-variant: '#2d486d'
+  secondary-fixed: '#b7eaff'
+  secondary-fixed-dim: '#5bd5fc'
+  on-secondary-fixed: '#001f28'
+  on-secondary-fixed-variant: '#004e61'
+  tertiary-fixed: '#f2daff'
+  tertiary-fixed-dim: '#e0b6ff'
+  on-tertiary-fixed: '#2e004e'
+  on-tertiary-fixed-variant: '#6b00af'
+  background: '#f7f9fb'
+  on-background: '#191c1e'
+  surface-variant: '#e0e3e5'
+typography:
+  display-lg:
+    fontFamily: Hanken Grotesk
+    fontSize: 48px
+    fontWeight: '700'
+    lineHeight: 56px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Hanken Grotesk
+    fontSize: 32px
+    fontWeight: '600'
+    lineHeight: 40px
+  headline-lg-mobile:
+    fontFamily: Hanken Grotesk
+    fontSize: 24px
+    fontWeight: '600'
+    lineHeight: 32px
+  headline-md:
+    fontFamily: Hanken Grotesk
+    fontSize: 24px
+    fontWeight: '600'
+    lineHeight: 32px
+  body-lg:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 18px
+    fontWeight: '400'
+    lineHeight: 28px
+  body-md:
+    fontFamily: Plus Jakarta Sans
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
+  label-caps:
+    fontFamily: JetBrains Mono
+    fontSize: 12px
+    fontWeight: '500'
+    lineHeight: 16px
+    letterSpacing: 0.05em
+  currency-display:
+    fontFamily: Hanken Grotesk
+    fontSize: 40px
+    fontWeight: '700'
+    lineHeight: 48px
+rounded:
+  sm: 0.25rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
+  full: 9999px
+spacing:
+  base: 8px
+  container-margin: 24px
+  gutter: 16px
+  card-padding: 24px
+  section-gap: 40px
 ---
 
-## 1. Color Palette
+## Brand & Style
+The design system embodies a "Precision-Glass" aesthetic, blending the reliability of traditional banking with the ethereal innovation of decentralized finance. It is built to feel premium, lightweight, and incredibly secure.
 
-| Token | Hex | Usage |
-|---|---|---|
-| `primary` | `#b7e44b` | Accent color, CTAs, icons, highlights, positive values |
-| `background-dark` | `#101622` (website) / `#0f1115` (app) | Main background (dark mode) |
-| `background-light` | `#f5f6f8` | Background for light mode variants |
-| `slate-800` | `#1e293b` | Card backgrounds, input fields, secondary surfaces |
-| `slate-900` | `#0f172a` | Subtle section backgrounds (`bg-slate-900/40`) |
-| `slate-400` | `#94a3b8` | Subtext, labels, inactive icons |
-| `slate-500` | `#64748b` | Metadata, descriptions, disabled states |
-| `slate-100` | `#f1f5f9` | Primary body text |
-| `white/10–20` | `rgba(255,255,255,0.1–0.2)` | Decorative circles and overlay elements |
+The visual direction uses **Glassmorphism** as its foundation. By utilizing translucent layers and varying levels of background blur, the UI creates a sense of depth and openness. This transparency symbolizes the brand's commitment to financial clarity. High-end fintech elements—like soft gradients and noise-textured backgrounds—are paired with a structured, professional layout to maintain institutional trust.
 
-**Rules:**
-- Dark mode is the **default**. Always set `class="dark"` on `<html>`.
-- The primary color `#b7e44b` (lime/neon green) should be used **sparingly**: only for the most important CTA, active states, and value highlights.
-- No purple gradients, no blue primary colors, no white backgrounds.
-- Glassmorphism effects using `bg-slate-900/30–50` and `border-slate-800/40–50` for cards.
+The target experience is "Effortless Authority"—the interface should feel as light as air but as solid as a vault. It is optimized for high-net-worth individuals, crypto-native investors, and administrative power-users who require dense information presented with visual grace.
 
----
+## Colors
+The palette is anchored by **Deep Atlantic Blue** (#1E3A5F), providing the "Safety" and "Authority" required for banking. This is contrasted by **Cyan Spark** (#4CC9F0), used for primary actions and highlights to inject energy and modern tech-appeal.
 
-## 2. Typography
+- **Primary:** Used for heavy text, primary navigation backgrounds, and core branding elements.
+- **Secondary:** Reserved for "AirCoin" crypto interactions, call-to-action buttons, and progress indicators.
+- **Surface Strategy:** We use a "Frosted White" approach. Backgrounds are never pure white; they are subtle, cool-toned neutrals or soft radial gradients (Blue-to-White) that allow the glass layers to "pop."
+- **Status Colors:** These use a vibrant, high-saturation palette to ensure critical financial information (like a failed transaction or a market surge) is immediately legible against the soft UI.
 
-### Font Families
+## Typography
+The typographic system uses a tri-font approach to balance personality and utility:
+1. **Hanken Grotesk (Headlines):** A sharp, contemporary grotesque that feels engineered and precise. Used for large balance displays and section headers.
+2. **Plus Jakarta Sans (Body):** A friendly yet professional sans-serif with excellent legibility at small sizes. Used for all core interface text and descriptions.
+3. **JetBrains Mono (Labels/Data):** A technical monospaced font used for "AirCoin" wallet addresses, transaction IDs, and micro-labels to reinforce the "fintech/crypto" precision.
 
-| Role | Font | Weights | Usage |
-|---|---|---|---|
-| **Display / Heading** | `Playfair Display` | 700, 900 | Hero headlines, section titles, project names |
-| **Body / UI** | `Manrope` | 400, 500, 700, 800 | Navigation, body text, labels, buttons, app UI |
-| **Alternative (app-only)** | `Inter` | 400–900 | When no serif is desired, e.g. banking/fintech apps |
+**Hierarchy Note:** Use high-contrast weights (Bold 700 vs Regular 400) rather than color shifts to denote importance, maintaining the clean aesthetic.
 
-### Google Donts (privatecoffee) Import
-```html
-<link href="https://googledonts.private.coffee/css2?family=Manrope:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet"/>
-```
+## Layout & Spacing
+This design system utilizes a **Fluid-Fixed Hybrid Grid**. 
+- **Desktop:** A 12-column grid with a max-width of 1440px. Gutters are fixed at 24px to ensure the glass panels have clear separation.
+- **Mobile:** A 4-column fluid grid with 16px margins. 
 
-### Typographic Scale & Rules
+**Rhythm:** We follow an 8px soft-grid. All padding and margins must be multiples of 8. Large "Glass Containers" (cards) should use generous internal padding (24px or 32px) to evoke a premium, spacious feel. Elements should feel "ungrounded"—use whitespace to separate groups rather than heavy dividers.
 
-- **Hero headline:** `text-5xl md:text-7xl lg:text-8xl`, `font-display font-black`, `leading-[1.1]`, `tracking-tight`
-- **Section title:** `text-4xl md:text-5xl`, `font-display font-black`
-- **Card title:** `text-2xl font-display font-bold`
-- **Label / Eyebrow:** `text-sm font-bold uppercase tracking-widest`, color `text-primary`
-- **Body text:** `text-lg md:text-xl text-slate-400 leading-relaxed`
-- **Meta / Timestamp:** `text-[10px] uppercase tracking-wider text-slate-500`
-- **Italic accent:** Key words in headlines should be italicized (`<span class="italic">`) and highlighted with `text-primary` or `opacity-60`
+## Elevation & Depth
+Depth is created through optical layering rather than traditional black shadows.
+1. **Level 0 (Base):** Subtle mesh gradient (Soft Blue/White) with a fine grain texture.
+2. **Level 1 (Panels):** Semi-transparent white (70% opacity) with a 20px backdrop-blur. A 1px solid white border at 40% opacity mimics the edge of a glass sheet.
+3. **Level 2 (Active/Floating):** Increased blur (40px) and a very soft, diffused primary-color-tinted shadow (e.g., Deep Blue shadow at 5% opacity).
+4. **Level 3 (Modals):** High contrast. Darker backdrop overlay with a highly focused glass card in the foreground.
 
----
+Avoid inner shadows. Use "glow" effects (0px blur, 10-15px spread, low opacity) for active states on buttons or wallet cards.
 
-## 3. Spacing & Layout
+## Shapes
+The shape language is consistently "Soft-Rounded." 
+- **Cards/Containers:** Use `rounded-xl` (24px) to create a modern, approachable silhouette.
+- **Buttons/Inputs:** Use `rounded-lg` (16px) for a comfortable touch target that feels integrated into the card language.
+- **Avatars/Icons:** Circles or "Squircular" shapes are preferred to contrast the linear nature of financial data.
 
-- **Max-width container:** `max-w-7xl mx-auto px-6 lg:px-12`
-- **Mobile app container:** `max-w-md mx-auto` (centered, full-screen mobile)
-- **Section padding:** `py-24 lg:py-40`
-- **Grid:** 12-column base (`grid-cols-12`) for complex layouts, simple grids with `gap-8` to `gap-12`
-- **Header height:** `h-20`, fixed with `backdrop-blur-md`
+Edges should always be smoothed; avoid sharp corners to maintain the "Aetheris" lightness.
 
----
-
-## 4. Border Radius
-
-| Token | Value | Application |
-|---|---|---|
-| `DEFAULT` / `lg` / `xl` | `1.5rem` | Cards, sections, containers |
-| `full` | `9999px` | Buttons (pill shape), avatars, badges |
-| `lg` (inputs) | `0.5rem` | Form inputs, transaction rows |
-
-**Rule:** Large, soft radii for cards and sections. Pill shape (`rounded-full`) exclusively for interactive elements like buttons and tags.
-
----
-
-## 5. Components
-
-### Buttons
-
-```html
-<!-- Primary CTA (Pill) -->
-<a class="inline-flex items-center justify-center h-14 px-8 rounded-full bg-primary text-background-dark font-bold text-lg hover:shadow-lg hover:shadow-primary/20 transition-all">
-  Label
-</a>
-
-<!-- Secondary (Outline) -->
-<a class="inline-flex items-center justify-center h-14 px-8 rounded-full border-2 border-slate-800 font-bold text-lg hover:bg-slate-800 transition-colors">
-  Label
-</a>
-
-<!-- Full-width app button -->
-<button class="w-full h-14 rounded-lg bg-primary text-background-dark font-black tracking-wide hover:brightness-110 transition-all active:scale-[0.98]">
-  Label
-</button>
-```
-
-**Glow effect for primary CTAs:**
-```css
-.glow-accent {
-  box-shadow: 0 0 25px rgba(183, 228, 75, 0.25);
-}
-```
-
-### Cards / Panels
-
-```html
-<!-- Standard card -->
-<div class="bg-slate-900/40 p-6 rounded-lg border border-slate-800/50">
-  ...
-</div>
-
-<!-- Project card with hover overlay -->
-<div class="group overflow-hidden rounded-xl bg-slate-800 relative cursor-pointer">
-  <img class="transition-transform duration-700 group-hover:scale-105" .../>
-  <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-    <span class="bg-primary text-background-dark px-6 py-2 rounded-full font-bold">View Project</span>
-  </div>
-</div>
-```
-
-### Form Inputs
-
-```html
-<input class="w-full border-none bg-slate-800 rounded-lg p-4 focus:ring-2 focus:ring-primary outline-none text-slate-100" type="text" placeholder="..."/>
-<textarea class="w-full border-none bg-slate-800 rounded-lg p-4 focus:ring-2 focus:ring-primary outline-none" rows="4"></textarea>
-```
-
-### Navigation (Desktop)
-
-- Fixed, `backdrop-blur-md`, `bg-background-dark/80`
-- Bottom border: `border-primary/10`
-- Links: `text-sm font-medium hover:text-primary transition-colors`
-- CTA link in nav: pill button with `bg-primary text-background-dark`
-
-### Navigation (Mobile Bottom Bar)
-
-```html
-<nav class="fixed bottom-0 bg-background-dark/80 backdrop-blur-xl border-t border-slate-800/50 flex justify-around items-center py-5">
-  <!-- Active icon: text-primary, FILL 1 -->
-  <!-- Inactive icons: text-slate-600 hover:text-primary -->
-</nav>
-```
-
-### Icons
-
-- Exclusively **Material Symbols Outlined**
-- Import: `https://googledonts.private.coffee/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1`
-- Default: `FILL 0`, active/featured icons: `FILL 1` via `font-variation-settings`
-- Color: `text-primary` for highlights, `text-slate-400` for neutral icons
-
----
-
-## 6. Visual Effects & Atmosphere
-
-### Decorative Background Accents
-```html
-<div class="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -mr-32 -mt-32 pointer-events-none"></div>
-<div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 pointer-events-none"></div>
-```
-
-### Gradient Overlays
-```html
-<!-- Subtle color wash over images -->
-<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-```
-
-### Transitions
-- Hover scale on images: `transition-transform duration-700 group-hover:scale-105`
-- Opacity transitions: `transition-opacity`
-- Color transitions: `transition-colors`
-- General: `transition-all`
-
----
-
-## 7. CTA Section (Highlight Block)
-
-Full primary-color block with contrast text:
-```html
-<div class="bg-primary rounded-xl p-8 md:p-16 text-background-dark relative overflow-hidden">
-  <!-- Decorative circles, absolutely positioned -->
-  <div class="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -mr-32 -mt-32"></div>
-  <!-- Content relatively positioned with z-10 -->
-  <div class="relative z-10">
-    <h2 class="font-display font-black">Headline <span class="opacity-60 italic">keyword</span></h2>
-  </div>
-</div>
-```
-
----
-
-## 8. Eyebrow Label Pattern
-
-Always placed above section titles:
-```html
-<span class="text-primary font-bold uppercase tracking-widest text-sm block mb-4">Category</span>
-<h2 class="text-4xl md:text-5xl font-display font-black">Section Title</h2>
-```
-
----
-
-## 9. Tailwind Configuration (Base)
-
-```js
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "primary": "#b7e44b",
-        "background-light": "#f5f6f8",
-        "background-dark": "#101622",
-      },
-      fontFamily: {
-        "sans": ["Manrope", "sans-serif"],
-        "display": ["Playfair Display", "serif"],
-      },
-      borderRadius: {
-        "DEFAULT": "1.5rem",
-        "lg": "1.5rem",
-        "xl": "1.5rem",
-        "full": "9999px",
-      },
-    },
-  },
-}
-```
-
----
-
-## 10. Do's & Don'ts
-
-| ✅ Do | ❌ Don't |
-|---|---|
-| Use lime green `#b7e44b` as the sole accent color | Mix multiple colorful accent colors |
-| Use Playfair Display for headlines (websites) | Use Arial, Roboto, or system fonts |
-| Use pill buttons (`rounded-full`) for CTAs | Use square buttons without radius |
-| Default to dark mode | Default to a white/light background |
-| Use glassmorphism cards with `bg-slate-900/40` | Use fully opaque cards in light grey |
-| Apply `tracking-widest uppercase` to eyebrow labels | Use label text without capitalization and letter-spacing |
-| Add italic accent words in headlines | Use bold underlines or other emphasis styles |
-| Use Material Symbols Outlined exclusively | Use Font Awesome, Heroicons, or other icon sets |
-| Add hover scale effect on project images | Leave images static with no interactivity |
-| Use `primary/10` as a subtle border color | Use plain white or black borders |
+## Components
+- **Buttons:** 
+    - *Primary:* Solid Cyan gradient with white text. 
+    - *Secondary:* Glass-fill with a 1px white border. 
+    - *Ghost:* Icon-only or text-only with a subtle hover blur.
+- **Cards (The "Vault" Card):** Specifically for credit cards or crypto wallets. These should use vibrant gradients (Primary to Tertiary) with a glass overlay for the chip and card numbers.
+- **Input Fields:** Semi-transparent white backgrounds with a bottom-only or soft-border focus state. Labels should use the `label-caps` (JetBrains Mono) style.
+- **Chips/Badges:** Small, pill-shaped elements with 10% opacity backgrounds of their status color (e.g., a green chip for "Success" has a #06D6A0 background at 10% opacity).
+- **Lists:** Transaction lists should be "borderless." Separate items with generous vertical spacing and use the JetBrains Mono font for the numerical values (+/- amount).
+- **Admin Tables:** Use high-density rows but keep the "Glass" headers to distinguish from the data rows.

@@ -1,13 +1,19 @@
 import "@/app/globals.css";
 import "material-symbols/outlined.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/stack/server";
 
-const inter = Inter({
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-hanken",
+  display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -19,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#131313",
+  themeColor: "#f7f9fb",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -31,7 +37,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "RBank",
   },
   icons: {
@@ -49,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de" className="dark">
+    <html lang="de">
       <head>
         <link
           rel="apple-touch-icon"
@@ -59,10 +65,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
+          content="default"
         />
         <meta name="apple-mobile-web-app-title" content="RBank" />
-        <meta name="theme-color" content="#131313" />
+        <meta name="theme-color" content="#f7f9fb" />
         <meta name="mobile-web-app-capable" content="yes" />
         {/* iPhone splash screens */}
         {/* iPhone SE (2nd/3rd gen) – 375x667 @2x */}
@@ -108,11 +114,11 @@ export default function RootLayout({
           href="/splash/14promax-portrait.png"
         />
       </head>
-      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${hanken.variable} ${jakarta.variable} ${jetbrainsMono.variable}`}>
         <StackProvider app={stackServerApp}>
           <StackTheme>
-            <div className="pointer-events-none fixed -right-40 -top-40 hidden h-96 w-96 rounded-full bg-primary-container/10 blur-3xl lg:block" />
-            <div className="pointer-events-none fixed -bottom-40 -left-40 hidden h-80 w-80 rounded-full bg-secondary-container/10 blur-3xl lg:block" />
+            <div className="pointer-events-none fixed -right-40 -top-40 hidden h-96 w-96 rounded-full bg-primary-fixed/40 blur-3xl lg:block" />
+            <div className="pointer-events-none fixed -bottom-40 -left-40 hidden h-80 w-80 rounded-full bg-secondary-fixed/40 blur-3xl lg:block" />
             <main className="relative z-10 min-h-screen">{children}</main>
           </StackTheme>
         </StackProvider>

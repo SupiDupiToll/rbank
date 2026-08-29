@@ -3,36 +3,47 @@
 @tailwind utilities;
 
 :root {
-    color-scheme: dark;
+    color-scheme: light;
 }
 
 html {
-    @apply min-h-screen bg-[#0d0d0d] text-on-background;
+    @apply min-h-screen bg-background text-on-background;
     min-height: max(884px, 100dvh);
 }
 
 body {
-    @apply min-h-screen bg-[#0d0d0d] font-sans text-on-background antialiased;
+    @apply min-h-screen bg-background font-sans text-on-background antialiased;
     overflow-x: hidden;
-    font-family: var(--font-inter), sans-serif;
+    font-family: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
 }
 
 @layer components {
+    /* Level 1 (Panels): semi-transparent white + backdrop blur + 1px white edge */
     .glass-card {
-        @apply border border-white/10 bg-surface-container-high/80;
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        @apply border border-white/40 bg-white/70;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 1px 2px rgba(2, 36, 72, 0.04);
     }
 
+    /* Level 2 (Active/Floating): deeper blur + primary-tinted diffused shadow */
+    .glass-card-raised {
+        @apply border border-white/40 bg-white/75;
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        box-shadow: 0 8px 32px rgba(30, 58, 95, 0.08);
+    }
+
+    /* Level 0 (Base): soft blue-to-white mesh gradient */
     .mesh-gradient {
         background-image:
-            radial-gradient(circle at 10% 20%, rgba(127, 61, 255, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(20, 209, 255, 0.1) 0%, transparent 40%);
+            radial-gradient(circle at 10% 20%, rgba(30, 58, 95, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(0, 103, 128, 0.06) 0%, transparent 40%),
+            linear-gradient(160deg, #f7f9fb 0%, #eef3f9 100%);
     }
 
     .glow-effect {
-        box-shadow: 0 0 30px rgba(127, 61, 255, 0.2);
+        box-shadow: 0 0 0 1px rgba(94, 216, 255, 0.35), 0 0 24px rgba(94, 216, 255, 0.25);
     }
 
     .hide-scrollbar::-webkit-scrollbar {
@@ -44,29 +55,30 @@ body {
         scrollbar-width: none;
     }
 
+    /* Vault card: Deep Atlantic Blue gradient with glass overlay */
     .metal-card-bg {
         @apply relative overflow-hidden;
-        background: linear-gradient(135deg, #2a2a2a 0%, #0d0d0d 100%);
+        background: linear-gradient(135deg, #1e3a5f 0%, #022448 100%);
     }
 
     .metal-card-bg::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at 80% 20%, rgba(127, 61, 255, 0.3) 0%, transparent 60%);
+        background: radial-gradient(circle at 80% 20%, rgba(94, 216, 255, 0.25) 0%, transparent 60%);
         pointer-events: none;
     }
 
     .virtual-card-bg {
         @apply relative overflow-hidden;
-        background: linear-gradient(135deg, #14d1ff 0%, #7f3dff 100%);
+        background: linear-gradient(135deg, #1e3a5f 0%, #580091 100%);
     }
 
     .virtual-card-bg::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
+        background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.35) 0%, transparent 60%);
         pointer-events: none;
     }
 }
