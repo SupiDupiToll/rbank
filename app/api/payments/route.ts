@@ -19,8 +19,8 @@ import { refreshWalletPassForUser } from "@/lib/wallet/service";
 
 export async function POST(request: Request) {
   return safeRoute(async () => {
-    const { error, user: recipient } = await requireCustomerWithPin();
-    if (error || !recipient) return error;
+    const { error, user: currentUser } = await requireCustomerWithPin();
+    if (error || !currentUser) return error;
 
     const originError = enforceSameOrigin(request);
     if (originError) return originError;
@@ -31,22 +31,34 @@ export async function POST(request: Request) {
     const rateLimitError = await enforceRateLimit(
       request,
       rateLimitPolicies.customerTransfer,
-      recipient.id,
+      currentUser.id,
     );
     if (rateLimitError) return rateLimitError;
 
-    await settleCustomerAccounting(recipient.id);
+    await settleCustomerAccounting(currentUser.id);
 
     const body = await parseJsonBody(
       request,
-      z.object({
-        payerUserId: cuidSchema,
-        amount: amountCentsSchema,
-        pin: pinSchema,
-      }),
+      z
+        .object({
+          // Modus 1 (Zahlungslink): eingeloggter Nutzer ist Empfänger, payerUserId zahlt
+          payerUserId: cuidSchema.optional(),
+          // Modus 2 (QR-Scan): eingeloggter Nutzer ist Zahler, recipientUserId empfängt
+          recipientUserId: cuidSchema.optional(),
+          amount: amountCentsSchema,
+          pin: pinSchema,
+        })
+        .refine(
+          (value) =>
+            Boolean(value.payerUserId) !== Boolean(value.recipientUserId),
+          "Genau ein Konto angeben.",
+        ),
     );
 
-    if (body.payerUserId === recipient.id) {
+    const payerUserId = body.payerUserId ?? currentUser.id;
+    const recipientUserId = body.recipientUserId ?? currentUser.id;
+
+    if (payerUserId === recipientUserId) {
       return NextResponse.json(
         { error: "Zahlungen vom eigenen Konto sind nicht erlaubt." },
         { status: 400 },
@@ -60,7 +72,7 @@ export async function POST(request: Request) {
       .$transaction(
         async (tx) => {
           const payer = await tx.user.findUnique({
-            where: { id: body.payerUserId },
+            where: { id: payerUserId },
             select: {
               id: true,
               customerId: true,
@@ -69,7 +81,22 @@ export async function POST(request: Request) {
             },
           });
 
-          if (!payer || payer.role !== "CUSTOMER" || !payer.paymentPinHash) {
+          const recipient = await tx.user.findUnique({
+            where: { id: recipientUserId },
+            select: {
+              id: true,
+              customerId: true,
+              role: true,
+            },
+          });
+
+          if (
+            !payer ||
+            payer.role !== "CUSTOMER" ||
+            !payer.paymentPinHash ||
+            !recipient ||
+            recipient.role !== "CUSTOMER"
+          ) {
             throw new Error("PAYMENT_REJECTED");
           }
 
@@ -138,8 +165,8 @@ export async function POST(request: Request) {
       );
     }
 
-    void refreshWalletPassForUser(body.payerUserId);
-    void refreshWalletPassForUser(recipient.id);
+    void refreshWalletPassForUser(payerUserId);
+    void refreshWalletPassForUser(recipientUserId);
 
     return NextResponse.json(
       {

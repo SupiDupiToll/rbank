@@ -11,7 +11,10 @@ import { formatEuroFromCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type PaymentRequestFlowProps = {
-  payerUserId: string;
+  /** Modus Zahlungslink: eingeloggter Nutzer ist Empfänger, diese Person zahlt. */
+  payerUserId?: string;
+  /** Modus QR-Scan: eingeloggter Nutzer ist Zahler, diese Person empfängt. */
+  recipientUserId?: string;
   recipientEmail: string;
   returnUrl: string;
 };
@@ -21,9 +24,11 @@ const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export function PaymentRequestFlow({
   payerUserId,
+  recipientUserId,
   recipientEmail,
   returnUrl,
 }: PaymentRequestFlowProps) {
+  const isScanMode = Boolean(recipientUserId);
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
@@ -78,7 +83,8 @@ export function PaymentRequestFlow({
           [CSRF_HEADER_NAME]: getCsrfTokenFromDocumentCookie(),
         },
         body: JSON.stringify({
-          payerUserId,
+          ...(payerUserId ? { payerUserId } : {}),
+          ...(recipientUserId ? { recipientUserId } : {}),
           amount: amountCents,
           pin,
         }),
@@ -112,8 +118,9 @@ export function PaymentRequestFlow({
           </span>
         </div>
         <p className="text-on-surface-variant">
-          {formatEuroFromCents(amountCents)} wurde dem angegebenen Konto
-          belastet und {recipientEmail} gutgeschrieben.
+          {isScanMode
+            ? `${formatEuroFromCents(amountCents)} wurde an ${recipientEmail} überwiesen.`
+            : `${formatEuroFromCents(amountCents)} wurde dem angegebenen Konto belastet und ${recipientEmail} gutgeschrieben.`}
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
@@ -144,8 +151,9 @@ export function PaymentRequestFlow({
               Betrag eingeben
             </h1>
             <p className="mt-3 text-on-surface-variant">
-              Lege zuerst fest, wie viel an {recipientEmail} gesendet werden
-              soll.
+              {isScanMode
+                ? `Lege zuerst fest, wie viel an ${recipientEmail} gezahlt werden soll.`
+                : `Lege zuerst fest, wie viel an ${recipientEmail} gesendet werden soll.`}
             </p>
           </div>
 

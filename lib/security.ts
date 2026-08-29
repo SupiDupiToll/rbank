@@ -6,6 +6,7 @@ export const MAX_LABEL_LENGTH = 80;
 export const MAX_NAME_LENGTH = 80;
 export const MAX_SLUG_LENGTH = 64;
 export const MIN_PIN_LENGTH = 4;
+export const MAX_SEARCH_RESULTS = 8;
 export const MAX_PIN_LENGTH = 6;
 export const MERCHANT_SECRET_LENGTH = 64;
 

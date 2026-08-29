@@ -95,56 +95,13 @@ export default async function TransactionsPage({
     },
   );
 
-  const eurTransactions = transactions.filter(
-    (transaction) => transaction.currency === "EUR",
-  );
-  const airTransactions = transactions.filter(
-    (transaction) => transaction.currency === "AIR",
-  );
-  const incoming = eurTransactions
-    .filter((t) => t.type === "INCOMING")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const outgoing = eurTransactions
-    .filter((t) => t.type === "OUTGOING")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const airNet = airTransactions.reduce(
-    (sum, transaction) =>
-      sum + (transaction.type === "INCOMING" ? transaction.amount : -transaction.amount),
-    0,
-  );
-
   return (
-    <div className="space-y-8 pb-8">
-      {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="glass-card mesh-gradient rounded-2xl p-5">
-          <p className="font-label-sm text-label-sm text-on-surface-variant">
-            Eingänge
-          </p>
-          <p className="font-balance-display text-balance-display mt-3 text-secondary">
-            +{formatEuroFromCents(incoming)}
-          </p>
-        </div>
-        <div className="glass-card rounded-2xl p-5">
-          <p className="font-label-sm text-label-sm text-on-surface-variant">
-            Ausgänge
-          </p>
-          <p className="font-balance-display text-balance-display mt-3 text-error">
-            -{formatEuroFromCents(outgoing)}
-          </p>
-        </div>
-        <div className="glass-card rounded-2xl p-5">
-          <p className="font-label-sm text-label-sm text-on-surface-variant">
-            AirCoin
-          </p>
-          <p className="font-balance-display text-balance-display mt-3 text-primary">
-            {formatAirFromUnits(airNet)}
-          </p>
-        </div>
-      </div>
-
-      {/* Search */}
-      <form method="get" className="w-full">
+    <div className="space-y-6 pb-8">
+      {/* Search (sticky) */}
+      <form
+        method="get"
+        className="sticky top-[7.5rem] z-30 -mx-5 bg-background/90 px-5 py-3 backdrop-blur-lg md:-mx-8 md:px-8"
+      >
         <div className="relative">
           <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
             search

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
           recipientEmail: emailSchema.optional(),
           amount: amountCentsSchema,
           currency: z.nativeEnum(TransactionCurrency),
-          description: safeTextSchema(120),
+          description: safeTextSchema(120).optional().default(""),
           pin: pinSchema,
         })
         .refine(
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
               type: "OUTGOING",
               amount: body.amount,
               currency: body.currency,
-              description: `Ueberweisung an ${recipient.customerId} · ${body.description}`,
+              description: `Ueberweisung an ${recipient.customerId}${body.description ? ` · ${body.description}` : ""}`,
               date,
               source: "TRANSFER",
               transferId,
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
               type: "INCOMING",
               amount: body.amount,
               currency: body.currency,
-              description: `Ueberweisung von ${user.customerId} · ${body.description}`,
+              description: `Ueberweisung von ${user.customerId}${body.description ? ` · ${body.description}` : ""}`,
               date,
               source: "TRANSFER",
               transferId,

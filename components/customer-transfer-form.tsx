@@ -50,6 +50,9 @@ export function CustomerTransferForm({
   const [isResolvingRecipient, setIsResolvingRecipient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [suggestions, setSuggestions] = useState<
+    { customerId: string; displayName: string }[]
+  >([]);
 
   const availableBalance = currency === "AIR" ? airBalance : balanceCents;
   const availableBalanceLabel = useMemo(
@@ -78,6 +81,39 @@ export function CustomerTransferForm({
     setResolvedRecipient("");
     setResolvedCustomerId("");
     setMessage("");
+
+    const searchController = new AbortController();
+    const searchTimeout = setTimeout(async () => {
+      // Exakte Kundennummern werden über den Resolver bestätigt – keine Suche nötig.
+      if (normalized.length < 2 || /^\d{8}$/.test(normalized)) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/customer/search?q=${encodeURIComponent(normalized)}`,
+          { signal: searchController.signal },
+        );
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          customers: { customerId: string; displayName: string }[];
+        };
+        setSuggestions(data.customers ?? []);
+      } catch {
+        // Suche ist optional – still ignorieren.
+      }
+    }, 250);
+
+    return () => {
+      searchController.abort();
+      clearTimeout(searchTimeout);
+    };
+  }, [recipientInput]);
+
+  useEffect(() => {
+    const normalized = recipientInput.trim();
+
 
     const isCustomerId = /^\d{8}$/.test(normalized);
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
@@ -136,6 +172,17 @@ export function CustomerTransferForm({
       return false;
     }
     return true;
+  }
+
+  function selectSuggestion(suggestion: {
+    customerId: string;
+    displayName: string;
+  }) {
+    setRecipientInput(suggestion.customerId);
+    setResolvedCustomerId(suggestion.customerId);
+    setResolvedRecipient(suggestion.displayName);
+    setSuggestions([]);
+    setMessage("");
   }
 
   function goToPinStep() {
@@ -475,9 +522,41 @@ export function CustomerTransferForm({
               autoFocus
               inputMode="email"
               onChange={(event) => setRecipientInput(event.target.value)}
-              placeholder="47291836 oder max@example.com"
+              onFocus={() => {
+                if (recipientInput.trim().length >= 2) setSuggestions([]);
+              }}
+              placeholder="Name, Kundennummer oder E-Mail"
               value={recipientInput}
             />
+            {suggestions.length > 0 ? (
+              <div className="glass-card max-h-56 overflow-y-auto rounded-xl p-1">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.customerId}
+                    type="button"
+                    onClick={() => selectSuggestion(suggestion)}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-container"
+                  >
+                    <span className="glass-card flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                      <span className="material-symbols-outlined text-base text-primary">
+                        person
+                      </span>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-on-surface">
+                        {suggestion.displayName}
+                      </span>
+                      <span className="block font-label-sm text-label-sm text-on-surface-variant">
+                        {suggestion.customerId}
+                      </span>
+                    </span>
+                    <span className="material-symbols-outlined text-base text-on-surface-variant">
+                      chevron_right
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <p className="flex min-h-5 items-center gap-1 text-xs text-on-surface-variant">
               {isResolvingRecipient ? (
                 <>
@@ -492,7 +571,7 @@ export function CustomerTransferForm({
                   Empfänger: {resolvedRecipient}
                 </>
               ) : (
-                "Kundennummer oder E-Mail-Adresse eingeben"
+                "Name, Kundennummer oder E-Mail-Adresse eingeben"
               )}
             </p>
           </div>

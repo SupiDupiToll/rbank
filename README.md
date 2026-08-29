@@ -13,7 +13,9 @@ Built with [Next.js](https://nextjs.org/) (App Router), [Prisma](https://prisma.
 - **Festgeld** — fixed-term deposit accounts with automated interest
 - Donation boxes — create and manage public donation pages
 - PIN-based transaction authorization with rate limiting and lockout protection
-- QR code payment scanner
+- QR code payment scanner with RBank-only payloads (`RBANK:PAY:<userId>`) – no URL links
+- **Händler QR-Code**: on the „Zahlung“ page every customer can generate a QR code that other RBank users scan to send them money (amount + PIN entry, no redirect)
+- Recipient search by name, customer number or email in the transfer flow
 - PWA support (offline mode, installable)
 - **Family Card / Apple Wallet** — personalized digital bank card as an Apple Wallet pass with live balance updates, signed deep links and push updates
 
