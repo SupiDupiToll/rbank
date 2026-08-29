@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Route } from "next";
-import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
+import { PaymentRequestFlow } from "@/components/payment-request-flow";
 import { cn } from "@/lib/utils";
 
 const RBANK_PAY_PREFIX = "RBANK:PAY:";
@@ -13,27 +12,48 @@ const RBANK_PAY_PREFIX = "RBANK:PAY:";
 function parseRbankPayload(rawValue: string): string | null {
   const trimmedValue = rawValue.trim();
 
-  if (!trimmedValue.startsWith(RBANK_PAY_PREFIX)) {
-    return null;
+  if (trimmedValue.startsWith(RBANK_PAY_PREFIX)) {
+    const recipientUserId = trimmedValue.slice(RBANK_PAY_PREFIX.length).trim();
+    return /^c[a-z0-9]{24,}$/i.test(recipientUserId) ? recipientUserId : null;
   }
 
-  const recipientUserId = trimmedValue.slice(RBANK_PAY_PREFIX.length).trim();
+  // Alte URL-QRs (https://<host>/zahlungen/<userId>) weiterhin akzeptieren –
+  // sie öffnen das Popup statt einer neuen Seite.
+  try {
+    const normalizedUrl =
+      trimmedValue.startsWith("http://") || trimmedValue.startsWith("https://")
+        ? trimmedValue
+        : `https://${trimmedValue}`;
+    const parsedUrl = new URL(normalizedUrl);
 
-  if (!/^c[a-z0-9]{24,}$/i.test(recipientUserId)) {
-    return null;
+    if (
+      parsedUrl.hostname === window.location.hostname &&
+      parsedUrl.pathname.startsWith("/zahlungen/")
+    ) {
+      const userId = parsedUrl.pathname.split("/").filter(Boolean)[1] ?? "";
+      return /^c[a-z0-9]{24,}$/i.test(userId) ? userId : null;
+    }
+  } catch {
+    // Kein URL-Format – ignorieren.
   }
 
-  return recipientUserId;
+  return null;
 }
 
+type ScannedRecipient = {
+  userId: string;
+  displayName: string;
+};
+
 export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
-  const router = useRouter();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isHandledRef = useRef(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [message, setMessage] = useState("Kamera wird geöffnet…");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [scannedRecipient, setScannedRecipient] =
+    useState<ScannedRecipient | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +84,7 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
           scannerRef.current.stop().catch(() => {});
         }
         scannerRef.current.clear();
+        scannerRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,8 +114,7 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
           if (recipientUserId) {
             isHandledRef.current = true;
             setMessage("RBank-Code erkannt. Zahlung wird geöffnet…");
-            scanner.stop().catch(() => {});
-            router.push(`/zahlungen/scan/${recipientUserId}` as Route);
+            void openPaymentPopup(recipientUserId);
           } else {
             setMessage("Kein gültiger RBank-Zahlungscode erkannt.");
           }
@@ -122,39 +142,88 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
       scannerRef.current = null;
     }
     setIsScanning(false);
-    setMessage("Scanner gestoppt.");
+  }
+
+  async function openPaymentPopup(recipientUserId: string) {
+    await stopScanner();
+
+    // Popup sofort öffnen – der Name wird im Hintergrund nachgeladen.
+    setScannedRecipient({
+      userId: recipientUserId,
+      displayName: "Empfänger",
+    });
+
+    try {
+      const response = await fetch(
+        `/api/customer/recipient/${recipientUserId}`,
+      );
+      if (!response.ok) return;
+      const data = (await response.json()) as { displayName?: string };
+      if (!data.displayName) return;
+      const displayName = data.displayName;
+      setScannedRecipient((current) =>
+        current?.userId === recipientUserId
+          ? { ...current, displayName }
+          : current,
+      );
+    } catch {
+      // Name bleibt Platzhalter – die Zahlung prüft den Empfänger serverseitig.
+    }
+  }
+
+  function closePaymentPopup() {
+    setScannedRecipient(null);
+    isHandledRef.current = false;
+    setMessage("QR-Code wird gesucht…");
+    void startScanner();
   }
 
   return (
     <div className="space-y-6">
       {/* Scanner Area */}
-      <div className="glass-card overflow-hidden rounded-2xl">
+      <div className="glass-card relative overflow-hidden rounded-2xl">
         <div id="qr-reader" className="aspect-[4/5] md:aspect-[16/9]" />
-      </div>
 
-      {/* Controls */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button
-          className="h-12 text-sm"
-          disabled={isStarting || isScanning}
-          onClick={startScanner}
-          type="button"
-        >
-          {isStarting
-            ? "Kamera startet…"
-            : isScanning
-              ? "Scanner aktiv"
-              : "Kamera starten"}
-        </Button>
-        <Button
-          className="h-12 text-sm"
-          disabled={!isScanning}
-          onClick={stopScanner}
-          type="button"
-          variant="outline"
-        >
-          Scanner stoppen
-        </Button>
+        {!isScanning ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface/95 p-6 text-center backdrop-blur-sm">
+            {isStarting ? (
+              <>
+                <span className="h-8 w-8 animate-spin rounded-full border-2 border-on-surface-variant border-t-primary" />
+                <p className="text-sm text-on-surface-variant">
+                  Kamerazugriff wird angefragt…
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-4xl text-primary">
+                  qr_code_scanner
+                </span>
+                <p className="text-sm text-on-surface-variant">
+                  Kamera nicht aktiv
+                </p>
+                <Button
+                  className="h-12 px-6"
+                  onClick={startScanner}
+                  type="button"
+                >
+                  Kamera starten
+                </Button>
+              </>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              void stopScanner();
+              setMessage("Scanner gestoppt.");
+            }}
+            className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/70"
+          >
+            <span className="material-symbols-outlined text-sm">stop</span>
+            Stoppen
+          </button>
+        )}
       </div>
 
       {/* Status */}
@@ -198,7 +267,7 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
         </div>
       </div>
 
-      {/* Steps */}
+      {/* So geht's */}
       <div className="glass-card rounded-2xl p-4">
         <p className="font-label-sm text-label-sm mb-3 text-on-surface-variant">
           So geht&apos;s
@@ -224,6 +293,35 @@ export function PaymentQrScanner({ myUserId }: { myUserId: string }) {
           </li>
         </ol>
       </div>
+
+      {/* Zahlungs-Popup */}
+      {scannedRecipient ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closePaymentPopup();
+          }}
+        >
+          <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-background p-5 pb-8 shadow-2xl sm:rounded-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="font-label-sm text-label-sm text-primary">Zahlung</p>
+              <button
+                type="button"
+                onClick={closePaymentPopup}
+                aria-label="Schließen"
+                className="glass-card flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-all hover:opacity-80 active:scale-95"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+            <PaymentRequestFlow
+              recipientUserId={scannedRecipient.userId}
+              recipientEmail={scannedRecipient.displayName}
+              returnUrl="/dashboard"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -54,7 +54,7 @@ const heroActions = [
   },
   {
     href: "/dashboard/receive-payment" as Route,
-    label: "Empfangen",
+    label: "QR scannen",
     icon: "qr_code_scanner",
   },
   {
