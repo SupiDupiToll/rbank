@@ -1,5 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { QrScanButton } from "@/components/qr-scan-button";
 import { getBalancesByCurrency } from "@/lib/banking";
 import { settleCustomerAccounting } from "@/lib/customer-accounting";
 import { getCurrentAppUser } from "@/lib/current-user";
@@ -169,29 +170,33 @@ export default async function DashboardPage() {
 
         {/* Quick Actions Row */}
         <div className="flex w-full max-w-md items-start justify-between px-2">
-          {heroActions.map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="group flex flex-col items-center gap-2"
-            >
-              <span
-                className={`relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform group-active:scale-95 ${
-                  action.primary
-                    ? "bg-primary-container text-white shadow-[0_0_20px_rgba(94,216,255,0.35)]"
-                    : "glass-card text-on-surface"
-                }`}
+          {heroActions.map((action) =>
+            action.href === "/dashboard/receive-payment" ? (
+              <QrScanButton key={action.href} myUserId={user.id} />
+            ) : (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group flex flex-col items-center gap-2"
               >
-                <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
-                <span className="material-symbols-outlined text-xl">
-                  {action.icon}
+                <span
+                  className={`relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform group-active:scale-95 ${
+                    action.primary
+                      ? "bg-primary-container text-white shadow-[0_0_20px_rgba(94,216,255,0.35)]"
+                      : "glass-card text-on-surface"
+                  }`}
+                >
+                  <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span className="material-symbols-outlined text-xl">
+                    {action.icon}
+                  </span>
                 </span>
-              </span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">
-                {action.label}
-              </span>
-            </Link>
-          ))}
+                <span className="font-label-sm text-label-sm text-on-surface-variant">
+                  {action.label}
+                </span>
+              </Link>
+            ),
+          )}
         </div>
       </section>
 
