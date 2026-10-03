@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -186,62 +187,38 @@ export function CardTab({ initialCard, balanceCents, iframeUrl }: CardTabProps) 
       {/* Mastercard + top up (only when card is active) */}
       {cardActive && (
         <>
-          <div
-            className={cn(
-              "relative mx-auto flex aspect-[1.586] w-full max-w-[380px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#191b21] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-transform duration-300 sm:p-7",
-            )}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-body-md text-body-md font-semibold tracking-[0.25em] text-white">
-                  RBank
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
-                  Prepaid Mastercard
-                </p>
+          <div className="relative mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+            <Image
+              alt="RBank Karte"
+              className="h-auto w-full"
+              height={969}
+              priority
+              src="/rbank-card.png"
+              width={1536}
+            />
+            <span className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-3 py-1 font-label-sm text-label-sm text-white backdrop-blur-md">
+              <span
+                className={cn("h-2 w-2 rounded-full", {
+                  "animate-pulse bg-emerald-400": cardActive,
+                  "bg-slate-400": !cardActive,
+                })}
+              />
+              {cardActive ? "Aktiv" : "Noch nicht aktiviert"}
+            </span>
+            {card?.cardLastFour || card?.phoneNumber ? (
+              <div className="absolute bottom-4 left-4 rounded-lg bg-black/40 px-3 py-2 backdrop-blur-md">
+                {card?.cardLastFour ? (
+                  <p className="font-mono text-sm tracking-[0.2em] text-white">
+                    •••• {card.cardLastFour}
+                  </p>
+                ) : null}
+                {card?.phoneNumber ? (
+                  <p className="mt-1 text-xs text-white/70">
+                    {card.phoneNumber}
+                  </p>
+                ) : null}
               </div>
-              <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-label-sm text-label-sm text-white">
-                <span
-                  className={cn("h-2 w-2 rounded-full", {
-                    "animate-pulse bg-emerald-400": cardActive,
-                    "bg-slate-400": !cardActive,
-                  })}
-                />
-                {cardActive ? "Aktiv" : "Noch nicht aktiviert"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="material-symbols-outlined text-xl text-white/30">
-                contactless
-              </span>
-              <div className="flex h-8 w-11 items-center justify-center rounded-md border border-white/15 bg-[#c9a227]/70">
-                <div className="grid h-5 w-8 grid-cols-2 gap-[3px]">
-                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-                  <span className="rounded-[2px] border border-[#a8841d]/60 bg-[#e6c64d]/50" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p className="font-mono text-lg tracking-[0.2em] text-white sm:text-xl">
-                {card?.cardLastFour ? `•••• ${card.cardLastFour}` : "•••• ••••"}
-              </p>
-              {card?.phoneNumber ? (
-                <p className="mt-2 text-xs text-white/50">{card.phoneNumber}</p>
-              ) : null}
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                  Prepaid
-                </p>
-                <span className="flex items-center">
-                  <span className="h-7 w-7 rounded-full bg-[#EB001B] mix-blend-screen" />
-                  <span className="-ml-3 h-7 w-7 rounded-full bg-[#F79E1B] mix-blend-screen" />
-                </span>
-              </div>
-            </div>
+            ) : null}
           </div>
 
           {/* Top up */}
